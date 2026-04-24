@@ -1,14 +1,16 @@
 import express from 'express';
 import dotenv from 'dotenv';
-dotenv.config("./.env");
+import dns from 'node:dns/promises';
+
+dotenv.config({ path: './.env' });
 const app  = express();
 import {nanoid} from 'nanoid';
-import connectDB from './src/config/mongo.config';
+import connectDB from './src/config/mongo.config.js';
+
+dns.setServers(['1.1.1.1', '8.8.8.8']);
 
 
 
-
-connectDB();
 
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
@@ -25,6 +27,7 @@ app.post('/api/create', (req, res) => {
 
 
 app.listen(3000, () => {
+    connectDB()
     console.log('Server is running on https://localhost:3000')
 })
 
