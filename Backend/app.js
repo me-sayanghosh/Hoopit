@@ -1,0 +1,34 @@
+import express from 'express';
+import dotenv from 'dotenv';
+dotenv.config("./.env");
+const app  = express();
+import {nanoid} from 'nanoid';
+import connectDB from './src/config/mongo.config';
+
+
+
+
+connectDB();
+
+app.use(express.json());
+app.use(express.urlencoded({extended: true}));
+
+
+app.post('/api/create', (req, res) => {
+    const { url } = req.body;
+    if (!url) {
+        return res.status(400).send('URL is required');
+    }
+    const shortUrl = nanoid(8);
+    res.send(shortUrl);
+});
+
+
+app.listen(3000, () => {
+    console.log('Server is running on https://localhost:3000')
+})
+
+
+
+//Get- Redirect
+//Post- Create short url
