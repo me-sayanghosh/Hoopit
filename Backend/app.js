@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import dns from 'node:dns/promises';
 import {nanoid} from 'nanoid';
 import connectDB from './src/config/mongo.config.js';
-import ShortUrl from './src/models/shorturl.model.js';
+import urlSchema from './src/models/shorturl.model.js';
 
 dotenv.config({ path: './.env' });
 const app  = express();
@@ -19,7 +19,7 @@ app.use(express.urlencoded({extended: true}));
 
 
 app.post('/api/create', (req, res) => {
-    const { url } = req.body;
+    const  {url}  = req.body;
     if (!url) {
         return res.status(400).send('URL is required');
     }
@@ -35,7 +35,7 @@ app.post('/api/create', (req, res) => {
 
 app.listen(3000, () => {
     connectDB()
-    console.log('Server is running on https://localhost:3000')
+    console.log('Server is running on http://localhost:3000')
 })
 
 
