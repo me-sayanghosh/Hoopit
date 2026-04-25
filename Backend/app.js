@@ -4,6 +4,11 @@ import dns from 'node:dns/promises';
 import {nanoid} from 'nanoid';
 import connectDB from './src/config/mongo.config.js';
 import urlSchema from './src/models/shorturl.model.js';
+import shortUrlRoute from './src/routes/shortUrl.route.js';
+
+
+
+
 
 dotenv.config({ path: './.env' });
 const app  = express();
@@ -18,18 +23,19 @@ app.use(express.urlencoded({extended: true}));
 
 
 
-app.post('/api/create', (req, res) => {
-    const  {url}  = req.body;
-    if (!url) {
-        return res.status(400).send('URL is required');
+app.use('/api', shortUrlRoute);
+
+
+
+app.get('/:id', async (req, res) => {
+    const {id} = req.params;
+    const urlEntry = await urlSchema.findOne({shortUrl: id});
+    if (urlEntry) {
+        
+        res.redirect(urlEntry.originalUrl);
+    } else {
+        res.status(404).send('URL not found');
     }
-    const shortUrl = nanoid(8);
-    const newUrl = new urlSchema({
-        originalUrl: url,
-        shortUrl: shortUrl
-    })
-    newUrl.save();
-    res.send(nanoid(8));
 });
 
 
@@ -41,4 +47,3 @@ app.listen(3000, () => {
 
 
 //Get- Redirect
-//Post- Create short url
