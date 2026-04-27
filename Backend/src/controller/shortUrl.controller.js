@@ -1,30 +1,39 @@
-import {generateNanoid} from '../utils/helper.js';
-import urlSchema from '../models/shorturl.model.js';
 import { shortUrlServiceWithoutUser } from '../services/shortUrl.service.js';
+import { getShortUrl } from '../dao/shortUrl.js';
+import { AppError } from '../utils/httpError.js';
+
+
+
 import dotenv from 'dotenv';
-
-
-
-
 dotenv.config({ path: './.env' });
 
 
 export const createShortUrl = async (req, res) => {
-    const  {url}  = req.body;
-    const shortUrl = await shortUrlServiceWithoutUser(url);
-    res.send (process.env.APP_URL + shortUrl)
+    try {
+        const { url } = req.body;
+        const shortUrl = await shortUrlServiceWithoutUser(url);
+        res.status(201).send(process.env.APP_URL + shortUrl);
+    }
+    catch (err) {
+        throw err instanceof AppError ? err : new AppError(err.message || 'Failed to create short URL.', 500);
+    }
 
 
 }
 
 
 export const redirectfromShortUrl = async (req, res) => {
-    const {id} = req.params;
-    const urlEntry = await urlSchema.findOne({shortUrl: id});
-    if (urlEntry) {
-        
-        res.redirect(urlEntry.originalUrl);
-    } else {
-        res.status(404).send('URL not found');
+    try {
+        const { id } = req.params;
+        const url = await getShortUrl(id);
+
+        if (!url) {
+            throw new AppError('Short URL not found.', 404);
+        }
+
+        res.redirect(url);
+    }
+    catch (err) {
+        throw err instanceof AppError ? err : new AppError(err.message || 'Failed to redirect short URL.', 500);
     }
 }

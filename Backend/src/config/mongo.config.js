@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { AppError } from "../utils/httpError.js";
 
 const connectDB = async () => {
     try {
@@ -6,7 +7,7 @@ const connectDB = async () => {
         console.log('MongoDB connected');
     }
     catch (err) {
-        console.error('MongoDB connection failed:', err.message);
+        throw new AppError(`MongoDB connection failed: ${err.message}`, 500);
     }
 }
 
