@@ -1,6 +1,6 @@
 import express from 'express';
 import { createShortUrl } from '../controller/shortUrl.controller.js';
-import { AppError, asyncHandler } from '../utils/httpError.js';
+import { AppError } from '../utils/httpError.js';
 
 const router = express.Router();
 
@@ -16,6 +16,6 @@ const validateCreateShortUrl = (req, res, next) => {
 
 
 
-router.post("/", validateCreateShortUrl, asyncHandler(createShortUrl));
+router.post("/", validateCreateShortUrl, createShortUrl);
 
 export default router;
