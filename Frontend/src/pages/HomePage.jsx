@@ -1,8 +1,9 @@
-import React from 'react'
+
+import UrlForm from '../components/urlFrom'
 
 function HomePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 text-white flex items-center justify-center px-4">
+    <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-slate-800 text-white flex items-center justify-center px-4">
       <div className="w-full max-w-2xl rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur">
         <div className="mb-8 text-center">
           <p className="mb-2 text-sm font-medium uppercase tracking-[0.3em] text-cyan-300">
@@ -15,12 +16,7 @@ function HomePage() {
             Paste a long URL, generate a short one, and copy it instantly.
           </p>
         </div>
-
-        
-
-        
-
-        
+        <UrlForm />
       </div>
     </div>
   )
