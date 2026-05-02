@@ -1,12 +1,18 @@
 import { useState } from "react";
+import axios from "axios";
 
 function UrlForm() {
     const [url, setUrl] = useState("");
+    
     const [shortUrl, setShortUrl] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
     const handleSubmit = async (e) => {
+        const data = await axios.post("/api/create", { url });
+        console.log(data);
+
+
         e.preventDefault();
         setLoading(true);
         setError("");
@@ -54,7 +60,7 @@ function UrlForm() {
                     type="url"
                     required
                     value={url}
-                    onChange={(e) => setUrl(e.target.value)}
+                    onInput={(e) => setUrl(e.target.value)}
                     placeholder="https://example.com/very/long/link"
                     className="w-full rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30"
                 />
