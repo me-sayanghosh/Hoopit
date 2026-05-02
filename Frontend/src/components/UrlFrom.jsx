@@ -9,11 +9,13 @@ function UrlForm() {
     const [error, setError] = useState("");
 
     const handleSubmit = async (e) => {
-        const data = await axios.post("/api/create", { url });
-        console.log(data);
-
-
         e.preventDefault();
+        const data = await axios.post("/api/create", { url });
+
+        
+
+
+        
         setLoading(true);
         setError("");
         setShortUrl("");
@@ -47,7 +49,7 @@ function UrlForm() {
         }
     };
     return (
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form className="space-y-4">
             <div>
                 <label
                     htmlFor="url"
@@ -67,6 +69,7 @@ function UrlForm() {
             </div>
 
             <button
+                onclick={handleSubmit}
                 type="submit"
                 disabled={loading}
                 className="w-full rounded-2xl bg-cyan-400 px-4 py-3 font-semibold text-slate-950 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-60"
