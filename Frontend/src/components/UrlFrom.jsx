@@ -3,39 +3,22 @@ import axios from "axios";
 
 function UrlForm() {
     const [url, setUrl] = useState("");
-    
+
     const [shortUrl, setShortUrl] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const data = await axios.post("/api/create", { url });
 
-        
-
-
-        
         setLoading(true);
         setError("");
         setShortUrl("");
 
         try {
-            const response = await fetch("http://localhost:3000/api/create", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ url }),
-            });
-
-            if (!response.ok) {
-                const message = await response.text();
-                throw new Error(message || "Failed to shorten URL");
-            }
-
-            const result = await response.text();
-            setShortUrl(result);
+            const response = await axios.post("/api/create", { url });
+            console.log("Backend generated URL:", response.data);
+            setShortUrl(response.data);
         } catch (err) {
             setError(err.message || "Something went wrong");
         } finally {
@@ -49,7 +32,7 @@ function UrlForm() {
         }
     };
     return (
-        <form className="space-y-4">
+        <form className="space-y-4" onSubmit={handleSubmit}>
             <div>
                 <label
                     htmlFor="url"
@@ -69,7 +52,6 @@ function UrlForm() {
             </div>
 
             <button
-                onclick={handleSubmit}
                 type="submit"
                 disabled={loading}
                 className="w-full rounded-2xl bg-cyan-400 px-4 py-3 font-semibold text-slate-950 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-60"
