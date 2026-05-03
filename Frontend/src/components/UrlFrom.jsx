@@ -1,12 +1,19 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 
 function UrlForm() {
     const [url, setUrl] = useState("");
-
     const [shortUrl, setShortUrl] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [copied, setCopied] = useState(false);
+    const resultRef = useRef(null);
+
+    useEffect(() => {
+        if (shortUrl && resultRef.current) {
+            resultRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+    }, [shortUrl]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -17,8 +24,16 @@ function UrlForm() {
 
         try {
             const response = await axios.post("/api/create", { url });
-            console.log("Backend generated URL:", response.data);
-            setShortUrl(response.data);
+            const generatedUrl =
+                typeof response.data === "string"
+                    ? response.data.trim()
+                    : response.data?.shortUrl || response.data?.data || response.data?.url || "";
+
+            if (!generatedUrl) {
+                throw new Error("No short URL returned from the server");
+            }
+
+            setShortUrl(generatedUrl);
         } catch (err) {
             setError(err.message || "Something went wrong");
         } finally {
@@ -29,6 +44,11 @@ function UrlForm() {
     const handleCopy = async () => {
         if (shortUrl) {
             await navigator.clipboard.writeText(shortUrl);
+            setCopied(true);
+
+            setTimeout(() => {
+                setCopied(false);
+            }, 1500);
         }
     };
     return (
@@ -66,7 +86,7 @@ function UrlForm() {
             )}
 
             {shortUrl && (
-                <div className="mt-6 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-4">
+                <div ref={resultRef} className="mt-6 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-4">
                     <p className="mb-2 text-sm font-medium text-emerald-200">
                         Your short URL
                     </p>
@@ -82,9 +102,13 @@ function UrlForm() {
                         <button
                             type="button"
                             onClick={handleCopy}
-                            className="rounded-xl border border-white/10 px-4 py-3 text-sm font-medium hover:bg-white/10"
+                            className={`rounded-xl border px-4 py-3 text-sm font-medium transition ${
+                                copied
+                                    ? "border-emerald-400 bg-emerald-400 text-slate-950"
+                                    : "border-white/10 hover:bg-white/10"
+                            }`}
                         >
-                            Copy
+                            {copied ? "Copied" : "Copy"}
                         </button>
                     </div>
                 </div>

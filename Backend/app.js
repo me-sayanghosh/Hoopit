@@ -5,7 +5,7 @@ import connectDB from './src/config/mongo.config.js';
 import shortUrlRoute from './src/routes/shortUrl.route.js';
 import { redirectfromShortUrl } from './src/controller/shortUrl.controller.js';
 import { errorHandler, notFoundHandler } from './src/utils/httpError.js';
-
+import cors from 'cors';
 
 
 ///this is for dotenv configuration
@@ -17,6 +17,7 @@ const app  = express();
 
 /// this is for dns configuration to support dns resolution for url redirection
 
+app.use(cors());
 dns.setServers(['1.1.1.1', '8.8.8.8']);
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
