@@ -8,6 +8,7 @@ function UrlForm() {
     const [error, setError] = useState("");
     const [copied, setCopied] = useState(false);
     const resultRef = useRef(null);
+    
 
     useEffect(() => {
         if (shortUrl && resultRef.current) {
@@ -41,7 +42,7 @@ function UrlForm() {
         }
     };
 
-    const handleCopy = async () => {
+    const handleCopy = async () => { 
         if (shortUrl) {
             await navigator.clipboard.writeText(shortUrl);
             setCopied(true);
