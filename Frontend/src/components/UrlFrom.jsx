@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import axios from "axios";
+
+import { shortenUrl } from "../api/shortUrlapi.js";
 
 function UrlForm() {
     const [url, setUrl] = useState("");
@@ -18,17 +19,16 @@ function UrlForm() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
         setLoading(true);
         setError("");
         setShortUrl("");
 
         try {
-            const response = await axios.post("/api/create", { url });
+            const response = await shortenUrl(url);
             const generatedUrl =
-                typeof response.data === "string"
-                    ? response.data.trim()
-                    : response.data?.shortUrl || response.data?.data || response.data?.url || "";
+                typeof response === "string"
+                    ? response.trim()
+                    : response?.shortUrl || response?.data || response?.url || "";
 
             if (!generatedUrl) {
                 throw new Error("No short URL returned from the server");
