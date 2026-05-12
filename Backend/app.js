@@ -2,6 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import dns from 'node:dns/promises';
 import connectDB from './src/config/mongo.config.js';
+import authRoute from './src/routes/auth.route.js';
 import shortUrlRoute from './src/routes/shortUrl.route.js';
 import { redirectfromShortUrl } from './src/controller/shortUrl.controller.js';
 import { errorHandler, notFoundHandler } from './src/utils/httpError.js';
@@ -28,6 +29,7 @@ app.use(express.urlencoded({extended: true}));
 
 /// this is the route for creating short url and redirecting from short url to original url
 
+app.use('/api/auth', authRoute);
 app.use('/api/create', shortUrlRoute);
 app.get('/:id', redirectfromShortUrl);
 app.use(notFoundHandler);
