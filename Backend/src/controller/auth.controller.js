@@ -1,12 +1,13 @@
-import wrapasync from "../utils/errorHandeler";
+import wrapasync from "../utils/errorHandeler.js";
+import { registerUser as registerUserService } from '../services/auth.service.js';
 
-export const registerUser = wrapasyncasync (async(req, res) => {
-    const {name, email, password} = req.body;
-    const user = await User.create({name, email, password});
-    res.send('Register route');
-})
+export const registerUser = wrapasync(async (req, res) => {
+    const { name, email, password } = req.body;
+    const token = await registerUserService(name, email, password);
+    res.status(201).json({ token });
+});
 
-export const loginUser = wrapasyncasync (async(req, res) => {
-    res.send('Login route');
-})
+export const loginUser = wrapasync(async (req, res) => {
+    res.status(200).json({ message: 'Login route (not implemented)' });
+});
 

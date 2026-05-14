@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import crypto from 'crypto';
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -26,7 +27,7 @@ const userSchema = new mongoose.Schema({
 
 
 function getGravatarUrl(email) {
-    const hash = require('crypto').createHash('md5').update(email.trim().toLowerCase()).digest('hex');
+    const hash = crypto.createHash('md5').update(email.trim().toLowerCase()).digest('hex');
     return `https://www.gravatar.com/avatar/${hash}?d=identicon`;
 }
 
