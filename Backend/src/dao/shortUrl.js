@@ -39,3 +39,12 @@ export const getShortUrl = async (shortUrl) => {
         throw new AppError(err.message || 'Failed to fetch short URL.', 500);
     }
 }
+
+export const getCustomShortUrl = async (shortUrl) => {
+    try {
+        return await urlSchema.findOne({ shortUrl });
+    }
+    catch (err) {
+        throw new AppError(err.message || 'Failed to fetch custom short URL.', 500);
+    }
+}

@@ -7,6 +7,8 @@ import shortUrlRoute from './src/routes/shortUrl.route.js';
 import { redirectfromShortUrl } from './src/controller/shortUrl.controller.js';
 import { errorHandler, notFoundHandler } from './src/utils/httpError.js';
 import cors from 'cors';
+import { attachUser } from './src/utils/attachUser.js';
+import cookieParser from 'cookie-parser';
 
 
 ///this is for dotenv configuration
@@ -22,6 +24,8 @@ app.use(cors());
 dns.setServers(['1.1.1.1', '8.8.8.8']);
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
+app.use(cookieParser());
+app.use(attachUser);
 
 
 

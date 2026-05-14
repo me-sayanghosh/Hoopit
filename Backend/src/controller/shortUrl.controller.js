@@ -24,7 +24,7 @@ export const createShortUrl = wrapasync(async (req, res) => {
 
 export const createCustomShortUrl = wrapasync(async (req, res) => {
     const { url, customAlias } = req.body;
-    const shortUrl = await shortUrlServiceWithoutUser(url, customAlias);
+    const shortUrl = await shortUrlServicewithUser(url, req.user._id, customAlias);
     res.status(201).send(process.env.APP_URL + shortUrl);
 });
 
