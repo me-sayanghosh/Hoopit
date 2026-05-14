@@ -10,22 +10,31 @@ dotenv.config({ path: './.env' });
 
 
 export const createShortUrl = wrapasync(async (req, res) => {
-    const { url } = req.body;
+    const { url, slug, customAlias } = req.body;
+    const shortAlias = slug || customAlias;
     let shortUrl;
 
-    if (req.user) {
+    if (shortAlias) {
+        const userId = req.user?._id;
+        shortUrl = await shortUrlServicewithUser(url, userId, shortAlias);
+    } else if (req.user) {
         shortUrl = await shortUrlServicewithUser(url, req.user._id);
     } else {
         shortUrl = await shortUrlServiceWithoutUser(url);
     }
 
-    res.status(201).send(process.env.APP_URL + shortUrl);
+    res.status(201).json({
+        shortUrl: process.env.APP_URL + shortUrl
+    });
 });
 
 export const createCustomShortUrl = wrapasync(async (req, res) => {
-    const { url, customAlias } = req.body;
-    const shortUrl = await shortUrlServicewithUser(url, req.user._id, customAlias);
-    res.status(201).send(process.env.APP_URL + shortUrl);
+    const { url, slug, customAlias } = req.body;
+    const shortAlias = slug || customAlias;
+    const shortUrl = await shortUrlServicewithUser(url, req.user._id, shortAlias);
+    res.status(201).json({
+        shortUrl: process.env.APP_URL + shortUrl
+    });
 });
 
 

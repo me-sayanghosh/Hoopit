@@ -16,13 +16,14 @@ const validateCreateShortUrl = (req, res, next) => {
 };
 
 const validateCreateCustomShortUrl = (req, res, next) => {
-	const { url, customAlias } = req.body || {};
+	const { url, slug, customAlias } = req.body || {};
+	const alias = slug || customAlias;
 
 	if (!url || typeof url !== 'string') {
 		return next(new AppError('A valid URL is required.', 400));
 	}
 
-	if (!customAlias || typeof customAlias !== 'string') {
+	if (!alias || typeof alias !== 'string') {
 		return next(new AppError('A valid custom alias is required.', 400));
 	}
 
