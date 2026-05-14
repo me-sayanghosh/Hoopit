@@ -1,5 +1,5 @@
 import { generateNanoid } from "../utils/helper.js";
-import { saveShortUrl, getCustomShortUrl } from "../dao/shortUrl.js";
+import { saveShortUrl, getCustomShortUrl, getShortUrlByOriginalUrl } from "../dao/shortUrl.js";
 import { AppError } from "../utils/httpError.js";
 
 
@@ -7,6 +7,11 @@ export const shortUrlServiceWithoutUser = async (url) => {
     try {
         if (!url) {
             throw new AppError('URL is required.', 400);
+        }
+
+        const existingUrl = await getShortUrlByOriginalUrl(url);
+        if (existingUrl) {
+            throw new AppError('This url already exists', 409);
         }
 
         const shortUrl = generateNanoid(7);
@@ -29,6 +34,11 @@ export const shortUrlServicewithUser = async (url, userId, slug = null) => {
     try {
         if (!url) {
             throw new AppError('URL is required.', 400);
+        }
+
+        const existingUrl = await getShortUrlByOriginalUrl(url);
+        if (existingUrl) {
+            throw new AppError('This url already exists', 409);
         }
 
         const shortUrl = slug || generateNanoid(7);
