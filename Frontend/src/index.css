@@ -1,1 +1,63 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+	color-scheme: light;
+	background: #ffffff;
+	color: #111827;
+	--font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+	--primary-blue: #0066ff;
+	--primary-blue-hover: #0052cc;
+	--bg-light: #f8f9fa;
+	--bg-card: #f1f3f5;
+	--border-light: #e5e7eb;
+}
+
+html,
+body,
+#root {
+	min-height: 100%;
+}
+
+body {
+	margin: 0;
+	background: #ffffff;
+	font-family: var(--font-sans);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+@keyframes draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-draw-line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: draw 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.delay-200 {
+  animation-delay: 200ms;
+}
+
+.delay-300 {
+  animation-delay: 300ms;
+}
+
+.delay-400 {
+  animation-delay: 400ms;
+}
+
+.delay-600 {
+  animation-delay: 600ms;
+}
