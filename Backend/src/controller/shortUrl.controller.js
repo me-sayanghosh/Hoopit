@@ -1,4 +1,4 @@
-import { shortUrlServiceWithoutUser } from '../services/shortUrl.service.js';
+import { shortUrlServiceWithoutUser, shortUrlServicewithUser } from '../services/shortUrl.service.js';
 import { getShortUrl } from '../dao/shortUrl.js';
 import { AppError } from '../utils/httpError.js';
 import wrapasync from '../utils/errorHandeler.js';
@@ -11,7 +11,20 @@ dotenv.config({ path: './.env' });
 
 export const createShortUrl = wrapasync(async (req, res) => {
     const { url } = req.body;
-    const shortUrl = await shortUrlServiceWithoutUser(url);
+    let shortUrl;
+
+    if (req.user) {
+        shortUrl = await shortUrlServicewithUser(url, req.user._id);
+    } else {
+        shortUrl = await shortUrlServiceWithoutUser(url);
+    }
+
+    res.status(201).send(process.env.APP_URL + shortUrl);
+});
+
+export const createCustomShortUrl = wrapasync(async (req, res) => {
+    const { url, customAlias } = req.body;
+    const shortUrl = await shortUrlServiceWithoutUser(url, customAlias);
     res.status(201).send(process.env.APP_URL + shortUrl);
 });
 
