@@ -57,3 +57,14 @@ export const getShortUrlByOriginalUrl = async (originalUrl) => {
         throw new AppError(err.message || 'Failed to fetch URL.', 500);
     }
 }
+
+export const getShortUrlsByUserId = async (userId) => {
+    try {
+        return await urlSchema
+            .find({ user: userId })
+            .sort({ createdAt: -1 });
+    }
+    catch (err) {
+        throw new AppError(err.message || 'Failed to fetch user URLs.', 500);
+    }
+}

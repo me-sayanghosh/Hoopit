@@ -1,4 +1,4 @@
-import { shortUrlServiceWithoutUser, shortUrlServicewithUser } from '../services/shortUrl.service.js';
+import { shortUrlServiceWithoutUser, shortUrlServicewithUser, getUserShortUrls, getUserUrlAnalytics } from '../services/shortUrl.service.js';
 import { getShortUrl } from '../dao/shortUrl.js';
 import { AppError } from '../utils/httpError.js';
 import wrapasync from '../utils/errorHandeler.js';
@@ -47,4 +47,24 @@ export const redirectfromShortUrl = wrapasync(async (req, res) => {
     }
 
     res.redirect(url);
+});
+
+export const getMyShortUrls = wrapasync(async (req, res) => {
+    const urls = await getUserShortUrls(req.user._id);
+
+    res.status(200).json({
+        urls: urls.map((item) => ({
+            id: item._id,
+            originalUrl: item.originalUrl,
+            shortUrl: item.shortUrl,
+            clicks: item.clicks,
+            createdAt: item.createdAt,
+        })),
+    });
+});
+
+export const getMyShortUrlAnalytics = wrapasync(async (req, res) => {
+    const analytics = await getUserUrlAnalytics(req.user._id);
+
+    res.status(200).json(analytics);
 });

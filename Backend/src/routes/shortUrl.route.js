@@ -1,5 +1,5 @@
 import express from 'express';
-import { createShortUrl, createCustomShortUrl } from '../controller/shortUrl.controller.js';
+import { createShortUrl, createCustomShortUrl, getMyShortUrls, getMyShortUrlAnalytics } from '../controller/shortUrl.controller.js';
 import { AppError } from '../utils/httpError.js';
 import { authMiddleware } from '../middleware/auth.middleware.js';
 
@@ -33,5 +33,7 @@ const validateCreateCustomShortUrl = (req, res, next) => {
 
 router.post("/", validateCreateShortUrl, createShortUrl);
 router.post("/custom", validateCreateCustomShortUrl, authMiddleware, createCustomShortUrl);
+router.get('/mine', authMiddleware, getMyShortUrls);
+router.get('/analytics', authMiddleware, getMyShortUrlAnalytics);
 
 export default router;

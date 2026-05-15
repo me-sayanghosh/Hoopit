@@ -13,3 +13,13 @@ export const createCustomShortUrl = async (url, customAlias) => {
 
         return data;
 };
+
+export const getMyShortUrls = async () => {
+        const { data } = await axiosInstance.get('/api/create/mine');
+        return data;
+};
+
+export const getMyShortUrlAnalytics = async () => {
+        const { data } = await axiosInstance.get('/api/create/analytics');
+        return data;
+};
