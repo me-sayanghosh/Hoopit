@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { registerUser } from '../api/user.api.js'
 
-function RegisterFrom() {
+function RegisterFrom({ onSubmit }) {
 	const [name, setName] = useState('')
 	const [email, setEmail] = useState('')
 	const [password, setPassword] = useState('')
@@ -17,7 +16,7 @@ function RegisterFrom() {
 		setMessage('')
 
 		try {
-			await registerUser(name, email, password)
+			await onSubmit(name, email, password)
 			setMessage('Account created successfully.')
 			setName('')
 			setEmail('')

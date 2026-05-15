@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { loginUser } from '../api/user.api.js'
 
-function LoginFrom() {
+function LoginFrom({ onSubmit, onSuccess }) {
 	const [email, setEmail] = useState('')
 	const [password, setPassword] = useState('')
 	const [loading, setLoading] = useState(false)
@@ -16,9 +15,12 @@ function LoginFrom() {
 		setMessage('')
 
 		try {
-			await loginUser(email, password)
-			setMessage('You are signed in.')
+			await onSubmit(email, password)
 			setPassword('')
+			setMessage('You are signed in.')
+			if (onSuccess) {
+				onSuccess()
+			}
 		} catch (err) {
 			setError(err?.message || 'Unable to sign in right now.')
 		} finally {

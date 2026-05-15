@@ -1,5 +1,6 @@
 import AuthLayout from '../components/AuthLayout.jsx'
 import RegisterFrom from '../components/RegisterFrom.jsx'
+import { registerUser } from '../api/user.api.js'
 
 function RegisterPage() {
   return (
@@ -7,7 +8,7 @@ function RegisterPage() {
       title="Create an account"
       description="Start organizing like a professional today."
     >
-      <RegisterFrom />
+      <RegisterFrom onSubmit={registerUser} />
     </AuthLayout>
   )
 }

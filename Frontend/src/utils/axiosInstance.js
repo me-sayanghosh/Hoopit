@@ -6,6 +6,7 @@ const baseURL = import.meta.env.VITE_API_BASE_URL || FALLBACK_BASE_URL;
 const axiosInstance = axios.create({
     baseURL,
     timeout: 10000,
+    withCredentials: true,
     headers: {
         "Content-Type": "application/json",
     },
