@@ -2,39 +2,40 @@
 @import "tailwindcss";
 
 :root {
-	color-scheme: light;
-	background: #ffffff;
-	color: #111827;
-	--font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-	--primary-blue: #0066ff;
-	--primary-blue-hover: #0052cc;
-	--bg-light: #f8f9fa;
-	--bg-card: #f1f3f5;
-	--border-light: #e5e7eb;
+  color-scheme: light;
+  background: #ffffff;
+  color: #111827;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --primary-blue: #0066ff;
+  --primary-blue-hover: #0052cc;
+  --bg-light: #f8f9fa;
+  --bg-card: #f1f3f5;
+  --border-light: #e5e7eb;
 }
 
 html,
 body,
 #root {
-	min-height: 100%;
+  min-height: 100%;
 }
 
 body {
-	margin: 0;
-	background: #ffffff;
-	font-family: var(--font-sans);
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  background: #ffffff;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 * {
-	box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 @keyframes draw {
   from {
     stroke-dashoffset: 1;
   }
+
   to {
     stroke-dashoffset: 0;
   }

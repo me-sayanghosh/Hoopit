@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { getMyShortUrlAnalytics, getMyShortUrls } from '../api/shortUrlapi.js'
-import { getCurrentUser, logOutUser } from '../api/user.api.js'
+
 
 const formatDate = (value) => {
   if (!value) {
@@ -123,7 +123,7 @@ const buildGrowthLinePath = (series, width, height, padding) => {
 function AnalyticsPage() {
   const navigate = useNavigate()
 
-  const [profile, setProfile] = useState(null)
+
   const [urls, setUrls] = useState([])
   const [analytics, setAnalytics] = useState({
     totalUrls: 0,
@@ -134,7 +134,6 @@ function AnalyticsPage() {
   })
   const [loading, setLoading] = useState(true)
   const [pageError, setPageError] = useState('')
-  const [copiedValue, setCopiedValue] = useState('')
 
   useEffect(() => {
     const loadAnalytics = async () => {
@@ -142,13 +141,11 @@ function AnalyticsPage() {
       setPageError('')
 
       try {
-        const [profileResponse, urlsResponse, analyticsResponse] = await Promise.all([
-          getCurrentUser(),
+        const [urlsResponse, analyticsResponse] = await Promise.all([
           getMyShortUrls(),
           getMyShortUrlAnalytics(),
         ])
 
-        setProfile(profileResponse?.user || null)
         setUrls(urlsResponse?.urls || [])
         setAnalytics({
           totalUrls: analyticsResponse?.totalUrls || 0,
@@ -174,23 +171,7 @@ function AnalyticsPage() {
     loadAnalytics()
   }, [navigate])
 
-  const handleCopy = async (value) => {
-    await navigator.clipboard.writeText(value)
-    setCopiedValue(value)
 
-    window.setTimeout(() => {
-      setCopiedValue('')
-    }, 1500)
-  }
-
-  const handleLogout = async () => {
-    try {
-      await logOutUser()
-      navigate('/')
-    } catch (error) {
-      setPageError(error?.message || 'Unable to log out right now.')
-    }
-  }
 
   const topUrl = analytics.topUrl || urls[0] || null
   const chartSegments = getChartSegments(urls, analytics.totalClicks)
@@ -217,30 +198,17 @@ function AnalyticsPage() {
   return (
     <div className="min-h-screen bg-[#f7f7f8] text-[#111827]">
       <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8">
-        <header className="mb-8 rounded-[28px] border border-white/70 bg-white/90 px-5 py-5 shadow-sm backdrop-blur sm:px-6">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Hoopit</p>
-              <h1 className="text-2xl font-bold tracking-tight text-slate-900">Analytics workspace</h1>
-              <p className="mt-1 text-sm text-slate-500">Review your profile, performance, and URLs created by you.</p>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3">
-              <Link
-                to="/dashboard"
-                className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-              >
-                Dashboard
-              </Link>
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
-              >
-                Logout
-              </button>
-            </div>
-          </div>
+        <header className="mb-8 flex flex-col sm:flex-row sm:items-center gap-4">
+          <Link 
+            to="/dashboard"
+            className="w-fit text-slate-500 hover:text-black flex items-center gap-2 text-sm font-medium transition-colors bg-white px-4 py-2 rounded-lg shadow-sm"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+            </svg>
+            Back
+          </Link>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:ml-auto">Analytics</h1>
         </header>
 
         {pageError ? (
@@ -249,35 +217,8 @@ function AnalyticsPage() {
           </p>
         ) : null}
 
-        <main className="grid gap-6 xl:grid-cols-[0.85fr_1.15fr]">
-          <section className="grid gap-6">
-            <section className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_12px_40px_rgba(15,23,42,0.08)] sm:p-7">
-              <div className="mb-5 flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Profile section</p>
-                  <h2 className="mt-2 text-2xl font-bold tracking-tight text-slate-900">Your profile</h2>
-                </div>
-                <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-                  Signed in
-                </span>
-              </div>
+        <main className="flex flex-col gap-6">
 
-              <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-                <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-3xl bg-slate-100 text-2xl font-bold text-slate-500">
-                  {profile?.avatar ? (
-                    <img src={profile.avatar} alt={profile?.name || 'User avatar'} className="h-full w-full object-cover" />
-                  ) : (
-                    (profile?.name || 'U').slice(0, 1).toUpperCase()
-                  )}
-                </div>
-
-                <div className="min-w-0 flex-1">
-                  <h3 className="text-xl font-semibold tracking-tight text-slate-900">{profile?.name || 'User'}</h3>
-                  <p className="mt-1 break-all text-sm text-slate-600">{profile?.email || 'No email available'}</p>
-                  <p className="mt-2 text-sm text-slate-500">This panel shows the analytics that are only visible after opening the profile route.</p>
-                </div>
-              </div>
-            </section>
 
             <section className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_12px_40px_rgba(15,23,42,0.08)] sm:p-7">
               <div className="mb-5">
@@ -487,57 +428,6 @@ function AnalyticsPage() {
                 )}
               </div>
             </section>
-          </section>
-
-          <section className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_12px_40px_rgba(15,23,42,0.08)] sm:p-8">
-            <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">URLs created by you</p>
-                <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">Your saved links</h2>
-              </div>
-              <p className="max-w-2xl text-sm leading-6 text-slate-600">
-                This page groups every link you created and shows the click count beside it.
-              </p>
-            </div>
-
-            {urls.length ? (
-              <div className="overflow-hidden rounded-2xl border border-slate-200">
-                <div className="hidden grid-cols-[1.4fr_1fr_0.6fr_0.7fr_0.7fr] gap-4 bg-slate-50 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 md:grid">
-                  <span>Original URL</span>
-                  <span>Short URL</span>
-                  <span>Clicks</span>
-                  <span>Created</span>
-                  <span>Action</span>
-                </div>
-
-                <div className="divide-y divide-slate-200">
-                  {urls.map((item) => (
-                    <div key={item.id} className="grid gap-4 px-4 py-4 md:grid-cols-[1.4fr_1fr_0.6fr_0.7fr_0.7fr] md:items-center">
-                      <a href={item.originalUrl} target="_blank" rel="noreferrer" className="break-all text-sm font-medium text-slate-900 hover:text-blue-700">
-                        {item.originalUrl}
-                      </a>
-                      <a href={item.shortUrl} target="_blank" rel="noreferrer" className="break-all text-sm text-blue-700 hover:underline">
-                        {item.shortUrl}
-                      </a>
-                      <span className="text-sm font-semibold text-slate-700">{item.clicks || 0}</span>
-                      <span className="text-sm text-slate-500">{formatDate(item.createdAt)}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleCopy(item.shortUrl)}
-                        className="justify-self-start rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
-                      >
-                        {copiedValue === item.shortUrl ? 'Copied' : 'Copy'}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-5 py-8 text-sm text-slate-500">
-                You have not created any URLs yet.
-              </div>
-            )}
-          </section>
         </main>
       </div>
     </div>

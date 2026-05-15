@@ -1,4 +1,5 @@
 @layer components {
+
 	/* Auth Form Styles */
 	.auth-form {
 		display: grid;
@@ -82,7 +83,7 @@
 		cursor: pointer;
 		text-decoration: none;
 	}
-	
+
 	.auth-link:hover {
 		text-decoration: underline;
 	}

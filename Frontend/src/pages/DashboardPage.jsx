@@ -1,42 +1,29 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { shortenUrl, createCustomShortUrl, getMyShortUrls } from '../api/shortUrlapi.js'
+import { shortenUrl } from '../api/shortUrlapi.js'
 import { getCurrentUser, logOutUser } from '../api/user.api.js'
-
-const formatDate = (value) => {
-  if (!value) return 'Just now'
-  return new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(value))
-}
 
 export default function DashboardPage() {
   const navigate = useNavigate()
   const [profile, setProfile] = useState(null)
-  const [urls, setUrls] = useState([])
   const [loading, setLoading] = useState(true)
   const [pageError, setPageError] = useState('')
 
-  // Card A - shorten
   const [aUrl, setAUrl] = useState('')
   const [aLoading, setALoading] = useState(false)
   const [aResult, setAResult] = useState('')
   const [aError, setAError] = useState('')
-
-  // Card B - custom alias
-  const [bUrl, setBUrl] = useState('')
-  const [bAlias, setBAlias] = useState('')
-  const [bLoading, setBLoading] = useState(false)
-  const [bResult, setBResult] = useState('')
-  const [bError, setBError] = useState('')
-
   const [copiedValue, setCopiedValue] = useState('')
+
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const dropdownRef = useRef(null)
 
   useEffect(() => {
     const load = async () => {
       setLoading(true)
       try {
-        const [profileRes, urlsRes] = await Promise.all([getCurrentUser(), getMyShortUrls()])
+        const profileRes = await getCurrentUser()
         setProfile(profileRes?.user || null)
-        setUrls(urlsRes?.urls || [])
       } catch (err) {
         const msg = err?.message || 'Unable to load dashboard.'
         if (msg.toLowerCase().includes('unauthorized')) return navigate('/login')
@@ -48,21 +35,24 @@ export default function DashboardPage() {
     load()
   }, [navigate])
 
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [dropdownRef])
+
   const handleLogout = async () => {
     try {
       await logOutUser()
       navigate('/')
     } catch (err) {
       setPageError(err?.message || 'Logout failed')
-    }
-  }
-
-  const refreshUrls = async () => {
-    try {
-      const res = await getMyShortUrls()
-      setUrls(res?.urls || [])
-    } catch {
-      // ignore
     }
   }
 
@@ -84,32 +74,10 @@ export default function DashboardPage() {
       if (!short) throw new Error('No short URL returned')
       setAResult(short)
       setAUrl('')
-      await refreshUrls()
     } catch (err) {
       setAError(err?.message || 'Failed to shorten')
     } finally {
       setALoading(false)
-    }
-  }
-
-  const submitB = async (e) => {
-    e.preventDefault()
-    if (!bUrl || !bAlias) return
-    setBLoading(true)
-    setBError('')
-    setBResult('')
-    try {
-      const res = await createCustomShortUrl(bUrl, bAlias)
-      const short = res?.shortUrl || ''
-      if (!short) throw new Error('No custom short URL returned')
-      setBResult(short)
-      setBUrl('')
-      setBAlias('')
-      await refreshUrls()
-    } catch (err) {
-      setBError(err?.message || 'Failed to create custom alias')
-    } finally {
-      setBLoading(false)
     }
   }
 
@@ -123,123 +91,96 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-[#F5F5F5] font-sans text-slate-900">
-      <header className="bg-white border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+      <header className="bg-white border-b border-slate-200 relative z-50">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-md bg-blue-600 flex items-center justify-center text-white font-bold">H</div>
-            <div className="hidden sm:block font-semibold">Hoopit</div>
+            <Link to="/" className="flex items-center gap-2 text-slate-500 hover:text-black mr-4 text-sm font-medium">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+              </svg>
+              Back
+            </Link>
+            <div className="h-9 w-9 rounded-md bg-[#1f1f1f] flex items-center justify-center text-white font-bold">H</div>
+            <div className="hidden sm:block font-bold text-xl tracking-tighter">hoopit</div>
           </div>
 
-          <nav className="hidden md:flex gap-6 text-sm text-slate-700">
-            <Link to="/" className="hover:text-slate-900">Home</Link>
-            <Link to="/analytics" className="hover:text-slate-900">Analytics</Link>
-          </nav>
-
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-3">
-              <img src={profile?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.name || 'User')}`} alt="avatar" className="h-8 w-8 rounded-full object-cover" />
-              <button onClick={handleLogout} className="rounded-md bg-slate-900 px-3 py-1 text-sm font-medium text-white">Logout</button>
-            </div>
+          <div className="relative" ref={dropdownRef}>
+            <button 
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              className="flex items-center gap-2 hover:bg-slate-50 p-1.5 rounded-full transition-colors relative"
+            >
+              <img src={profile?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.name || 'User')}`} alt="avatar" className="h-9 w-9 rounded-full object-cover shadow-sm border border-slate-200" />
+              <span className="absolute bottom-1.5 right-1.5 h-2.5 w-2.5 rounded-full bg-green-500 border-2 border-white shadow-sm"></span>
+            </button>
+            
+            {dropdownOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-slate-200 py-1">
+                <Link to="/creations" className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">My Creations</Link>
+                <Link to="/analytics" className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Analytics</Link>
+                <div className="border-t border-slate-100 my-1"></div>
+                <button onClick={handleLogout} className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-slate-50">Logout</button>
+              </div>
+            )}
           </div>
         </div>
       </header>
+
       {pageError ? (
-        <div className="max-w-7xl mx-auto px-4 py-4">
+        <div className="max-w-4xl mx-auto px-4 py-4 mt-4">
           <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{pageError}</p>
         </div>
       ) : null}
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-10 gap-6">
-          <aside className="md:col-span-3">
-            <div className="bg-white rounded-lg shadow p-4">
-              <div className="flex items-center gap-4">
-                <img src={profile?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.name || 'User')}`} alt="avatar" className="h-16 w-16 rounded-lg object-cover" />
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-lg font-semibold truncate">{profile?.name || 'User'}</h3>
-                    <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">Signed in</span>
-                  </div>
-                  <p className="text-sm text-slate-600 truncate">{profile?.email || ''}</p>
-                </div>
+      <main className="max-w-3xl mx-auto px-4 pt-20 pb-12 text-center">
+        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 mb-4">
+          Welcome, {profile?.name || 'User'}
+        </h1>
+        <p className="text-lg text-slate-600 mb-12">
+          Shorten your links, create custom memorable aliases, and track your analytics all in one place.
+        </p>
+
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 p-8 text-left">
+          <h2 className="text-xl font-semibold mb-2">Generate short url</h2>
+          <p className="text-sm text-slate-500 mb-6">Paste your long URL below to instantly generate a short link.</p>
+          
+          <form onSubmit={submitA} className="flex flex-col sm:flex-row gap-3">
+            <input 
+              type="url" 
+              value={aUrl} 
+              onChange={(e) => setAUrl(e.target.value)} 
+              placeholder="https://example.com/very/long/url" 
+              className="flex-1 rounded-xl border border-slate-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#1f1f1f]/20 focus:border-[#1f1f1f] transition-all bg-[#f7f7f8]" 
+              required 
+            />
+            <button 
+              type="submit" 
+              disabled={aLoading} 
+              className="rounded-xl bg-[#1f1f1f] hover:bg-black px-6 py-3 text-white font-medium transition-colors disabled:opacity-50 whitespace-nowrap"
+            >
+              {aLoading ? 'Generating…' : 'Shorten'}
+            </button>
+          </form>
+
+          {aError ? <p className="mt-3 text-sm text-red-600">{aError}</p> : null}
+          {aResult ? (
+            <div className="mt-6 rounded-xl bg-slate-50 border border-slate-100 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Your Short URL</p>
+                <a href={aResult} target="_blank" rel="noreferrer" className="text-[#0066cc] font-medium hover:underline break-all">{aResult}</a>
               </div>
-              <p className="mt-4 text-sm text-slate-600">Quick tools to shorten links and create memorable aliases.</p>
+              <button onClick={() => copy(aResult)} className="text-sm border border-slate-200 bg-white px-4 py-2 rounded-lg hover:bg-slate-50 shrink-0 font-medium text-slate-700">
+                {copiedValue === aResult ? 'Copied!' : 'Copy'}
+              </button>
             </div>
-          </aside>
-
-          <section className="md:col-span-7 flex flex-col gap-6">
-            <div className="bg-white rounded-lg shadow p-4">
-              <h4 className="text-lg font-semibold">Shorten any link</h4>
-              <p className="mt-1 text-sm text-slate-600">Paste a long URL and generate a short link.</p>
-
-              <form onSubmit={submitA} className="mt-4 flex flex-col sm:flex-row gap-3">
-                <input type="url" value={aUrl} onChange={(e) => setAUrl(e.target.value)} placeholder="https://example.com/very/long/url" className="flex-1 rounded-md border border-slate-200 px-3 py-2" required />
-                <button type="submit" disabled={aLoading} className="rounded-md bg-blue-600 px-4 py-2 text-white font-semibold">{aLoading ? 'Generating…' : 'Generate short URL'}</button>
-              </form>
-
-              {aError ? <p className="mt-3 text-sm text-red-600">{aError}</p> : null}
-              {aResult ? (
-                <div className="mt-3 rounded-md bg-slate-50 p-3 flex items-center justify-between gap-3">
-                  <a href={aResult} target="_blank" rel="noreferrer" className="text-blue-700 break-all">{aResult}</a>
-                  <button onClick={() => copy(aResult)} className="text-sm text-slate-700">{copiedValue === aResult ? 'Copied' : 'Copy'}</button>
-                </div>
-              ) : null}
-            </div>
-
-            <div className="bg-white rounded-lg shadow p-4">
-              <h4 className="text-lg font-semibold">Create a custom alias</h4>
-              <p className="mt-1 text-sm text-slate-600">Provide a URL and pick a short, memorable alias.</p>
-
-              <form onSubmit={submitB} className="mt-4 grid gap-3">
-                <input type="url" value={bUrl} onChange={(e) => setBUrl(e.target.value)} placeholder="https://example.com/your-page" className="rounded-md border border-slate-200 px-3 py-2" required />
-                <input type="text" value={bAlias} onChange={(e) => setBAlias(e.target.value)} placeholder="your-alias" className="rounded-md border border-slate-200 px-3 py-2" required />
-                <div className="flex justify-end">
-                  <button type="submit" disabled={bLoading} className="rounded-md bg-slate-900 px-4 py-2 text-white font-semibold">{bLoading ? 'Creating…' : 'Create custom alias'}</button>
-                </div>
-              </form>
-
-              {bError ? <p className="mt-3 text-sm text-red-600">{bError}</p> : null}
-              {bResult ? (
-                <div className="mt-3 rounded-md bg-slate-50 p-3 flex items-center justify-between gap-3">
-                  <a href={bResult} target="_blank" rel="noreferrer" className="text-slate-900 break-all">{bResult}</a>
-                  <button onClick={() => copy(bResult)} className="text-sm text-slate-700">{copiedValue === bResult ? 'Copied' : 'Copy'}</button>
-                </div>
-              ) : null}
-            </div>
-
-            <div className="bg-white rounded-lg shadow p-4">
-              <h4 className="text-lg font-semibold">URLs created by you</h4>
-              <p className="mt-1 text-sm text-slate-600">A list of saved links with click counts.</p>
-
-              {urls.length ? (
-                <div className="mt-4 overflow-hidden rounded-md border border-slate-200">
-                  <div className="hidden md:grid grid-cols-[1.4fr_1fr_0.6fr_0.7fr_0.7fr] gap-4 bg-slate-50 px-4 py-3 text-xs font-semibold text-slate-500">
-                    <span>Original URL</span>
-                    <span>Short URL</span>
-                    <span>Clicks</span>
-                    <span>Created</span>
-                    <span>Action</span>
-                  </div>
-                  <div className="divide-y divide-slate-200">
-                    {urls.map((item) => (
-                      <div key={item.id} className="grid gap-4 px-4 py-4 md:grid-cols-[1.4fr_1fr_0.6fr_0.7fr_0.7fr] md:items-center">
-                        <a href={item.originalUrl} target="_blank" rel="noreferrer" className="break-all text-sm font-medium text-slate-900 hover:text-blue-700">{item.originalUrl}</a>
-                        <a href={item.shortUrl} target="_blank" rel="noreferrer" className="break-all text-sm text-blue-700 hover:underline">{item.shortUrl}</a>
-                        <span className="text-sm font-semibold text-slate-700">{item.clicks || 0}</span>
-                        <span className="text-sm text-slate-500">{formatDate(item.createdAt)}</span>
-                        <button type="button" onClick={() => copy(item.shortUrl)} className="justify-self-start rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700">{copiedValue === item.shortUrl ? 'Copied' : 'Copy'}</button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="mt-4 rounded-md border border-dashed border-slate-300 bg-slate-50 px-5 py-8 text-sm text-slate-500">You have not created any URLs yet.</div>
-              )}
-            </div>
-          </section>
+          ) : null}
+          
+          <div className="mt-8 pt-6 border-t border-slate-100 text-center">
+            <p className="text-slate-600 text-sm">
+              You can create your <Link to="/custom-url" className="text-[#0066cc] font-semibold hover:underline">custom url</Link>
+            </p>
+          </div>
         </div>
       </main>
     </div>
   )
 }
-

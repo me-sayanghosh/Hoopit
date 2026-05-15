@@ -4,6 +4,9 @@ import LoginPage from './pages/LoginPage.jsx'
 import RegisterPage from './pages/RegisterPage.jsx'
 import DashboardPage from './pages/DashboardPage.jsx'
 import AnalyticsPage from './pages/AnalyticsPage.jsx'
+import TryNowPage from './pages/TryNowPage.jsx'
+import CustomUrlPage from './pages/CustomUrlPage.jsx'
+import MyCreationsPage from './pages/MyCreationsPage.jsx'
 
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 
@@ -12,9 +15,12 @@ const App = () => {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/try-now" element={<TryNowPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/custom-url" element={<CustomUrlPage />} />
+        <Route path="/creations" element={<MyCreationsPage />} />
         <Route path="/analytics" element={<AnalyticsPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
