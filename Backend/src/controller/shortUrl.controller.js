@@ -1,4 +1,5 @@
 import { shortUrlServiceWithoutUser, shortUrlServicewithUser, getUserShortUrls, getUserUrlAnalytics } from '../services/shortUrl.service.js';
+import { getCustomShortUrl } from '../dao/shortUrl.js';
 import { recordShortUrlClick } from '../dao/shortUrl.js';
 import { AppError } from '../utils/httpError.js';
 import wrapasync from '../utils/errorHandeler.js';
@@ -10,21 +11,35 @@ dotenv.config({ path: './.env' });
 
 
 export const createShortUrl = wrapasync(async (req, res) => {
-    const { url, slug, customAlias } = req.body;
+    const { url, slug, customAlias, domain, tags, comments, title, description, folder, conversionTracking } = req.body;
     const shortAlias = slug || customAlias;
-    let shortUrl;
 
-    if (shortAlias) {
-        const userId = req.user?._id;
-        shortUrl = await shortUrlServicewithUser(url, userId, shortAlias);
-    } else if (req.user) {
-        shortUrl = await shortUrlServicewithUser(url, req.user._id);
+    // Build options to pass through
+    const opts = {
+        domain: domain || '',
+        tags: Array.isArray(tags) ? tags : (tags ? String(tags).split(',').map(s => s.trim()).filter(Boolean) : []),
+        comments: comments || '',
+        title: title || '',
+        description: description || '',
+        folder: folder || '',
+        conversionTracking: !!conversionTracking
+    };
+
+    let short;
+    if (req.user) {
+        // Authenticated: allow custom alias or generated
+        short = await shortUrlServicewithUser(url, req.user._id, shortAlias || null, opts);
     } else {
-        shortUrl = await shortUrlServiceWithoutUser(url);
+        // Unauthenticated: no user metadata is stored other than url
+        short = await shortUrlServiceWithoutUser(url, opts);
     }
 
+    // fetch created record to include qrCodeUrl if available
+    const record = await getCustomShortUrl(short);
+
     res.status(201).json({
-        shortUrl: process.env.APP_URL + shortUrl
+        shortUrl: process.env.APP_URL + short,
+        qrCodeUrl: record?.qrCodeUrl || ''
     });
 });
 

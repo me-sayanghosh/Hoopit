@@ -1,11 +1,14 @@
-import { useState } from 'react'
-import { shortenUrl } from '../api/shortUrlapi.js'
+import { useState, useEffect } from 'react'
+import { shortenUrl, getDomains } from '../api/shortUrlapi.js'
+import { getCurrentUser } from '../api/user.api.js'
 import { useNavigate } from 'react-router-dom'
 
 export default function CreateLinkForm() {
-  const navigate = useNavigate()
+  
   const [destination, setDestination] = useState('')
-  const [domain, setDomain] = useState('sayannn.com')
+  const [domain, setDomain] = useState('')
+  const [domains, setDomains] = useState([])
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [alias, setAlias] = useState('')
   const [tags, setTags] = useState('')
   const [comments, setComments] = useState('')
@@ -15,6 +18,7 @@ export default function CreateLinkForm() {
   const [description, setDescription] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [qrCode, setQrCode] = useState('')
 
   const handleCreate = async (e) => {
     e.preventDefault()
@@ -22,9 +26,23 @@ export default function CreateLinkForm() {
     setLoading(true)
     setError('')
     try {
-      const res = await shortenUrl(destination)
-      const short = res?.shortUrl || res?.data || ''
+      const body = {
+        url: destination,
+        slug: alias || undefined,
+        domain,
+        tags: tags || undefined,
+        comments,
+        title,
+        description,
+        folder,
+        conversionTracking: conversion
+      }
+
+      const res = await shortenUrl(body)
+      const short = res?.shortUrl || ''
       if (!short) throw new Error('No short url returned')
+      // show returned QR code if provided
+      if (res?.qrCodeUrl) setQrCode(res.qrCodeUrl)
       // success: navigate back to dashboard
       navigate('/dashboard')
     } catch (err) {
@@ -33,6 +51,34 @@ export default function CreateLinkForm() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    let mounted = true
+    const fetchDomains = async () => {
+      try {
+        const list = await getDomains()
+        if (!mounted) return
+        const names = (list || []).map(d => d.domain)
+        setDomains(names)
+        if (!domain && names.length) setDomain(names[0])
+      } catch (err) {
+        // ignore
+      }
+    }
+
+    const checkAuth = async () => {
+      try {
+        const data = await getCurrentUser()
+        if (data?.user) setIsAuthenticated(true)
+      } catch (e) {
+        setIsAuthenticated(false)
+      }
+    }
+
+    fetchDomains()
+    checkAuth()
+    return () => { mounted = false }
+  }, [])
 
   return (
     <form onSubmit={handleCreate} className="grid grid-cols-12 gap-6">
@@ -52,9 +98,13 @@ export default function CreateLinkForm() {
             <div className="col-span-4">
               <label className="mb-2 block text-sm font-medium text-slate-700">Short Link</label>
               <select value={domain} onChange={(e) => setDomain(e.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm">
-                <option value="sayannn.com">sayannn.com</option>
-                <option value="hoopit.app">hoopit.app</option>
+                {domains.map(d => (
+                  <option key={d} value={d}>{d}</option>
+                ))}
               </select>
+              <div className="mt-2">
+                {/* Add-domain removed from this page per request */}
+              </div>
             </div>
             <div className="col-span-8">
               <label className="mb-2 block text-sm font-medium text-slate-700">Alias</label>
@@ -94,20 +144,15 @@ export default function CreateLinkForm() {
 
           <div className="rounded-lg border border-slate-200 p-3 text-center">
             <div className="mb-2 text-sm font-medium text-slate-700">QR Code</div>
-            <div className="mx-auto my-2 h-28 w-28 rounded bg-slate-50 border border-dashed" />
+            {qrCode ? (
+              <img src={qrCode} alt="QR Code" className="mx-auto my-2 h-28 w-28 rounded bg-white" />
+            ) : (
+              <div className="mx-auto my-2 h-28 w-28 rounded bg-slate-50 border border-dashed" />
+            )}
             <div className="mt-2 text-xs text-slate-500">QR code preview</div>
           </div>
 
-          <div className="rounded-lg border border-slate-200 p-3">
-            <div className="mb-2 text-sm font-medium text-slate-700">Custom Link Preview</div>
-            <div className="flex items-center gap-2">
-              <button type="button" className="rounded-md border px-2 py-1 text-xs">🌐</button>
-              <button type="button" className="rounded-md border px-2 py-1 text-xs">X</button>
-              <button type="button" className="rounded-md border px-2 py-1 text-xs">in</button>
-              <button type="button" className="rounded-md border px-2 py-1 text-xs">f</button>
-            </div>
-            <div className="mt-3 h-24 w-full rounded border border-dashed bg-slate-50 flex items-center justify-center text-slate-400">Enter a link to generate a preview</div>
-          </div>
+          {/* Custom link preview removed per request */}
 
           <div>
             <label className="mb-2 block text-sm font-medium text-slate-700">Add a title</label>
@@ -122,15 +167,7 @@ export default function CreateLinkForm() {
       </aside>
 
       <div className="col-span-12">
-        <div className="flex items-center justify-between border-t border-slate-200 pt-4">
-          <div className="flex gap-2">
-            <button type="button" className="rounded-full border border-slate-200 bg-white px-3 py-1 text-sm">UTM</button>
-            <button type="button" className="rounded-full border border-slate-200 bg-white px-3 py-1 text-sm">Targeting</button>
-            <button type="button" className="rounded-full border border-slate-200 bg-white px-3 py-1 text-sm">A/B Test</button>
-            <button type="button" className="rounded-full border border-slate-200 bg-white px-3 py-1 text-sm">Password</button>
-            <button type="button" className="rounded-full border border-slate-200 bg-white px-3 py-1 text-sm">Expiration</button>
-          </div>
-
+        <div className="flex items-center justify-end border-t border-slate-200 pt-4">
           <div>
             {error ? <div className="text-sm text-red-600 mr-4 inline">{error}</div> : null}
             <button type="submit" disabled={loading} className="rounded-lg bg-slate-900 px-5 py-2 text-sm font-semibold text-white hover:bg-black">

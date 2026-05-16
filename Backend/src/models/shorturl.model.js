@@ -55,6 +55,43 @@ const shortUrlSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     }
+    ,
+    alias: {
+        type: String,
+        default: ''
+    },
+    domain: {
+        type: String,
+        default: ''
+    },
+    tags: {
+        type: [String],
+        default: []
+    },
+    comments: {
+        type: String,
+        default: ''
+    },
+    title: {
+        type: String,
+        default: ''
+    },
+    description: {
+        type: String,
+        default: ''
+    },
+    folder: {
+        type: String,
+        default: ''
+    },
+    conversionTracking: {
+        type: Boolean,
+        default: false
+    },
+    qrCodeUrl: {
+        type: String,
+        default: ''
+    }
 });
 
 

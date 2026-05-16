@@ -206,11 +206,16 @@ export default function DashboardPage() {
               <div className="text-sm font-semibold text-slate-900">Short Links</div>
               <nav className="mt-3 space-y-1">
                 {sidebarItems.map((item) => (
-                  <div key={item.label} className={`relative flex items-center gap-3 rounded-lg pl-4 pr-3 py-2 text-sm ${item.active ? 'bg-blue-50 font-medium text-blue-600' : 'text-slate-600 hover:bg-slate-50'}`}>
+                  <button key={item.label} onClick={() => {
+                    if (item.label === 'Domains') return navigate('/domains')
+                    if (item.label === 'Links') return navigate('/dashboard')
+                    if (item.label === 'Analytics') return navigate('/analytics')
+                    // default: no-op
+                  }} className={`relative w-full text-left flex items-center gap-3 rounded-lg pl-4 pr-3 py-2 text-sm ${item.active ? 'bg-blue-50 font-medium text-blue-600' : 'text-slate-600 hover:bg-slate-50'}`}>
                     {item.active ? <span className="absolute left-0 top-0 h-full w-1 rounded-r-md bg-blue-500" /> : null}
                     <SidebarIcon name={item.icon} active={item.active} />
                     <span>{item.label}</span>
-                  </div>
+                  </button>
                 ))}
               </nav>
 

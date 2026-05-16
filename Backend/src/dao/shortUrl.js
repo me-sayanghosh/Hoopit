@@ -84,18 +84,29 @@ const getDeviceInfo = (req) => {
 };
 
 
-export const saveShortUrl = async (url, shortUrl, userId) => {
+export const saveShortUrl = async (opts = {}) => {
+    const { originalUrl, shortUrl, userId, alias, domain, tags, comments, title, description, folder, conversionTracking, qrCodeUrl } = opts;
     try {
         const newUrl = new urlSchema({
-            originalUrl: url,
-            shortUrl: shortUrl
+            originalUrl,
+            shortUrl,
+            alias: alias || '',
+            domain: domain || '',
+            tags: Array.isArray(tags) ? tags : (tags ? String(tags).split(',').map(s => s.trim()).filter(Boolean) : []),
+            comments: comments || '',
+            title: title || '',
+            description: description || '',
+            folder: folder || '',
+            conversionTracking: !!conversionTracking,
+            qrCodeUrl: qrCodeUrl || ''
         });
 
         if (userId) {
             newUrl.user = userId;
         }
 
-        await newUrl.save();
+        const saved = await newUrl.save();
+        return saved;
     }
     catch (err) {
         if (err.code === 11000) {

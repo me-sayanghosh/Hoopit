@@ -1,9 +1,10 @@
 import { generateNanoid } from "../utils/helper.js";
 import { saveShortUrl, getCustomShortUrl, getShortUrlByOriginalUrl, getShortUrlsByUserId } from "../dao/shortUrl.js";
+import qrcode from 'qrcode';
 import { AppError } from "../utils/httpError.js";
 
 
-export const shortUrlServiceWithoutUser = async (url) => {
+export const shortUrlServiceWithoutUser = async (url, opts = {}) => {
     try {
         if (!url) {
             throw new AppError('URL is required.', 400);
@@ -18,7 +19,17 @@ export const shortUrlServiceWithoutUser = async (url) => {
         if (!shortUrl) {
             throw new AppError('Short URL not generated', 500);
         }
-        await saveShortUrl(url, shortUrl);
+        const saved = await saveShortUrl(Object.assign({ originalUrl: url, shortUrl }, opts));
+
+        // generate QR code pointing to the public short URL
+        try {
+            const full = (process.env.APP_URL || '') + shortUrl;
+            const dataUrl = await qrcode.toDataURL(full);
+            await saved.updateOne({ qrCodeUrl: dataUrl });
+        } catch (e) {
+            // ignore QR failures
+        }
+
         return shortUrl;
     }
     catch (err) {
@@ -30,7 +41,7 @@ export const shortUrlServiceWithoutUser = async (url) => {
     }
 }
 
-export const shortUrlServicewithUser = async (url, userId, slug = null) => {
+export const shortUrlServicewithUser = async (url, userId, slug = null, opts = {}) => {
     try {
         if (!url) {
             throw new AppError('URL is required.', 400);
@@ -47,7 +58,16 @@ export const shortUrlServicewithUser = async (url, userId, slug = null) => {
             throw new AppError('This custom url already exists', 409);
         }
 
-        await saveShortUrl(url, shortUrl, userId);
+        const saved = await saveShortUrl(Object.assign({ originalUrl: url, shortUrl, userId }, opts));
+
+        try {
+            const full = (process.env.APP_URL || '') + shortUrl;
+            const dataUrl = await qrcode.toDataURL(full);
+            await saved.updateOne({ qrCodeUrl: dataUrl });
+        } catch (e) {
+            // ignore QR failures
+        }
+
         return shortUrl;
     }
     catch (err) {
