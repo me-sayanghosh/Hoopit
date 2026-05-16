@@ -56,7 +56,7 @@ export const getMyShortUrls = wrapasync(async (req, res) => {
         urls: urls.map((item) => ({
             id: item._id,
             originalUrl: item.originalUrl,
-            shortUrl: item.shortUrl,
+            shortUrl: process.env.APP_URL + item.shortUrl,
             clicks: item.clicks,
             createdAt: item.createdAt,
         })),

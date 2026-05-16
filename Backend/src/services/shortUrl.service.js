@@ -92,7 +92,7 @@ export const getUserUrlAnalytics = async (userId) => {
                 ? {
                     id: topUrl._id,
                     originalUrl: topUrl.originalUrl,
-                    shortUrl: topUrl.shortUrl,
+                    shortUrl: process.env.APP_URL + topUrl.shortUrl,
                     clicks: topUrl.clicks,
                     createdAt: topUrl.createdAt,
                 }
@@ -100,7 +100,7 @@ export const getUserUrlAnalytics = async (userId) => {
             recentUrls: recentUrls.map((item) => ({
                 id: item._id,
                 originalUrl: item.originalUrl,
-                shortUrl: item.shortUrl,
+                shortUrl: process.env.APP_URL + item.shortUrl,
                 clicks: item.clicks,
                 createdAt: item.createdAt,
             })),

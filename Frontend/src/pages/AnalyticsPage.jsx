@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { getMyShortUrlAnalytics, getMyShortUrls } from '../api/shortUrlapi.js'
 
 
@@ -198,17 +198,8 @@ function AnalyticsPage() {
   return (
     <div className="min-h-screen bg-[#f7f7f8] text-[#111827]">
       <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8">
-        <header className="mb-8 flex flex-col sm:flex-row sm:items-center gap-4">
-          <Link 
-            to="/dashboard"
-            className="w-fit text-slate-500 hover:text-black flex items-center gap-2 text-sm font-medium transition-colors bg-white px-4 py-2 rounded-lg shadow-sm"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-            </svg>
-            Back
-          </Link>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:ml-auto">Analytics</h1>
+        <header className="mb-8 flex items-center gap-4">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Analytics</h1>
         </header>
 
         {pageError ? (

@@ -40,17 +40,7 @@ export default function CustomUrlPage() {
   return (
     <div className="min-h-screen bg-[#F5F5F5] font-sans text-slate-900 p-6 flex justify-center items-center">
       <div className="w-full max-w-lg bg-white rounded-lg shadow p-6 sm:p-8">
-        <div className="mb-6">
-          <button 
-            onClick={() => navigate('/dashboard')}
-            className="w-fit text-slate-500 hover:text-black flex items-center gap-2 text-sm font-medium transition-colors"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-            </svg>
-            Back
-          </button>
-        </div>
+        <div className="mb-6" />
 
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-slate-900">Create Custom URL</h1>
@@ -82,6 +72,19 @@ export default function CustomUrlPage() {
               <button onClick={() => copy(bResult)} className="text-sm border border-slate-200 bg-white px-3 py-1.5 rounded-md hover:bg-slate-50 shrink-0">
                 {copiedValue === bResult ? 'Copied' : 'Copy'}
               </button>
+            </div>
+          </div>
+        ) : null}
+        {copiedValue ? (
+          <div className="fixed right-4 top-16 z-50">
+            <div className="flex items-center gap-3 rounded-md bg-white px-4 py-2 shadow-md border border-slate-100">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-emerald-600" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 00-1.414-1.414L8 11.172 4.707 7.879A1 1 0 003.293 9.293l4 4a1 1 0 001.414 0l8-8z" clipRule="evenodd" />
+              </svg>
+              <div className="text-sm">
+                <div className="font-medium text-slate-900">Copied to clipboard</div>
+                <div className="text-xs text-slate-500 break-all max-w-xs">{copiedValue.length > 48 ? `${copiedValue.slice(0,45)}...` : copiedValue}</div>
+              </div>
             </div>
           </div>
         ) : null}

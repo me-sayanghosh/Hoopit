@@ -45,6 +45,16 @@ app.use(express.urlencoded({extended: true}));
 app.use(cookieParser());
 app.use(attachUser);
 
+// Log every response's status code and request duration
+app.use((req, res, next) => {
+    const start = Date.now();
+    res.on('finish', () => {
+        const duration = Date.now() - start;
+        console.log(`${req.method} ${req.originalUrl} ${res.statusCode} ${duration}ms`);
+    });
+    next();
+});
+
 
 
 

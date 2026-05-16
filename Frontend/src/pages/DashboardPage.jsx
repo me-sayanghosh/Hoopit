@@ -3,6 +3,24 @@ import { Link, useNavigate } from 'react-router-dom'
 import { shortenUrl } from '../api/shortUrlapi.js'
 import { getCurrentUser, logOutUser } from '../api/user.api.js'
 
+function CopyToast({ value }) {
+  if (!value) return null
+  const display = value.length > 48 ? `${value.slice(0, 45)}...` : value
+  return (
+    <div className="fixed right-4 top-16 z-50">
+      <div className="flex items-center gap-3 rounded-md bg-white px-4 py-2 shadow-md border border-slate-100">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-emerald-600" viewBox="0 0 20 20" fill="currentColor">
+          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 00-1.414-1.414L8 11.172 4.707 7.879A1 1 0 003.293 9.293l4 4a1 1 0 001.414 0l8-8z" clipRule="evenodd" />
+        </svg>
+        <div className="text-sm">
+          <div className="font-medium text-slate-900">Copied to clipboard</div>
+          <div className="text-xs text-slate-500 break-all max-w-xs">{display}</div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function DashboardPage() {
   const navigate = useNavigate()
   const [profile, setProfile] = useState(null)
@@ -94,12 +112,6 @@ export default function DashboardPage() {
       <header className="bg-white border-b border-slate-200 relative z-50">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link to="/" className="flex items-center gap-2 text-slate-500 hover:text-black mr-4 text-sm font-medium">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-              </svg>
-              Back
-            </Link>
             <div className="h-9 w-9 rounded-md bg-[#1f1f1f] flex items-center justify-center text-white font-bold">H</div>
             <div className="hidden sm:block font-bold text-xl tracking-tighter">hoopit</div>
           </div>
@@ -181,6 +193,10 @@ export default function DashboardPage() {
           </div>
         </div>
       </main>
+      {copiedValue ? <CopyToast value={copiedValue} /> : null}
     </div>
   )
 }
+
+// Toast: shows briefly when `copiedValue` is set
+// Rendered by the page when copy() sets `copiedValue`.
