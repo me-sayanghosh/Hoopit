@@ -30,7 +30,7 @@ const sidebarItems = [
   { label: 'Domains', icon: 'globe' },
   { label: 'Analytics', icon: 'chart' },
   { label: 'Events', icon: 'spark' },
-  { label: 'Customers', icon: 'user' },
+  
   { label: 'Folders', icon: 'folder' },
   { label: 'Tags', icon: 'tag' },
 ]
@@ -113,15 +113,7 @@ export default function DashboardPage() {
   const [pageError, setPageError] = useState('')
   const [urls, setUrls] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
-  const [composerOpen, setComposerOpen] = useState(false)
-
-  const [aUrl, setAUrl] = useState('')
-  const [aLoading, setALoading] = useState(false)
-  const [aResult, setAResult] = useState('')
-  const [aError, setAError] = useState('')
   const [copiedValue, setCopiedValue] = useState('')
-
-  const composerRef = useRef(null)
 
   useEffect(() => {
     const load = async () => {
@@ -169,27 +161,7 @@ export default function DashboardPage() {
     }
   }
 
-  const submitA = async (e) => {
-    e.preventDefault()
-    if (!aUrl) return
-
-    setALoading(true)
-    setAError('')
-    setAResult('')
-
-    try {
-      const res = await shortenUrl(aUrl)
-      const short = res?.shortUrl || ''
-      if (!short) throw new Error('No short URL returned')
-      setAResult(short)
-      setAUrl('')
-      await refreshUrls()
-    } catch (err) {
-      setAError(err?.message || 'Failed to shorten')
-    } finally {
-      setALoading(false)
-    }
-  }
+  // Create composer moved to separate Create page
 
   const filteredUrls = (() => {
     const query = searchTerm.trim().toLowerCase()
@@ -215,79 +187,99 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f5f5f5] text-slate-900">
-      <div className="mx-auto flex min-h-screen max-w-400">
-        <aside className="hidden w-18.5 flex-col items-center border-r border-slate-200 bg-white py-4 lg:flex">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-950 text-sm font-bold text-white">h</div>
-          <img
-            src={profile?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.name || 'User')}`}
-            alt="avatar"
-            className="mt-4 h-9 w-9 rounded-full object-cover ring-1 ring-slate-200"
-          />
-
-          <div className="mt-8 flex flex-1 flex-col items-center gap-5 text-slate-500">
-            <button className="rounded-2xl bg-blue-50 p-3 text-blue-600 shadow-sm">
-              <SidebarIcon name="link" active />
-            </button>
-            <button className="rounded-2xl p-3 transition hover:bg-slate-100">
-              <SidebarIcon name="chart" />
-            </button>
-            <button className="rounded-2xl p-3 transition hover:bg-slate-100">
-              <SidebarIcon name="spark" />
-            </button>
-          </div>
-
-          <button onClick={handleLogout} className="rounded-2xl p-3 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor" className="h-4 w-4">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-9A2.25 2.25 0 002.25 5.25v13.5A2.25 2.25 0 004.5 21h9a2.25 2.25 0 002.25-2.25V15" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h12m0 0-3-3m3 3-3 3" />
-            </svg>
-          </button>
-        </aside>
-
-        <aside className="hidden w-65 flex-col border-r border-slate-200 bg-[#f7f7f8] px-4 py-4 lg:flex">
-          <div className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200/70">
-            <div className="text-sm font-semibold text-slate-900">Short Links</div>
-            <nav className="mt-4 space-y-1">
-              {sidebarItems.map((item) => (
-                <div key={item.label} className={`flex items-center gap-3 rounded-xl px-3 py-2 text-sm ${item.active ? 'bg-blue-50 font-medium text-blue-600' : 'text-slate-600 hover:bg-slate-100'}`}>
-                  <SidebarIcon name={item.icon} active={item.active} />
-                  <span>{item.label}</span>
-                </div>
-              ))}
-            </nav>
-
-            <div className="mt-8 border-t border-slate-200 pt-4">
-              <div className="text-sm font-medium text-slate-500">Usage</div>
-              <div className="mt-3 space-y-3 text-sm text-slate-600">
-                <div className="flex items-center justify-between">
-                  <span>Links</span>
-                  <span className="font-medium text-slate-900">{urls.length}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Analytics</span>
-                  <span className="font-medium text-slate-900">Live</span>
-                </div>
+    <div className="min-h-screen bg-[#fafafa] text-slate-900">
+      <div className="flex min-h-screen w-full">
+        <aside className="hidden lg:flex w-64 flex-col px-2 py-6 sticky top-6 self-start h-[calc(100vh-48px)] overflow-auto">
+          <div className="rounded-3xl bg-[#f3f4f6] p-3 shadow-sm border border-slate-200 flex flex-col h-full">
+            <div className="flex items-center gap-3 px-2">
+              <div className="text-2xl font-extrabold text-slate-900">dub</div>
+              <div className="ml-auto">
+                <img
+                  src={profile?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.name || 'User')}`}
+                  alt="avatar"
+                  className="h-8 w-8 rounded-full object-cover ring-1 ring-slate-200"
+                />
               </div>
-              <button onClick={handleLogout} className="mt-4 w-full rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-black">
-                Logout
-              </button>
+            </div>
+
+            <div className="mt-4 rounded-xl bg-white p-4 shadow-sm flex-shrink-0">
+              <div className="text-sm font-semibold text-slate-900">Short Links</div>
+              <nav className="mt-3 space-y-1">
+                {sidebarItems.map((item) => (
+                  <div key={item.label} className={`relative flex items-center gap-3 rounded-lg pl-4 pr-3 py-2 text-sm ${item.active ? 'bg-blue-50 font-medium text-blue-600' : 'text-slate-600 hover:bg-slate-50'}`}>
+                    {item.active ? <span className="absolute left-0 top-0 h-full w-1 rounded-r-md bg-blue-500" /> : null}
+                    <SidebarIcon name={item.icon} active={item.active} />
+                    <span>{item.label}</span>
+                  </div>
+                ))}
+              </nav>
+
+              <div className="mt-4 text-sm text-slate-500">Insights</div>
+              <nav className="mt-2 space-y-1">
+                <button onClick={() => navigate('/analytics')} className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 transition">
+                  <SidebarIcon name="chart" />
+                  <span>Analytics</span>
+                </button>
+                <div className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-slate-600 hover:bg-slate-50">
+                  <SidebarIcon name="spark" />
+                  <span>Events</span>
+                </div>
+                <button onClick={() => navigate('/customers')} className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 transition">
+                  <SidebarIcon name="user" />
+                  <span>Customers</span>
+                </button>
+              </nav>
+
+              <div className="mt-4 text-sm text-slate-500">Library</div>
+              <nav className="mt-2 space-y-1">
+                <button onClick={() => navigate('/folders')} className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 transition">
+                  <SidebarIcon name="folder" />
+                  <span>Folders</span>
+                </button>
+                
+              </nav>
+            </div>
+
+            <div className="mt-4 border-t border-slate-200 pt-4 px-1">
+              <div className="text-xs font-medium text-slate-500">Usage</div>
+              <div className="mt-3 text-sm text-slate-600">
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M3 3v18h18" /></svg> Events</span>
+                  <span className="text-xs text-slate-400">1 of 1K</span>
+                </div>
+                <div className="mt-2 h-2 w-full rounded-full bg-slate-200">
+                  <div className="h-2 rounded-full bg-blue-500" style={{width: '10%'}} />
+                </div>
+
+                <div className="mt-3 flex items-center justify-between">
+                  <span className="flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M3 3v18h18" /></svg> Links</span>
+                  <span className="text-xs text-slate-400">2 of 25</span>
+                </div>
+                <div className="mt-2 h-2 w-full rounded-full bg-slate-200">
+                  <div className="h-2 rounded-full bg-blue-500" style={{width: '8%'}} />
+                </div>
+
+              </div>
+            </div>
+
+            <div className="mt-auto px-1">
+              <button onClick={handleLogout} className="w-full rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white">Logout</button>
             </div>
           </div>
         </aside>
 
-        <main className="min-w-0 flex-1 px-4 py-4 sm:px-6 lg:px-8">
+        <main className="min-w-0 flex-1 px-2 py-6 sm:px-4 lg:px-6">
           <div className="rounded-[28px] border border-slate-200 bg-white shadow-sm">
-            <div className="flex flex-col gap-4 border-b border-slate-200 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex flex-col gap-4 border-b border-slate-200 px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <div className="text-xl font-semibold tracking-tight text-slate-900">Links</div>
+                <div className="text-2xl font-semibold tracking-tight text-slate-900">Links</div>
                 <p className="mt-1 text-sm text-slate-500">Manage short links, custom aliases, and analytics in one place.</p>
               </div>
 
               <div className="flex flex-wrap items-center gap-3">
                 <div className="hidden items-center gap-2 lg:flex">
-                  <button className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Filter</button>
-                  <button className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Display</button>
+                  <button className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">Filter</button>
+                  <button className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">Display</button>
                 </div>
                 <div className="relative">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400">
@@ -297,11 +289,12 @@ export default function DashboardPage() {
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="Search by short link or URL"
-                    className="w-65 rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-4 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-300"
+                    className="w-96 rounded-lg border border-slate-200 bg-white py-2.5 pl-9 pr-4 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-300"
                   />
                 </div>
-                <button onClick={() => setComposerOpen((value) => !value)} className="rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white hover:bg-black">
+                <button onClick={() => navigate('/create')} className="relative rounded-full bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white hover:bg-black">
                   Create link
+                  <span className="ml-2 inline-block rounded-md bg-slate-800 px-2 py-0.5 text-xs font-medium text-white opacity-80">C</span>
                 </button>
               </div>
             </div>
@@ -313,48 +306,7 @@ export default function DashboardPage() {
                 </div>
               ) : null}
 
-              {composerOpen ? (
-                <div ref={composerRef} className="mb-5 rounded-3xl border border-slate-200 bg-slate-50 p-4">
-                  <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                    <div>
-                      <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Create link</p>
-                      <p className="mt-1 text-sm text-slate-600">Paste a long URL and generate a short Hoopit link.</p>
-                    </div>
-                    <button onClick={() => setComposerOpen(false)} className="self-start rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50">
-                      Close
-                    </button>
-                  </div>
-
-                  <form onSubmit={submitA} className="mt-4 flex flex-col gap-3 lg:flex-row">
-                    <input
-                      type="url"
-                      value={aUrl}
-                      onChange={(e) => setAUrl(e.target.value)}
-                      placeholder="https://example.com/very/long/url"
-                      className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-blue-300"
-                      required
-                    />
-                    <button type="submit" disabled={aLoading} className="rounded-xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white hover:bg-black disabled:opacity-60">
-                      {aLoading ? 'Creating…' : 'Shorten'}
-                    </button>
-                  </form>
-
-                  {aError ? <p className="mt-3 text-sm text-red-600">{aError}</p> : null}
-                  {aResult ? (
-                    <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4">
-                      <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Your short link</p>
-                      <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <a href={aResult} target="_blank" rel="noreferrer" className="break-all text-sm font-medium text-blue-700 hover:underline">
-                          {aResult}
-                        </a>
-                        <button onClick={() => copy(aResult)} className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">
-                          {copiedValue === aResult ? 'Copied' : 'Copy'}
-                        </button>
-                      </div>
-                    </div>
-                  ) : null}
-                </div>
-              ) : null}
+              {/* Create composer moved to its own page at /create */}
 
               <div className="mb-4 flex items-center justify-between text-sm text-slate-500">
                 <span>Viewing {filteredUrls.length || 0} of {urls.length} links</span>
@@ -383,10 +335,13 @@ export default function DashboardPage() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3 self-start lg:self-center">
+                      <div className="flex flex-col items-start gap-2 lg:flex-row lg:items-center lg:gap-3">
                         <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700">
                           {item.clicks || 0} clicks
                         </div>
+                        <button onClick={() => navigate('/analytics')} className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-100">
+                          View Analytics
+                        </button>
                         <button className="rounded-full border border-slate-200 bg-white p-2 text-slate-500 hover:bg-slate-50">
                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
                             <path d="M12 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 7.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 7.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3z" />
@@ -399,7 +354,7 @@ export default function DashboardPage() {
                   <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 px-6 py-14 text-center">
                     <p className="text-lg font-semibold text-slate-900">No links found</p>
                     <p className="mt-2 text-sm text-slate-500">Create your first short link to populate this view.</p>
-                    <button onClick={() => setComposerOpen(true)} className="mt-4 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white hover:bg-black">
+                    <button onClick={() => navigate('/create')} className="mt-4 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white hover:bg-black">
                       Create link
                     </button>
                   </div>

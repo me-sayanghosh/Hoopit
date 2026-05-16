@@ -57,28 +57,30 @@ function UrlForm() {
             <div>
                 <label
                     htmlFor="url"
-                    className="mb-2 block text-sm font-medium text-slate-200"
+                    className="mb-2 block text-sm font-medium text-slate-900"
                 >
-                    Enter your URL
+                    Destination URL
                 </label>
                 <input
                     id="url"
                     type="url"
                     required
                     value={url}
-                    onInput={(e) => setUrl(e.target.value)}
+                    onChange={(e) => setUrl(e.target.value)}
                     placeholder="https://example.com/very/long/link"
-                    className="w-full rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-300"
                 />
             </div>
 
-            <button
-                type="submit"
-                disabled={loading}
-                className="w-full rounded-2xl bg-cyan-400 px-4 py-3 font-semibold text-slate-950 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-                {loading ? "Shortening..." : "Shorten URL"}
-            </button>
+            <div className="flex items-center gap-3">
+                <button
+                    type="submit"
+                    disabled={loading}
+                    className="ml-auto rounded-xl bg-slate-950 px-6 py-3 text-sm font-semibold text-white hover:bg-black disabled:opacity-60"
+                >
+                    {loading ? "Creating..." : "Shorten"}
+                </button>
+            </div>
 
             {error && (
                 <p className="mt-4 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-200">
@@ -87,29 +89,14 @@ function UrlForm() {
             )}
 
             {shortUrl && (
-                <div ref={resultRef} className="mt-6 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-4">
-                    <p className="mb-2 text-sm font-medium text-emerald-200">
-                        Your short URL
-                    </p>
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                        <a
-                            href={shortUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="break-all rounded-xl bg-slate-950/60 px-4 py-3 text-cyan-300 underline-offset-4 hover:underline"
-                        >
+                <div ref={resultRef} className="mt-6 rounded-2xl border border-slate-200 bg-white p-4">
+                    <p className="mb-2 text-xs font-medium uppercase tracking-wider text-slate-500">Your short link</p>
+                    <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <a href={shortUrl} target="_blank" rel="noreferrer" className="break-all text-sm font-medium text-blue-700 hover:underline">
                             {shortUrl}
                         </a>
-                        <button
-                            type="button"
-                            onClick={handleCopy}
-                            className={`rounded-xl border px-4 py-3 text-sm font-medium transition ${
-                                copied
-                                    ? "border-emerald-400 bg-emerald-400 text-slate-950"
-                                    : "border-white/10 hover:bg-white/10"
-                            }`}
-                        >
-                            {copied ? "Copied" : "Copy"}
+                        <button onClick={handleCopy} className={`rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 ${copied ? 'bg-emerald-400 border-emerald-400 text-slate-900' : ''}`}>
+                            {copied ? 'Copied' : 'Copy'}
                         </button>
                     </div>
                 </div>
