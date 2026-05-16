@@ -128,9 +128,15 @@ function AnalyticsPage() {
   const [analytics, setAnalytics] = useState({
     totalUrls: 0,
     totalClicks: 0,
+    uniqueClicks: 0,
     averageClicks: 0,
     topUrl: null,
     recentUrls: [],
+    realtimeClicks: [],
+    topReferrers: [],
+    trafficByCountry: [],
+    trafficByDevice: [],
+    trafficByBrowser: [],
   })
   const [loading, setLoading] = useState(true)
   const [pageError, setPageError] = useState('')
@@ -150,9 +156,15 @@ function AnalyticsPage() {
         setAnalytics({
           totalUrls: analyticsResponse?.totalUrls || 0,
           totalClicks: analyticsResponse?.totalClicks || 0,
+          uniqueClicks: analyticsResponse?.uniqueClicks || 0,
           averageClicks: analyticsResponse?.averageClicks || 0,
           topUrl: analyticsResponse?.topUrl || null,
           recentUrls: analyticsResponse?.recentUrls || [],
+          realtimeClicks: analyticsResponse?.realtimeClicks || [],
+          topReferrers: analyticsResponse?.topReferrers || [],
+          trafficByCountry: analyticsResponse?.trafficByCountry || [],
+          trafficByDevice: analyticsResponse?.trafficByDevice || [],
+          trafficByBrowser: analyticsResponse?.trafficByBrowser || [],
         })
       } catch (error) {
         const message = error?.message || 'Unable to load your analytics right now.'
@@ -182,6 +194,13 @@ function AnalyticsPage() {
   const growthPadding = { top: 24, right: 20, bottom: 48, left: 24 }
   const growthPath = buildGrowthLinePath(growthSeries, growthWidth, growthHeight, growthPadding)
   const growthMax = Math.max(...growthSeries.map((item) => item.value), 1)
+  const realtimeSeries = analytics.realtimeClicks || []
+  const realtimeWidth = 860
+  const realtimeHeight = 240
+  const realtimePadding = { top: 20, right: 20, bottom: 36, left: 20 }
+  const realtimePath = buildGrowthLinePath(realtimeSeries, realtimeWidth, realtimeHeight, realtimePadding)
+  const realtimeMax = Math.max(...realtimeSeries.map((item) => item.value), 1)
+  const clickThroughRate = analytics.totalClicks ? Number(((analytics.uniqueClicks / analytics.totalClicks) * 100).toFixed(1)) : 0
 
   if (loading) {
     return (
@@ -327,8 +346,12 @@ function AnalyticsPage() {
                     <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900">{analytics.averageClicks}</p>
                   </div>
                   <div className="rounded-2xl bg-slate-50 p-4">
-                    <p className="text-sm font-medium text-slate-500">Top URL clicks</p>
-                    <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900">{topUrl?.clicks || 0}</p>
+                    <p className="text-sm font-medium text-slate-500">Unique clicks</p>
+                    <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900">{analytics.uniqueClicks}</p>
+                  </div>
+                  <div className="rounded-2xl bg-slate-50 p-4">
+                    <p className="text-sm font-medium text-slate-500">Unique rate</p>
+                    <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900">{clickThroughRate}%</p>
                   </div>
                 </div>
 
@@ -406,12 +429,177 @@ function AnalyticsPage() {
                 </div>
               </div>
 
+              <div className="mt-6 grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+                <section className="rounded-[26px] border border-slate-200 bg-white p-5 shadow-sm">
+                  <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                      <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Real-time clicks</p>
+                      <h3 className="mt-2 text-xl font-bold tracking-tight text-slate-900">Last 24 hours</h3>
+                    </div>
+                    <p className="text-sm text-slate-500">Updated from each redirect event.</p>
+                  </div>
+
+                  {realtimeSeries.length ? (
+                    <div className="grid gap-5 lg:grid-cols-[1fr_220px] lg:items-center">
+                      <div className="overflow-hidden rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                        <svg viewBox={`0 0 ${realtimeWidth} ${realtimeHeight}`} className="h-auto w-full">
+                          <defs>
+                            <linearGradient id="realtimeFill" x1="0" x2="0" y1="0" y2="1">
+                              <stop offset="0%" stopColor="#0f766e" stopOpacity="0.28" />
+                              <stop offset="100%" stopColor="#0f766e" stopOpacity="0.02" />
+                            </linearGradient>
+                          </defs>
+
+                          {[0.25, 0.5, 0.75, 1].map((ratio) => {
+                            const y = realtimePadding.top + (realtimeHeight - realtimePadding.top - realtimePadding.bottom) * ratio
+
+                            return (
+                              <line
+                                key={ratio}
+                                x1={realtimePadding.left}
+                                y1={y}
+                                x2={realtimeWidth - realtimePadding.right}
+                                y2={y}
+                                stroke="#e2e8f0"
+                                strokeDasharray="4 8"
+                              />
+                            )
+                          })}
+
+                          {realtimeSeries.length > 1 ? (
+                            <path
+                              d={`${realtimePath} L ${realtimeWidth - realtimePadding.right} ${realtimeHeight - realtimePadding.bottom} L ${realtimePadding.left} ${realtimeHeight - realtimePadding.bottom} Z`}
+                              fill="url(#realtimeFill)"
+                            />
+                          ) : null}
+
+                          <path d={realtimePath} fill="none" stroke="#0f766e" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+
+                          {realtimeSeries.map((item, index) => {
+                            const usableWidth = realtimeWidth - realtimePadding.left - realtimePadding.right
+                            const usableHeight = realtimeHeight - realtimePadding.top - realtimePadding.bottom
+                            const x = realtimePadding.left + (index / Math.max(realtimeSeries.length - 1, 1)) * usableWidth
+                            const y = realtimePadding.top + usableHeight - (item.value / realtimeMax) * usableHeight
+
+                            return (
+                              <g key={item.label}>
+                                <circle cx={x} cy={y} r="5" fill="#0f766e" stroke="#ffffff" strokeWidth="3" />
+                                <text x={x} y={realtimeHeight - 14} textAnchor="middle" className="fill-slate-500 text-[10px] font-medium">
+                                  {index % 3 === 0 ? item.label : ''}
+                                </text>
+                              </g>
+                            )
+                          })}
+                        </svg>
+                      </div>
+
+                      <div className="grid gap-3">
+                        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                          <p className="text-sm font-medium text-slate-500">Clicks in last 24h</p>
+                          <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
+                            {realtimeSeries.reduce((sum, item) => sum + item.value, 0)}
+                          </p>
+                        </div>
+                        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                          <p className="text-sm font-medium text-slate-500">Top referrer</p>
+                          <p className="mt-2 wrap-break-word text-lg font-semibold text-slate-900">
+                            {analytics.topReferrers[0]?.label || 'Direct'}
+                          </p>
+                        </div>
+                        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                          <p className="text-sm font-medium text-slate-500">Top country</p>
+                          <p className="mt-2 text-lg font-semibold text-slate-900">
+                            {analytics.trafficByCountry[0]?.label || 'Unknown'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-sm text-slate-500">
+                      Real-time click activity will appear here after users start opening your short links.
+                    </div>
+                  )}
+                </section>
+
+                <section className="grid gap-6">
+                  <div className="rounded-[26px] border border-slate-200 bg-white p-5 shadow-sm">
+                    <div className="mb-4">
+                      <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Geography</p>
+                      <h3 className="mt-2 text-xl font-bold tracking-tight text-slate-900">Top locations</h3>
+                    </div>
+                    {analytics.trafficByCountry.length ? (
+                      <div className="grid gap-3">
+                        {analytics.trafficByCountry.slice(0, 6).map((item) => (
+                          <div key={item.label} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                            <span className="text-sm font-medium text-slate-900">{item.label}</span>
+                            <span className="text-sm font-semibold text-slate-700">{item.value}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-slate-500">No location data yet.</p>
+                    )}
+                  </div>
+
+                  <div className="rounded-[26px] border border-slate-200 bg-white p-5 shadow-sm">
+                    <div className="mb-4">
+                      <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Audience</p>
+                      <h3 className="mt-2 text-xl font-bold tracking-tight text-slate-900">Devices and browsers</h3>
+                    </div>
+                    <div className="grid gap-5 sm:grid-cols-2">
+                      <div>
+                        <p className="mb-3 text-sm font-semibold text-slate-700">Devices</p>
+                        <div className="grid gap-2">
+                          {analytics.trafficByDevice.length ? analytics.trafficByDevice.slice(0, 5).map((item) => (
+                            <div key={item.label} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                              <span className="text-sm text-slate-900">{item.label}</span>
+                              <span className="text-sm font-semibold text-slate-700">{item.value}</span>
+                            </div>
+                          )) : <p className="text-sm text-slate-500">No device data yet.</p>}
+                        </div>
+                      </div>
+                      <div>
+                        <p className="mb-3 text-sm font-semibold text-slate-700">Browsers</p>
+                        <div className="grid gap-2">
+                          {analytics.trafficByBrowser.length ? analytics.trafficByBrowser.slice(0, 5).map((item) => (
+                            <div key={item.label} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                              <span className="text-sm text-slate-900">{item.label}</span>
+                              <span className="text-sm font-semibold text-slate-700">{item.value}</span>
+                            </div>
+                          )) : <p className="text-sm text-slate-500">No browser data yet.</p>}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-[26px] border border-slate-200 bg-white p-5 shadow-sm">
+                    <div className="mb-4">
+                      <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Traffic sources</p>
+                      <h3 className="mt-2 text-xl font-bold tracking-tight text-slate-900">Top referrers</h3>
+                    </div>
+                    {analytics.topReferrers.length ? (
+                      <div className="grid gap-3">
+                        {analytics.topReferrers.slice(0, 6).map((item) => (
+                          <div key={item.label} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                            <span className="truncate text-sm font-medium text-slate-900">{item.label}</span>
+                            <span className="text-sm font-semibold text-slate-700">{item.value}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-slate-500">No referrer data yet.</p>
+                    )}
+                  </div>
+                </section>
+              </div>
+
               <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
                 <p className="text-sm font-semibold text-slate-700">Best performing URL</p>
                 {topUrl ? (
                   <div className="mt-3 grid gap-3 text-sm text-slate-600">
                     <p className="break-all"><span className="font-medium text-slate-500">Original:</span> {topUrl.originalUrl}</p>
                     <p className="break-all"><span className="font-medium text-slate-500">Short:</span> {topUrl.shortUrl}</p>
+                    <p><span className="font-medium text-slate-500">Unique clicks:</span> {topUrl.uniqueClicks || 0}</p>
                     <p><span className="font-medium text-slate-500">Created:</span> {formatDate(topUrl.createdAt)}</p>
                   </div>
                 ) : (

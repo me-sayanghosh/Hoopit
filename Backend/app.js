@@ -15,6 +15,7 @@ import cookieParser from 'cookie-parser';
 
 dotenv.config({ path: './.env' });
 const app  = express();
+app.set('trust proxy', true);
 
 
 

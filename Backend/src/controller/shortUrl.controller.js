@@ -1,5 +1,5 @@
 import { shortUrlServiceWithoutUser, shortUrlServicewithUser, getUserShortUrls, getUserUrlAnalytics } from '../services/shortUrl.service.js';
-import { getShortUrl } from '../dao/shortUrl.js';
+import { recordShortUrlClick } from '../dao/shortUrl.js';
 import { AppError } from '../utils/httpError.js';
 import wrapasync from '../utils/errorHandeler.js';
 
@@ -40,7 +40,7 @@ export const createCustomShortUrl = wrapasync(async (req, res) => {
 
 export const redirectfromShortUrl = wrapasync(async (req, res) => {
     const { id } = req.params;
-    const url = await getShortUrl(id);
+    const url = await recordShortUrlClick(id, req, res);
 
     if (!url) {
         throw new AppError('Short URL not found.', 404);

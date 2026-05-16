@@ -20,6 +20,37 @@ const shortUrlSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    uniqueClicks: {
+        type: Number,
+        default: 0
+    },
+    uniqueVisitors: {
+        type: [String],
+        default: []
+    },
+    lastClickedAt: {
+        type: Date,
+        default: null
+    },
+    clickEvents: {
+        type: [
+            new mongoose.Schema({
+                clickedAt: {
+                    type: Date,
+                    default: Date.now
+                },
+                visitorId: String,
+                ip: String,
+                country: String,
+                region: String,
+                city: String,
+                referrer: String,
+                device: String,
+                browser: String
+            }, { _id: false })
+        ],
+        default: []
+    },
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
