@@ -29,6 +29,11 @@ export const getSingleShortUrlAnalytics = async (shortUrl) => {
         return data;
 };
 
+export const generateAiSuggestion = async (url, field) => {
+        const { data } = await axiosInstance.post('/api/create/suggest', { url, field });
+        return data;
+};
+
 
 export const getFolders = async () => {
         const { data } = await axiosInstance.get('/api/folders');

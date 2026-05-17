@@ -1,5 +1,6 @@
 import express from 'express';
 import { createShortUrl, createCustomShortUrl, getMyShortUrls, getMyShortUrlAnalytics, recordLocationForClick, getSingleShortUrlAnalytics } from '../controller/shortUrl.controller.js';
+import { generateSuggestion } from '../controller/ai.controller.js';
 import { AppError } from '../utils/httpError.js';
 import { authMiddleware } from '../middleware/auth.middleware.js';
 
@@ -33,6 +34,7 @@ const validateCreateCustomShortUrl = (req, res, next) => {
 
 router.post("/", validateCreateShortUrl, createShortUrl);
 router.post("/custom", validateCreateCustomShortUrl, authMiddleware, createCustomShortUrl);
+router.post("/suggest", generateSuggestion);
 router.post("/track-location", recordLocationForClick);
 router.get('/mine', authMiddleware, getMyShortUrls);
 router.get('/analytics', authMiddleware, getMyShortUrlAnalytics);

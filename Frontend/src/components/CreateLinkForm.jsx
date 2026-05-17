@@ -1,7 +1,22 @@
 import { useState, useEffect } from 'react'
-import { shortenUrl, getFolders } from '../api/shortUrlapi.js'
+import { shortenUrl, getFolders, generateAiSuggestion } from '../api/shortUrlapi.js'
 import { getCurrentUser } from '../api/user.api.js'
 import { useNavigate } from 'react-router-dom'
+
+function AIGenerateButton({ onClick, loading }) {
+  return (
+    <button type="button" onClick={onClick} disabled={loading} className="text-[11px] font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 transition-colors bg-blue-50/50 hover:bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100/50 disabled:opacity-50">
+      {loading ? 'Generating...' : (
+        <>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3">
+            <path d="M9.75 3.75l1.06 4.24a2.25 2.25 0 001.66 1.66l4.24 1.06-4.24 1.06a2.25 2.25 0 00-1.66 1.66l-1.06 4.24-1.06-4.24a2.25 2.25 0 00-1.66-1.66l-4.24-1.06 4.24-1.06a2.25 2.25 0 001.66-1.66l1.06-4.24z" />
+          </svg>
+          AI Generate
+        </>
+      )}
+    </button>
+  )
+}
 
 export default function CreateLinkForm() {
   
@@ -19,6 +34,30 @@ export default function CreateLinkForm() {
   const [qrCode, setQrCode] = useState('')
   const [createdShort, setCreatedShort] = useState('')
   const [folderOptions, setFolderOptions] = useState([])
+  const [aiLoading, setAiLoading] = useState(null)
+
+  const handleAiGenerate = async (field) => {
+    if (!destination) {
+      setError('Please enter a Destination URL first to generate suggestions.')
+      return
+    }
+    setError('')
+    setAiLoading(field)
+    try {
+      const res = await generateAiSuggestion(destination, field)
+      if (res?.suggestion) {
+        if (field === 'alias') setAlias(res.suggestion)
+        if (field === 'tags') setTags(res.suggestion)
+        if (field === 'comments') setComments(res.suggestion)
+        if (field === 'title') setTitle(res.suggestion)
+        if (field === 'description') setDescription(res.suggestion)
+      }
+    } catch (err) {
+      setError(err?.message || 'Failed to generate AI suggestion.')
+    } finally {
+      setAiLoading(null)
+    }
+  }
 
   const handleCreate = async (e) => {
     e.preventDefault()
@@ -95,17 +134,26 @@ export default function CreateLinkForm() {
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">Alias</label>
+            <div className="mb-2 flex items-center justify-between">
+              <label className="block text-sm font-medium text-slate-700">Alias</label>
+              <AIGenerateButton onClick={() => handleAiGenerate('alias')} loading={aiLoading === 'alias'} />
+            </div>
             <input value={alias} onChange={(e) => setAlias(e.target.value)} placeholder="Auto-generated or type alias" className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm" />
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">Tags</label>
+            <div className="mb-2 flex items-center justify-between">
+              <label className="block text-sm font-medium text-slate-700">Tags</label>
+              <AIGenerateButton onClick={() => handleAiGenerate('tags')} loading={aiLoading === 'tags'} />
+            </div>
             <input value={tags} onChange={(e) => setTags(e.target.value)} placeholder="Select tags..." className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm" />
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">Comments</label>
+            <div className="mb-2 flex items-center justify-between">
+              <label className="block text-sm font-medium text-slate-700">Comments</label>
+              <AIGenerateButton onClick={() => handleAiGenerate('comments')} loading={aiLoading === 'comments'} />
+            </div>
             <textarea value={comments} onChange={(e) => setComments(e.target.value)} rows={4} placeholder="Add comments" className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm" />
           </div>
 
@@ -152,12 +200,18 @@ export default function CreateLinkForm() {
           {/* Custom link preview removed per request */}
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">Add a title</label>
+            <div className="mb-2 flex items-center justify-between">
+              <label className="block text-sm font-medium text-slate-700">Add a title</label>
+              <AIGenerateButton onClick={() => handleAiGenerate('title')} loading={aiLoading === 'title'} />
+            </div>
             <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Add a title..." className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" />
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">Add a description</label>
+            <div className="mb-2 flex items-center justify-between">
+              <label className="block text-sm font-medium text-slate-700">Add a description</label>
+              <AIGenerateButton onClick={() => handleAiGenerate('description')} loading={aiLoading === 'description'} />
+            </div>
             <input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Add a description..." className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" />
           </div>
         </div>
