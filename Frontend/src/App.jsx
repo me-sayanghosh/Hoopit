@@ -26,6 +26,7 @@ const App = () => {
         <Route path="/custom-url" element={<CustomUrlPage />} />
         <Route path="/creations" element={<MyCreationsPage />} />
         <Route path="/analytics" element={<AnalyticsPage />} />
+        <Route path="/analytics/:shortUrl" element={<AnalyticsPage />} />
         <Route path="/customers" element={<CustomersPage />} />
         <Route path="/folders" element={<FoldersPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />

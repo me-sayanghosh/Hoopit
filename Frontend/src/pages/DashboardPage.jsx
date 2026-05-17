@@ -306,7 +306,10 @@ export default function DashboardPage() {
                         <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700">
                           {item.clicks || 0} clicks
                         </div>
-                        <button onClick={() => navigate('/analytics')} className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-100">
+                        <button onClick={() => {
+                          const shortCode = item.shortUrl.split('/').pop() || '';
+                          navigate(`/analytics/${shortCode}`);
+                        }} className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-100">
                           View Analytics
                         </button>
                         <button className="rounded-full border border-slate-200 bg-white p-2 text-slate-500 hover:bg-slate-50">

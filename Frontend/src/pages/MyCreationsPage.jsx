@@ -112,12 +112,21 @@ export default function MyCreationsPage() {
                               </td>
                               <td className="px-4 py-3 font-semibold text-slate-700">{item.clicks || 0}</td>
                               <td className="px-4 py-3 text-slate-500">{formatDate(item.createdAt)}</td>
-                              <td className="px-4 py-3">
+                              <td className="px-4 py-3 flex gap-2">
                                 <button 
                                   onClick={() => copy(item.shortUrl)} 
                                   className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
                                 >
                                   {copiedValue === item.shortUrl ? 'Copied' : 'Copy'}
+                                </button>
+                                <button 
+                                  onClick={() => {
+                                    const shortCode = item.shortUrl.split('/').pop() || '';
+                                    navigate(`/analytics/${shortCode}`);
+                                  }} 
+                                  className="rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-100"
+                                >
+                                  Analytics
                                 </button>
                               </td>
                             </tr>
@@ -154,12 +163,21 @@ export default function MyCreationsPage() {
                               </td>
                               <td className="px-4 py-3 font-semibold text-slate-700">{item.clicks || 0}</td>
                               <td className="px-4 py-3 text-slate-500">{formatDate(item.createdAt)}</td>
-                              <td className="px-4 py-3">
+                              <td className="px-4 py-3 flex gap-2">
                                 <button 
                                   onClick={() => copy(item.shortUrl)} 
                                   className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
                                 >
                                   {copiedValue === item.shortUrl ? 'Copied' : 'Copy'}
+                                </button>
+                                <button 
+                                  onClick={() => {
+                                    const shortCode = item.shortUrl.split('/').pop() || '';
+                                    navigate(`/analytics/${shortCode}`);
+                                  }} 
+                                  className="rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-100"
+                                >
+                                  Analytics
                                 </button>
                               </td>
                             </tr>

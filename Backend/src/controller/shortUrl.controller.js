@@ -1,4 +1,4 @@
-import { shortUrlServiceWithoutUser, shortUrlServicewithUser, getUserShortUrls, getUserUrlAnalytics } from '../services/shortUrl.service.js';
+import { shortUrlServiceWithoutUser, shortUrlServicewithUser, getUserShortUrls, getUserUrlAnalytics, getSingleUserUrlAnalytics } from '../services/shortUrl.service.js';
 import { getCustomShortUrl } from '../dao/shortUrl.js';
 import { recordShortUrlClick } from '../dao/shortUrl.js';
 import { AppError } from '../utils/httpError.js';
@@ -81,6 +81,13 @@ export const getMyShortUrls = wrapasync(async (req, res) => {
 
 export const getMyShortUrlAnalytics = wrapasync(async (req, res) => {
     const analytics = await getUserUrlAnalytics(req.user._id);
+
+    res.status(200).json(analytics);
+});
+
+export const getSingleShortUrlAnalytics = wrapasync(async (req, res) => {
+    const { shortUrl } = req.params;
+    const analytics = await getSingleUserUrlAnalytics(req.user._id, shortUrl);
 
     res.status(200).json(analytics);
 });

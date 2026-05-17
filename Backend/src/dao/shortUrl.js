@@ -50,7 +50,7 @@ const parseCoordinate = (value) => {
     return Number.isFinite(coordinate) ? coordinate : null;
 };
 
-const getLocation = (req, ip) => {
+const getLocation = async (req, ip) => {
     const country = req.headers['x-vercel-ip-country'] || req.headers['cf-ipcountry'] || '';
     const region = req.headers['x-vercel-ip-country-region'] || '';
     const city = req.headers['x-vercel-ip-city'] || '';
@@ -65,6 +65,36 @@ const getLocation = (req, ip) => {
             latitude,
             longitude,
         };
+    }
+
+    if (ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1') {
+        return {
+            country: 'IN',
+            region: 'Delhi',
+            city: 'New Delhi',
+            latitude: 28.7041,
+            longitude: 77.1025,
+        };
+    }
+
+    if (ip) {
+        try {
+            const response = await fetch(`http://ip-api.com/json/${ip}`);
+            if (response.ok) {
+                const data = await response.json();
+                if (data.status === 'success') {
+                    return {
+                        country: data.country || 'Unknown',
+                        region: data.regionName || 'Unknown',
+                        city: data.city || 'Unknown',
+                        latitude: data.lat ?? null,
+                        longitude: data.lon ?? null,
+                    };
+                }
+            }
+        } catch (error) {
+            console.error('IP-API lookup failed:', error);
+        }
     }
 
     const lookup = ip ? geoip.lookup(ip) : null;
@@ -142,7 +172,7 @@ export const recordShortUrlClick = async (shortUrl, req, res) => {
         const visitorId = getVisitorId(req, res);
         const ip = getClientIp(req);
         const referrer = getReferrer(req);
-        const location = getLocation(req, ip);
+        const location = await getLocation(req, ip);
         const deviceInfo = getDeviceInfo(req);
         const now = new Date();
         const isUnique = !(urlEntry.uniqueVisitors || []).includes(visitorId);

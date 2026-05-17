@@ -132,9 +132,7 @@ export const getUserShortUrls = async (userId) => {
     }
 }
 
-export const getUserUrlAnalytics = async (userId) => {
-    try {
-        const urls = await getUserShortUrls(userId);
+const buildAnalytics = (urls) => {
         const totalUrls = urls.length;
         const totalClicks = urls.reduce((sum, item) => sum + (item.clicks || 0), 0);
         const uniqueClicks = urls.reduce((sum, item) => sum + (item.uniqueClicks || 0), 0);
@@ -242,6 +240,32 @@ export const getUserUrlAnalytics = async (userId) => {
                 createdAt: item.createdAt,
             })),
         };
+};
+
+export const getUserUrlAnalytics = async (userId) => {
+    try {
+        const urls = await getUserShortUrls(userId);
+        return buildAnalytics(urls);
+    }
+    catch (err) {
+        if (err instanceof AppError) {
+            throw err;
+        }
+
+        throw new AppError(err.message || 'Failed to build user analytics.', 500);
+    }
+}
+
+export const getSingleUserUrlAnalytics = async (userId, shortUrlAlias) => {
+    try {
+        const urls = await getUserShortUrls(userId);
+        const filteredUrls = urls.filter(u => u.shortUrl === shortUrlAlias);
+        
+        if (filteredUrls.length === 0) {
+            throw new AppError('URL not found or not owned by user', 404);
+        }
+        
+        return buildAnalytics(filteredUrls);
     }
     catch (err) {
         if (err instanceof AppError) {

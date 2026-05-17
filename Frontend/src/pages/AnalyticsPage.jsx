@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { getMyShortUrlAnalytics, getMyShortUrls } from '../api/shortUrlapi.js'
+import { useNavigate, useParams } from 'react-router-dom'
+import { getMyShortUrlAnalytics, getMyShortUrls, getSingleShortUrlAnalytics } from '../api/shortUrlapi.js'
 import GrowthBarChart from '../components/GrowthBarChart.jsx'
 import ChannelGauge from '../components/ChannelGauge.jsx'
 import GeoMapView from '../components/GeoMapView.jsx'
@@ -191,6 +191,7 @@ const buildGrowthLinePath = (series, width, height, padding) => {
 
 function AnalyticsPage() {
   const navigate = useNavigate()
+  const { shortUrl } = useParams()
   const [profile, setProfile] = useState(null)
   const [urls, setUrls] = useState([])
   const [analytics, setAnalytics] = useState({
@@ -220,7 +221,7 @@ function AnalyticsPage() {
         const [profileRes, urlsResponse, analyticsResponse] = await Promise.all([
           getCurrentUser(),
           getMyShortUrls(),
-          getMyShortUrlAnalytics(),
+          shortUrl ? getSingleShortUrlAnalytics(shortUrl) : getMyShortUrlAnalytics(),
         ])
 
         setProfile(profileRes?.user || null)
@@ -352,11 +353,19 @@ function AnalyticsPage() {
           <div className="rounded-[28px] border border-slate-200 bg-white shadow-sm">
             <div className="flex flex-col gap-4 border-b border-slate-200 px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <div className="text-2xl font-semibold tracking-tight text-slate-900">Analytics</div>
+                <div className="text-2xl font-semibold tracking-tight text-slate-900">
+                  {shortUrl ? `Analytics for /${shortUrl}` : 'Analytics'}
+                </div>
                 <p className="mt-1 text-sm text-slate-500">Overview of your links and click activity.</p>
               </div>
 
-              <div />
+              <div className="flex items-center gap-3">
+                {shortUrl && (
+                  <button onClick={() => navigate('/analytics')} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition">
+                    &larr; Back to All Analytics
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="px-5 py-4">

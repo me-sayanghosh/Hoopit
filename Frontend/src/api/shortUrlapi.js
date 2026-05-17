@@ -24,6 +24,11 @@ export const getMyShortUrlAnalytics = async () => {
         return data;
 };
 
+export const getSingleShortUrlAnalytics = async (shortUrl) => {
+        const { data } = await axiosInstance.get(`/api/create/analytics/${shortUrl}`);
+        return data;
+};
+
 
 export const getFolders = async () => {
         const { data } = await axiosInstance.get('/api/folders');
