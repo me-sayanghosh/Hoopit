@@ -1,7 +1,42 @@
 import { generateNanoid } from "../utils/helper.js";
 import { saveShortUrl, getCustomShortUrl, getShortUrlByOriginalUrl, getShortUrlsByUserId } from "../dao/shortUrl.js";
-import qrcode from 'qrcode';
+import { toDataURL } from 'qrcode';
 import { AppError } from "../utils/httpError.js";
+
+const regionNames = typeof Intl !== 'undefined' && typeof Intl.DisplayNames === 'function'
+    ? new Intl.DisplayNames(['en'], { type: 'region' })
+    : null;
+
+const getCountryLabel = (value) => {
+    if (!value) return 'Unknown';
+
+    const normalized = String(value).trim();
+    if (!normalized) return 'Unknown';
+
+    if (/^[A-Z]{2}$/.test(normalized)) {
+        return regionNames?.of(normalized) || normalized;
+    }
+
+    return normalized;
+};
+
+const getDeviceLabel = (value) => {
+    const normalized = String(value || '').trim().toLowerCase();
+
+    if (!normalized || normalized === 'desktop') {
+        return 'Desktop';
+    }
+
+    if (normalized === 'mobile') {
+        return 'Mobile';
+    }
+
+    if (normalized === 'tablet') {
+        return 'Tablet';
+    }
+
+    return 'Other';
+};
 
 
 export const shortUrlServiceWithoutUser = async (url, opts = {}) => {
@@ -23,11 +58,12 @@ export const shortUrlServiceWithoutUser = async (url, opts = {}) => {
 
         // generate QR code pointing to the public short URL
         try {
-            const full = (process.env.APP_URL || '') + shortUrl;
-            const dataUrl = await qrcode.toDataURL(full);
+            const full = `${process.env.APP_URL || ''}${process.env.APP_URL && !process.env.APP_URL.endsWith('/') ? '/' : ''}${shortUrl}`;
+            const dataUrl = await toDataURL(full);
             await saved.updateOne({ qrCodeUrl: dataUrl });
         } catch (e) {
-            // ignore QR failures
+            // log QR failures for debugging
+            console.error('Failed to generate QR for', shortUrl, e?.message || e);
         }
 
         return shortUrl;
@@ -61,11 +97,11 @@ export const shortUrlServicewithUser = async (url, userId, slug = null, opts = {
         const saved = await saveShortUrl(Object.assign({ originalUrl: url, shortUrl, userId }, opts));
 
         try {
-            const full = (process.env.APP_URL || '') + shortUrl;
-            const dataUrl = await qrcode.toDataURL(full);
+            const full = `${process.env.APP_URL || ''}${process.env.APP_URL && !process.env.APP_URL.endsWith('/') ? '/' : ''}${shortUrl}`;
+            const dataUrl = await toDataURL(full);
             await saved.updateOne({ qrCodeUrl: dataUrl });
         } catch (e) {
-            // ignore QR failures
+            console.error('Failed to generate QR for', shortUrl, e?.message || e);
         }
 
         return shortUrl;
@@ -109,10 +145,12 @@ export const getUserUrlAnalytics = async (userId) => {
             shortUrl: item.shortUrl,
             clickedAt: event.clickedAt || item.lastClickedAt || item.createdAt,
             referrer: event.referrer || 'Direct',
-            country: event.country || 'Unknown',
+            country: getCountryLabel(event.country),
             region: event.region || 'Unknown',
             city: event.city || 'Unknown',
-            device: event.device || 'Desktop',
+            latitude: typeof event.latitude === 'number' ? event.latitude : null,
+            longitude: typeof event.longitude === 'number' ? event.longitude : null,
+            device: getDeviceLabel(event.device),
             browser: event.browser || 'Unknown',
         })));
 
@@ -148,8 +186,30 @@ export const getUserUrlAnalytics = async (userId) => {
 
         const topReferrers = countBy(clickEvents, (event) => event.referrer).slice(0, 8);
         const trafficByCountry = countBy(clickEvents, (event) => event.country).slice(0, 8);
+        const trafficByCity = countBy(clickEvents, (event) => {
+            const city = event.city || 'Unknown';
+            const region = event.region || '';
+
+            if (city === 'Unknown' && !region) {
+                return 'Unknown';
+            }
+
+            return region ? `${city}, ${region}` : city;
+        }).slice(0, 8);
         const trafficByDevice = countBy(clickEvents, (event) => event.device).slice(0, 8);
         const trafficByBrowser = countBy(clickEvents, (event) => event.browser).slice(0, 8);
+        const clickMapPoints = clickEvents
+            .filter((event) => typeof event.latitude === 'number' && typeof event.longitude === 'number')
+            .map((event) => ({
+                shortUrl: event.shortUrl,
+                city: event.city,
+                region: event.region,
+                country: event.country,
+                latitude: event.latitude,
+                longitude: event.longitude,
+                device: event.device,
+                clickedAt: event.clickedAt,
+            }));
 
         return {
             totalUrls,
@@ -159,8 +219,10 @@ export const getUserUrlAnalytics = async (userId) => {
             realtimeClicks,
             topReferrers,
             trafficByCountry,
+            trafficByCity,
             trafficByDevice,
             trafficByBrowser,
+            clickMapPoints,
             topUrl: topUrl
                 ? {
                     id: topUrl._id,

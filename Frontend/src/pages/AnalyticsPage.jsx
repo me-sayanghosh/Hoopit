@@ -3,14 +3,13 @@ import { useNavigate } from 'react-router-dom'
 import { getMyShortUrlAnalytics, getMyShortUrls } from '../api/shortUrlapi.js'
 import GrowthBarChart from '../components/GrowthBarChart.jsx'
 import ChannelGauge from '../components/ChannelGauge.jsx'
+import GeoMapView from '../components/GeoMapView.jsx'
 import { getCurrentUser, logOutUser } from '../api/user.api.js'
 
 const sidebarItems = [
-  { label: 'Links', icon: 'link', active: true },
-  { label: 'Domains', icon: 'globe' },
-  { label: 'Analytics', icon: 'chart' },
-  { label: 'Events', icon: 'spark' },
-  { label: 'Folders', icon: 'folder' },
+  { label: 'Links', icon: 'link', active: true, to: '/dashboard' },
+  { label: 'Analytics', icon: 'chart', to: '/analytics' },
+  { label: 'Folders', icon: 'folder', to: '/folders' },
   { label: 'Tags', icon: 'tag' },
 ]
 
@@ -80,6 +79,12 @@ const formatDate = (value) => {
 }
 
 const chartPalette = ['#2563eb', '#0f766e', '#f59e0b', '#7c3aed', '#ef4444', '#14b8a6']
+const devicePalette = {
+  Desktop: '#2563eb',
+  Mobile: '#0f766e',
+  Tablet: '#f59e0b',
+  Other: '#7c3aed',
+}
 
 const polarToCartesian = (centerX, centerY, radius, angleInDegrees) => {
   const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180.0
@@ -198,8 +203,10 @@ function AnalyticsPage() {
     realtimeClicks: [],
     topReferrers: [],
     trafficByCountry: [],
+    trafficByCity: [],
     trafficByDevice: [],
     trafficByBrowser: [],
+    clickMapPoints: [],
   })
   const [loading, setLoading] = useState(true)
   const [pageError, setPageError] = useState('')
@@ -228,8 +235,10 @@ function AnalyticsPage() {
           realtimeClicks: analyticsResponse?.realtimeClicks || [],
           topReferrers: analyticsResponse?.topReferrers || [],
           trafficByCountry: analyticsResponse?.trafficByCountry || [],
+          trafficByCity: analyticsResponse?.trafficByCity || [],
           trafficByDevice: analyticsResponse?.trafficByDevice || [],
           trafficByBrowser: analyticsResponse?.trafficByBrowser || [],
+          clickMapPoints: analyticsResponse?.clickMapPoints || [],
         })
       } catch (error) {
         const message = error?.message || 'Unable to load your analytics right now.'
@@ -254,11 +263,6 @@ function AnalyticsPage() {
   const chartSegments = getChartSegments(urls, analytics.totalClicks)
   const chartTotal = chartSegments.reduce((sum, segment) => sum + segment.value, 0)
   const growthSeries = getGrowthSeries(urls)
-  const growthWidth = 860
-  const growthHeight = 280
-  const growthPadding = { top: 24, right: 20, bottom: 48, left: 24 }
-  const growthPath = buildGrowthLinePath(growthSeries, growthWidth, growthHeight, growthPadding)
-  const growthMax = Math.max(...growthSeries.map((item) => item.value), 1)
   const realtimeSeries = analytics.realtimeClicks || []
   const realtimeWidth = 860
   const realtimeHeight = 240
@@ -266,6 +270,11 @@ function AnalyticsPage() {
   const realtimePath = buildGrowthLinePath(realtimeSeries, realtimeWidth, realtimeHeight, realtimePadding)
   const realtimeMax = Math.max(...realtimeSeries.map((item) => item.value), 1)
   const clickThroughRate = analytics.totalClicks ? Number(((analytics.uniqueClicks / analytics.totalClicks) * 100).toFixed(1)) : 0
+  const deviceTotal = analytics.trafficByDevice.reduce((sum, item) => sum + (item.value || 0), 0)
+  const normalizedDeviceData = ['Desktop', 'Mobile', 'Tablet', 'Other'].map((label) => ({
+    label,
+    value: analytics.trafficByDevice.find((item) => item.label === label)?.value || 0,
+  }))
 
   if (loading) {
     return (
@@ -295,15 +304,20 @@ function AnalyticsPage() {
               </div>
             </div>
 
-            <div className="mt-4 rounded-xl bg-white p-4 shadow-sm flex-shrink-0">
+                <div className="mt-4 rounded-xl bg-white p-4 shadow-sm shrink-0">
               <div className="text-sm font-semibold text-slate-900">Short Links</div>
               <nav className="mt-3 space-y-1">
                 {sidebarItems.map((item) => (
-                  <div key={item.label} className={`relative flex items-center gap-3 rounded-lg pl-4 pr-3 py-2 text-sm ${item.active ? 'bg-blue-50 font-medium text-blue-600' : 'text-slate-600 hover:bg-slate-50'}`}>
+                  <button
+                    key={item.label}
+                    type="button"
+                    onClick={() => { if (item.to) navigate(item.to) }}
+                    className={`relative flex w-full items-center gap-3 rounded-lg pl-4 pr-3 py-2 text-left text-sm ${item.active ? 'bg-blue-50 font-medium text-blue-600' : 'text-slate-600 hover:bg-slate-50'}`}
+                  >
                     {item.active ? <span className="absolute left-0 top-0 h-full w-1 rounded-r-md bg-blue-500" /> : null}
                     <SidebarIcon name={item.icon} active={item.active} />
                     <span>{item.label}</span>
-                  </div>
+                  </button>
                 ))}
               </nav>
 
@@ -313,10 +327,6 @@ function AnalyticsPage() {
                   <SidebarIcon name="chart" />
                   <span>Analytics</span>
                 </button>
-                <div className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-slate-600 hover:bg-slate-50">
-                  <SidebarIcon name="spark" />
-                  <span>Events</span>
-                </div>
                 <button onClick={() => navigate('/customers')} className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 transition">
                   <SidebarIcon name="user" />
                   <span>Customers</span>
@@ -332,30 +342,8 @@ function AnalyticsPage() {
               </nav>
             </div>
 
-            <div className="mt-4 border-t border-slate-200 pt-4 px-1">
-              <div className="text-xs font-medium text-slate-500">Usage</div>
-              <div className="mt-3 text-sm text-slate-600">
-                <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M3 3v18h18" /></svg> Events</span>
-                  <span className="text-xs text-slate-400">1 of 1K</span>
-                </div>
-                <div className="mt-2 h-2 w-full rounded-full bg-slate-200">
-                  <div className="h-2 rounded-full bg-blue-500" style={{width: '10%'}} />
-                </div>
-
-                <div className="mt-3 flex items-center justify-between">
-                  <span className="flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M3 3v18h18" /></svg> Links</span>
-                  <span className="text-xs text-slate-400">2 of 25</span>
-                </div>
-                <div className="mt-2 h-2 w-full rounded-full bg-slate-200">
-                  <div className="h-2 rounded-full bg-blue-500" style={{width: '8%'}} />
-                </div>
-
-              </div>
-            </div>
-
             <div className="mt-auto px-1">
-                <button onClick={async () => { try { await logOutUser(); navigate('/'); } catch (e) { /* ignore */ } }} className="w-full rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white">Logout</button>
+                <button onClick={async () => { try { await logOutUser(); navigate('/'); } catch { /* ignore */ } }} className="w-full rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white">Logout</button>
             </div>
           </div>
         </aside>
@@ -402,7 +390,7 @@ function AnalyticsPage() {
                       <GrowthBarChart series={growthSeries.map((s) => ({ id: s.id, label: s.label, value: s.value }))} width={640} height={240} />
                     </div>
                     <div>
-                      <ChannelGauge data={analytics.trafficByCountry && analytics.trafficByCountry.length ? analytics.trafficByCountry.slice(0,4).map((d,i)=>({label:d.label,value:d.value})): [{label:'Google',value:78},{label:'Facebook',value:12},{label:'YouTube',value:6},{label:'Others',value:4}]} />
+                      <ChannelGauge data={analytics.trafficByCountry && analytics.trafficByCountry.length ? analytics.trafficByCountry.slice(0,4).map((d)=>({label:d.label,value:d.value})) : [{label:'Google',value:78},{label:'Facebook',value:12},{label:'YouTube',value:6},{label:'Others',value:4}]} />
                     </div>
                   </div>
                 ) : (
@@ -606,20 +594,27 @@ function AnalyticsPage() {
                   <div className="rounded-[26px] border border-slate-200 bg-white p-5 shadow-sm">
                     <div className="mb-4">
                       <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Geography</p>
-                      <h3 className="mt-2 text-xl font-bold tracking-tight text-slate-900">Top locations</h3>
+                      <h3 className="mt-2 text-xl font-bold tracking-tight text-slate-900">Top countries and cities</h3>
                     </div>
-                    {analytics.trafficByCountry.length ? (
-                      <div className="grid gap-3">
-                        {analytics.trafficByCountry.slice(0, 6).map((item) => (
-                          <div key={item.label} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                            <span className="text-sm font-medium text-slate-900">{item.label}</span>
-                            <span className="text-sm font-semibold text-slate-700">{item.value}</span>
+                    <div className="grid gap-5">
+                      <GeoMapView points={analytics.clickMapPoints} />
+
+                      <div>
+                        <p className="mb-3 text-sm font-semibold text-slate-700">Cities</p>
+                        {analytics.trafficByCity.length ? (
+                          <div className="grid gap-3">
+                            {analytics.trafficByCity.slice(0, 6).map((item) => (
+                              <div key={item.label} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                                <span className="text-sm font-medium text-slate-900">{item.label}</span>
+                                <span className="text-sm font-semibold text-slate-700">{item.value}</span>
+                              </div>
+                            ))}
                           </div>
-                        ))}
+                        ) : (
+                          <p className="text-sm text-slate-500">No city data yet.</p>
+                        )}
                       </div>
-                    ) : (
-                      <p className="text-sm text-slate-500">No location data yet.</p>
-                    )}
+                    </div>
                   </div>
 
                   <div className="rounded-[26px] border border-slate-200 bg-white p-5 shadow-sm">
@@ -630,13 +625,26 @@ function AnalyticsPage() {
                     <div className="grid gap-5 sm:grid-cols-2">
                       <div>
                         <p className="mb-3 text-sm font-semibold text-slate-700">Devices</p>
-                        <div className="grid gap-2">
-                          {analytics.trafficByDevice.length ? analytics.trafficByDevice.slice(0, 5).map((item) => (
-                            <div key={item.label} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                              <span className="text-sm text-slate-900">{item.label}</span>
-                              <span className="text-sm font-semibold text-slate-700">{item.value}</span>
-                            </div>
-                          )) : <p className="text-sm text-slate-500">No device data yet.</p>}
+                        <div className="grid gap-3">
+                          {normalizedDeviceData.length ? normalizedDeviceData.map((item) => {
+                            const percent = deviceTotal ? Math.round((item.value / deviceTotal) * 100) : 0
+
+                            return (
+                              <div key={item.label} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                                <div className="flex items-center justify-between gap-3">
+                                  <span className="text-sm text-slate-900">{item.label}</span>
+                                  <span className="text-sm font-semibold text-slate-700">{item.value}</span>
+                                </div>
+                                <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-200">
+                                  <div
+                                    className="h-full rounded-full"
+                                    style={{ width: `${percent}%`, backgroundColor: devicePalette[item.label] || '#64748b' }}
+                                  />
+                                </div>
+                                <div className="mt-1 text-xs text-slate-500">{percent}% of device clicks</div>
+                              </div>
+                            )
+                          }) : <p className="text-sm text-slate-500">No device data yet.</p>}
                         </div>
                       </div>
                       <div>

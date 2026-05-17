@@ -45,24 +45,37 @@ const getReferrer = (req) => {
     }
 };
 
+const parseCoordinate = (value) => {
+    const coordinate = Number(value);
+    return Number.isFinite(coordinate) ? coordinate : null;
+};
+
 const getLocation = (req, ip) => {
     const country = req.headers['x-vercel-ip-country'] || req.headers['cf-ipcountry'] || '';
     const region = req.headers['x-vercel-ip-country-region'] || '';
     const city = req.headers['x-vercel-ip-city'] || '';
+    const latitude = parseCoordinate(req.headers['x-vercel-ip-latitude'] || req.headers['cf-iplatitude']);
+    const longitude = parseCoordinate(req.headers['x-vercel-ip-longitude'] || req.headers['cf-iplongitude']);
 
     if (country || region || city) {
         return {
             country: country || 'Unknown',
             region: region || 'Unknown',
             city: city || 'Unknown',
+            latitude,
+            longitude,
         };
     }
 
     const lookup = ip ? geoip.lookup(ip) : null;
+    const [lookupLatitude, lookupLongitude] = Array.isArray(lookup?.ll) ? lookup.ll : [null, null];
+
     return {
         country: lookup?.country || 'Unknown',
         region: lookup?.region || 'Unknown',
         city: lookup?.city || 'Unknown',
+        latitude: typeof latitude === 'number' ? latitude : (typeof lookupLatitude === 'number' ? lookupLatitude : null),
+        longitude: typeof longitude === 'number' ? longitude : (typeof lookupLongitude === 'number' ? lookupLongitude : null),
     };
 };
 
@@ -152,6 +165,8 @@ export const recordShortUrlClick = async (shortUrl, req, res) => {
                         country: location.country,
                         region: location.region,
                         city: location.city,
+                        latitude: location.latitude,
+                        longitude: location.longitude,
                         referrer,
                         device: deviceInfo.device,
                         browser: deviceInfo.browser,

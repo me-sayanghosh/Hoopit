@@ -10,7 +10,6 @@ import MyCreationsPage from './pages/MyCreationsPage.jsx'
 import CustomersPage from './pages/CustomersPage.jsx'
 import FoldersPage from './pages/FoldersPage.jsx'
 import CreateShortUrlPage from './pages/CreateShortUrlPage.jsx'
-import DomainsPage from './pages/DomainsPage.jsx'
 
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 
@@ -23,7 +22,6 @@ const App = () => {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/domains" element={<DomainsPage />} />
         <Route path="/create" element={<CreateShortUrlPage />} />
         <Route path="/custom-url" element={<CustomUrlPage />} />
         <Route path="/creations" element={<MyCreationsPage />} />

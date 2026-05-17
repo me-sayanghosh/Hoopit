@@ -24,12 +24,18 @@ export const getMyShortUrlAnalytics = async () => {
         return data;
 };
 
-export const getDomains = async () => {
-        const { data } = await axiosInstance.get('/api/domains');
-        return data?.domains || [];
+
+export const getFolders = async () => {
+        const { data } = await axiosInstance.get('/api/folders');
+        return data?.folders || [];
 };
 
-export const createDomain = async (domain) => {
-        const { data } = await axiosInstance.post('/api/domains', { domain });
-        return data?.domain;
+export const createFolder = async (body) => {
+        const { data } = await axiosInstance.post('/api/folders', body);
+        return data?.folder;
+};
+
+export const updateFolder = async (folderId, body) => {
+        const { data } = await axiosInstance.put(`/api/folders/${folderId}`, body);
+        return data?.folder;
 };

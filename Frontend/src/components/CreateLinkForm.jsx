@@ -1,24 +1,24 @@
 import { useState, useEffect } from 'react'
-import { shortenUrl, getDomains } from '../api/shortUrlapi.js'
+import { shortenUrl, getFolders } from '../api/shortUrlapi.js'
 import { getCurrentUser } from '../api/user.api.js'
 import { useNavigate } from 'react-router-dom'
 
 export default function CreateLinkForm() {
   
   const [destination, setDestination] = useState('')
-  const [domain, setDomain] = useState('')
-  const [domains, setDomains] = useState([])
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [alias, setAlias] = useState('')
   const [tags, setTags] = useState('')
   const [comments, setComments] = useState('')
   const [conversion, setConversion] = useState(false)
-  const [folder, setFolder] = useState('Links')
+  const [folder, setFolder] = useState('')
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [qrCode, setQrCode] = useState('')
+  const [createdShort, setCreatedShort] = useState('')
+  const [folderOptions, setFolderOptions] = useState([])
 
   const handleCreate = async (e) => {
     e.preventDefault()
@@ -29,12 +29,11 @@ export default function CreateLinkForm() {
       const body = {
         url: destination,
         slug: alias || undefined,
-        domain,
         tags: tags || undefined,
         comments,
         title,
         description,
-        folder,
+        folder: folder || undefined,
         conversionTracking: conversion
       }
 
@@ -43,8 +42,7 @@ export default function CreateLinkForm() {
       if (!short) throw new Error('No short url returned')
       // show returned QR code if provided
       if (res?.qrCodeUrl) setQrCode(res.qrCodeUrl)
-      // success: navigate back to dashboard
-      navigate('/dashboard')
+      setCreatedShort(short)
     } catch (err) {
       setError(err?.message || 'Failed to create link')
     } finally {
@@ -54,15 +52,17 @@ export default function CreateLinkForm() {
 
   useEffect(() => {
     let mounted = true
-    const fetchDomains = async () => {
+
+    const fetchFolders = async () => {
       try {
-        const list = await getDomains()
+        const list = await getFolders()
         if (!mounted) return
-        const names = (list || []).map(d => d.domain)
-        setDomains(names)
-        if (!domain && names.length) setDomain(names[0])
-      } catch (err) {
-        // ignore
+        setFolderOptions(list || [])
+        if (!folder && list?.length) {
+          setFolder(list[0].name || '')
+        }
+      } catch {
+        // ignore unauthenticated or empty folder states
       }
     }
 
@@ -75,7 +75,7 @@ export default function CreateLinkForm() {
       }
     }
 
-    fetchDomains()
+    fetchFolders()
     checkAuth()
     return () => { mounted = false }
   }, [])
@@ -94,22 +94,9 @@ export default function CreateLinkForm() {
             />
           </div>
 
-          <div className="grid grid-cols-12 gap-3">
-            <div className="col-span-4">
-              <label className="mb-2 block text-sm font-medium text-slate-700">Short Link</label>
-              <select value={domain} onChange={(e) => setDomain(e.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm">
-                {domains.map(d => (
-                  <option key={d} value={d}>{d}</option>
-                ))}
-              </select>
-              <div className="mt-2">
-                {/* Add-domain removed from this page per request */}
-              </div>
-            </div>
-            <div className="col-span-8">
-              <label className="mb-2 block text-sm font-medium text-slate-700">Alias</label>
-              <input value={alias} onChange={(e) => setAlias(e.target.value)} placeholder="Auto-generated or type alias" className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm" />
-            </div>
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-700">Alias</label>
+            <input value={alias} onChange={(e) => setAlias(e.target.value)} placeholder="Auto-generated or type alias" className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm" />
           </div>
 
           <div>
@@ -137,8 +124,10 @@ export default function CreateLinkForm() {
           <div>
             <label className="mb-2 block text-sm font-medium text-slate-700">Folder</label>
             <select value={folder} onChange={(e) => setFolder(e.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm">
-              <option>Links</option>
-              <option>Marketing</option>
+              <option value="">No folder</option>
+              {folderOptions.map((item) => (
+                <option key={item.id} value={item.name}>{item.name}</option>
+              ))}
             </select>
           </div>
 
@@ -150,6 +139,14 @@ export default function CreateLinkForm() {
               <div className="mx-auto my-2 h-28 w-28 rounded bg-slate-50 border border-dashed" />
             )}
             <div className="mt-2 text-xs text-slate-500">QR code preview</div>
+            {createdShort ? (
+              <div className="mt-3 text-sm">
+                <div className="truncate text-blue-700"><a href={createdShort} target="_blank" rel="noreferrer">{createdShort}</a></div>
+                <div className="mt-2">
+                  <button onClick={() => navigate('/dashboard')} className="rounded-md bg-slate-900 px-3 py-1 text-xs font-semibold text-white">Back to dashboard</button>
+                </div>
+              </div>
+            ) : null}
           </div>
 
           {/* Custom link preview removed per request */}

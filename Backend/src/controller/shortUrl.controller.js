@@ -11,12 +11,12 @@ dotenv.config({ path: './.env' });
 
 
 export const createShortUrl = wrapasync(async (req, res) => {
-    const { url, slug, customAlias, domain, tags, comments, title, description, folder, conversionTracking } = req.body;
+    const { url, slug, customAlias, tags, comments, title, description, folder, conversionTracking } = req.body;
     const shortAlias = slug || customAlias;
 
     // Build options to pass through
     const opts = {
-        domain: domain || '',
+        // domain removed from payload
         tags: Array.isArray(tags) ? tags : (tags ? String(tags).split(',').map(s => s.trim()).filter(Boolean) : []),
         comments: comments || '',
         title: title || '',
@@ -72,6 +72,7 @@ export const getMyShortUrls = wrapasync(async (req, res) => {
             id: item._id,
             originalUrl: item.originalUrl,
             shortUrl: process.env.APP_URL + item.shortUrl,
+            folder: item.folder || '',
             clicks: item.clicks,
             createdAt: item.createdAt,
         })),
@@ -82,4 +83,56 @@ export const getMyShortUrlAnalytics = wrapasync(async (req, res) => {
     const analytics = await getUserUrlAnalytics(req.user._id);
 
     res.status(200).json(analytics);
+});
+
+export const recordLocationForClick = wrapasync(async (req, res) => {
+    const { shortUrl, latitude, longitude, visitorId, timestamp } = req.body;
+
+    if (!shortUrl || typeof shortUrl !== 'string') {
+        throw new AppError('Short URL is required.', 400);
+    }
+
+    if (typeof latitude !== 'number' || typeof longitude !== 'number') {
+        throw new AppError('Valid latitude and longitude are required.', 400);
+    }
+
+    const urlEntry = await getCustomShortUrl(shortUrl);
+    if (!urlEntry) {
+        throw new AppError('Short URL not found.', 404);
+    }
+
+    if (!urlEntry.clickEvents || urlEntry.clickEvents.length === 0) {
+        throw new AppError('No click events found for this URL.', 404);
+    }
+
+    // Find the most recent click event, optionally filtered by visitorId
+    let targetIndex = -1;
+    
+    if (visitorId) {
+        // If visitorId provided, find the most recent click by this visitor
+        for (let i = urlEntry.clickEvents.length - 1; i >= 0; i--) {
+            if (urlEntry.clickEvents[i].visitorId === visitorId) {
+                targetIndex = i;
+                break;
+            }
+        }
+    } else {
+        // Otherwise, find the most recent click overall
+        targetIndex = urlEntry.clickEvents.length - 1;
+    }
+
+    if (targetIndex >= 0) {
+        urlEntry.clickEvents[targetIndex].latitude = latitude;
+        urlEntry.clickEvents[targetIndex].longitude = longitude;
+        await urlEntry.save();
+        console.log(`Updated location for click event at index ${targetIndex} for URL ${shortUrl}`);
+    } else {
+        console.warn(`No matching click event found for URL ${shortUrl}, visitorId: ${visitorId}`);
+    }
+
+    res.status(200).json({ 
+        success: true,
+        message: 'Location recorded',
+        updated: targetIndex >= 0
+    });
 });

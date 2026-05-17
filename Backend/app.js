@@ -4,7 +4,7 @@ import dns from 'node:dns/promises';
 import connectDB from './src/config/mongo.config.js';
 import authRoute from './src/routes/auth.route.js';
 import shortUrlRoute from './src/routes/shortUrl.route.js';
-import domainRoute from './src/routes/domain.route.js';
+import folderRoute from './src/routes/folder.route.js';
 import { redirectfromShortUrl } from './src/controller/shortUrl.controller.js';
 import { errorHandler, notFoundHandler } from './src/utils/httpError.js';
 import cors from 'cors';
@@ -65,7 +65,7 @@ app.use((req, res, next) => {
 
 app.use('/api/auth', authRoute);
 app.use('/api/create', shortUrlRoute);
-app.use('/api/domains', domainRoute);
+app.use('/api/folders', folderRoute);
 app.get('/:id', redirectfromShortUrl);
 app.use(notFoundHandler);
 app.use(errorHandler);

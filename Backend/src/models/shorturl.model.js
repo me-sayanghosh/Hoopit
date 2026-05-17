@@ -45,6 +45,8 @@ const shortUrlSchema = new mongoose.Schema({
                 region: String,
                 city: String,
                 referrer: String,
+                latitude: Number,
+                longitude: Number,
                 device: String,
                 browser: String
             }, { _id: false })

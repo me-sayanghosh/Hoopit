@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { getMyShortUrls } from '../api/shortUrlapi.js'
+import AppShell from '../components/AppShell.jsx'
 
 const formatDate = (value) => {
   if (!value) return 'Just now'
@@ -67,8 +68,8 @@ export default function MyCreationsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5] font-sans text-slate-900 p-6">
-      <div className="max-w-5xl mx-auto">
+    <AppShell title="My Creations" subtitle="All of your short URLs in one workspace view.">
+      <div className="mx-auto max-w-5xl">
         
         <div className="flex items-center justify-between mb-8 gap-4">
           <h1 className="text-2xl font-bold">My Creations</h1>
@@ -192,7 +193,7 @@ export default function MyCreationsPage() {
 
       </div>
       {copiedValue ? <MyCreationsCopyToast value={copiedValue} /> : null}
-    </div>
+    </AppShell>
   )
 }
 // Show toast when copied

@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { shortenUrl, getMyShortUrls } from '../api/shortUrlapi.js'
+import { getMyShortUrls } from '../api/shortUrlapi.js'
 import { getCurrentUser, logOutUser } from '../api/user.api.js'
 
 function CopyToast({ value }) {
@@ -27,10 +27,7 @@ function CopyToast({ value }) {
 
 const sidebarItems = [
   { label: 'Links', icon: 'link', active: true },
-  { label: 'Domains', icon: 'globe' },
   { label: 'Analytics', icon: 'chart' },
-  { label: 'Events', icon: 'spark' },
-  
   { label: 'Folders', icon: 'folder' },
   { label: 'Tags', icon: 'tag' },
 ]
@@ -152,15 +149,6 @@ export default function DashboardPage() {
     setTimeout(() => setCopiedValue(''), 1800)
   }
 
-  const refreshUrls = async () => {
-    try {
-      const urlsRes = await getMyShortUrls()
-      setUrls(urlsRes?.urls || [])
-    } catch (err) {
-      setPageError(err?.message || 'Unable to refresh links.')
-    }
-  }
-
   // Create composer moved to separate Create page
 
   const filteredUrls = (() => {
@@ -202,12 +190,11 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="mt-4 rounded-xl bg-white p-4 shadow-sm flex-shrink-0">
+            <div className="mt-4 rounded-xl bg-white p-4 shadow-sm shrink-0">
               <div className="text-sm font-semibold text-slate-900">Short Links</div>
               <nav className="mt-3 space-y-1">
                 {sidebarItems.map((item) => (
                   <button key={item.label} onClick={() => {
-                    if (item.label === 'Domains') return navigate('/domains')
                     if (item.label === 'Links') return navigate('/dashboard')
                     if (item.label === 'Analytics') return navigate('/analytics')
                     // default: no-op
@@ -225,10 +212,7 @@ export default function DashboardPage() {
                   <SidebarIcon name="chart" />
                   <span>Analytics</span>
                 </button>
-                <div className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-slate-600 hover:bg-slate-50">
-                  <SidebarIcon name="spark" />
-                  <span>Events</span>
-                </div>
+                
                 <button onClick={() => navigate('/customers')} className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 transition">
                   <SidebarIcon name="user" />
                   <span>Customers</span>
@@ -243,28 +227,6 @@ export default function DashboardPage() {
                 </button>
                 
               </nav>
-            </div>
-
-            <div className="mt-4 border-t border-slate-200 pt-4 px-1">
-              <div className="text-xs font-medium text-slate-500">Usage</div>
-              <div className="mt-3 text-sm text-slate-600">
-                <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M3 3v18h18" /></svg> Events</span>
-                  <span className="text-xs text-slate-400">1 of 1K</span>
-                </div>
-                <div className="mt-2 h-2 w-full rounded-full bg-slate-200">
-                  <div className="h-2 rounded-full bg-blue-500" style={{width: '10%'}} />
-                </div>
-
-                <div className="mt-3 flex items-center justify-between">
-                  <span className="flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M3 3v18h18" /></svg> Links</span>
-                  <span className="text-xs text-slate-400">2 of 25</span>
-                </div>
-                <div className="mt-2 h-2 w-full rounded-full bg-slate-200">
-                  <div className="h-2 rounded-full bg-blue-500" style={{width: '8%'}} />
-                </div>
-
-              </div>
             </div>
 
             <div className="mt-auto px-1">
