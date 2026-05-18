@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getCurrentUser } from '../api/user.api.js'
 import { createFolder, getFolders, getMyShortUrls, updateFolder } from '../api/shortUrlapi.js'
+import AppShell from '../components/AppShell.jsx'
 
 const formatDate = (value) => {
   if (!value) return 'recently'
@@ -11,12 +12,6 @@ const formatDate = (value) => {
     day: 'numeric',
   }).format(new Date(value))
 }
-
-const sidebarItems = [
-  { label: 'Links', icon: 'link' },
-  { label: 'Analytics', icon: 'chart' },
-  { label: 'Folders', icon: 'folder', active: true },
-]
 
 function SidebarIcon({ name, active = false }) {
   const className = active ? 'text-blue-600' : 'text-slate-500'
@@ -181,72 +176,26 @@ export default function FoldersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fafafa] text-slate-900">
-      <div className="flex min-h-screen w-full">
-        <aside className="hidden lg:flex w-64 flex-col px-2 py-6 sticky top-6 self-start h-[calc(100vh-48px)] overflow-auto">
-          <div className="rounded-3xl bg-[#f3f4f6] p-3 shadow-sm border border-slate-200 flex flex-col h-full">
-            <div className="flex items-center gap-3 px-2">
-              <div className="text-2xl font-extrabold text-slate-900">dub</div>
-              <div className="ml-auto">
-                <img
-                  src={profile?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.name || 'User')}`}
-                  alt="avatar"
-                  className="h-8 w-8 rounded-full object-cover ring-1 ring-slate-200"
-                />
-              </div>
-            </div>
-
-            <div className="mt-4 rounded-xl bg-white p-4 shadow-sm shrink-0">
-              <div className="text-sm font-semibold text-slate-900">Short Links</div>
-              <nav className="mt-3 space-y-1">
-                {sidebarItems.map((item) => (
-                  <button
-                    key={item.label}
-                    onClick={() => {
-                      if (item.label === 'Links') return navigate('/dashboard')
-                      if (item.label === 'Analytics') return navigate('/analytics')
-                      if (item.label === 'Folders') return navigate('/folders')
-                      return null
-                    }}
-                    className={`relative w-full text-left flex items-center gap-3 rounded-lg pl-4 pr-3 py-2 text-sm ${item.active ? 'bg-blue-50 font-medium text-blue-600' : 'text-slate-600 hover:bg-slate-50'}`}
-                  >
-                    {item.active ? <span className="absolute left-0 top-0 h-full w-1 rounded-r-md bg-blue-500" /> : null}
-                    <SidebarIcon name={item.icon} active={item.active} />
-                    <span>{item.label}</span>
-                  </button>
-                ))}
-              </nav>
-            </div>
-
-            <div className="mt-4 border-t border-slate-200 pt-4 px-1">
-              <div className="text-xs font-medium text-slate-500">Quick actions</div>
-              <div className="mt-3 space-y-1">
-                <button onClick={() => navigate('/create')} className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-600 hover:bg-slate-50 transition">
-                  Create link
-                </button>
-                <button onClick={() => navigate('/dashboard')} className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-600 hover:bg-slate-50 transition">
-                  Dashboard
-                </button>
-              </div>
-            </div>
-          </div>
-        </aside>
-
-        <main className="min-w-0 flex-1 px-2 py-6 sm:px-4 lg:px-6">
+    <AppShell
+      title="Folders"
+      subtitle="Create folders from your existing links and update them later."
+      profile={profile}
+      rightSlot={(
+        <div className="flex items-center gap-3">
+          <button onClick={() => navigate('/dashboard')} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+            Back to dashboard
+          </button>
+          <button onClick={resetForm} className="rounded-lg bg-slate-950 px-4 py-2 text-sm font-semibold text-white hover:bg-black">
+            New folder
+          </button>
+        </div>
+      )}
+    >
+      <main className="min-w-0 flex-1 px-0 py-0">
           <div className="rounded-[28px] border border-slate-200 bg-white shadow-sm">
-            <div className="flex flex-col gap-4 border-b border-slate-200 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <div className="text-2xl font-semibold tracking-tight text-slate-900">Folders</div>
-                <p className="mt-1 text-sm text-slate-500">Create folders from your existing links and update them later.</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <button onClick={() => navigate('/dashboard')} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
-                  Back to dashboard
-                </button>
-                <button onClick={resetForm} className="rounded-lg bg-slate-950 px-4 py-2 text-sm font-semibold text-white hover:bg-black">
-                  New folder
-                </button>
-              </div>
+            <div className="border-b border-slate-200 px-6 py-5">
+              <div className="text-2xl font-semibold tracking-tight text-slate-900">Folders</div>
+              <p className="mt-1 text-sm text-slate-500">Create folders from your existing links and update them later.</p>
             </div>
 
             <div className="grid gap-6 px-6 py-6 lg:grid-cols-[420px_minmax(0,1fr)]">
@@ -394,8 +343,7 @@ export default function FoldersPage() {
               </div>
             </div>
           </div>
-        </main>
-      </div>
-    </div>
+      </main>
+    </AppShell>
   )
 }

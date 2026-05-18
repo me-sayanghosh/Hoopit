@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
+import Sidebar from '../components/Sidebar.jsx'
 import { getMyShortUrls } from '../api/shortUrlapi.js'
 import { getCurrentUser, logOutUser } from '../api/user.api.js'
 
@@ -150,6 +151,7 @@ export default function DashboardPage() {
   const [copiedValue, setCopiedValue] = useState('')
   const [showNewLinkModal, setShowNewLinkModal] = useState(false)
   const [newLinkData, setNewLinkData] = useState(null)
+  const [openMenuId, setOpenMenuId] = useState(null)
 
   useEffect(() => {
     if (location.state?.newLink) {
@@ -225,63 +227,7 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-[#fafafa] text-slate-900">
       <div className="flex min-h-screen w-full">
-        <aside className="hidden lg:flex w-64 flex-col px-2 py-6 sticky top-6 self-start h-[calc(100vh-48px)] overflow-auto">
-          <div className="rounded-3xl bg-[#f3f4f6] p-3 shadow-sm border border-slate-200 flex flex-col h-full">
-            <div className="flex items-center gap-3 px-2">
-              <div className="text-2xl font-extrabold text-slate-900">dub</div>
-              <div className="ml-auto">
-                <img
-                  src={profile?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.name || 'User')}`}
-                  alt="avatar"
-                  className="h-8 w-8 rounded-full object-cover ring-1 ring-slate-200"
-                />
-              </div>
-            </div>
-
-            <div className="mt-4 rounded-xl bg-white p-4 shadow-sm shrink-0">
-              <div className="text-sm font-semibold text-slate-900">Short Links</div>
-              <nav className="mt-3 space-y-1">
-                {sidebarItems.map((item) => (
-                  <button key={item.label} onClick={() => {
-                    if (item.label === 'Links') return navigate('/dashboard')
-                    if (item.label === 'Analytics') return navigate('/analytics')
-                    // default: no-op
-                  }} className={`relative w-full text-left flex items-center gap-3 rounded-lg pl-4 pr-3 py-2 text-sm ${item.active ? 'bg-blue-50 font-medium text-blue-600' : 'text-slate-600 hover:bg-slate-50'}`}>
-                    {item.active ? <span className="absolute left-0 top-0 h-full w-1 rounded-r-md bg-blue-500" /> : null}
-                    <SidebarIcon name={item.icon} active={item.active} />
-                    <span>{item.label}</span>
-                  </button>
-                ))}
-              </nav>
-
-              <div className="mt-4 text-sm text-slate-500">Insights</div>
-              <nav className="mt-2 space-y-1">
-                <button onClick={() => navigate('/analytics')} className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 transition">
-                  <SidebarIcon name="chart" />
-                  <span>Analytics</span>
-                </button>
-                
-                <button onClick={() => navigate('/customers')} className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 transition">
-                  <SidebarIcon name="user" />
-                  <span>Customers</span>
-                </button>
-              </nav>
-
-              <div className="mt-4 text-sm text-slate-500">Library</div>
-              <nav className="mt-2 space-y-1">
-                <button onClick={() => navigate('/folders')} className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 transition">
-                  <SidebarIcon name="folder" />
-                  <span>Folders</span>
-                </button>
-                
-              </nav>
-            </div>
-
-            <div className="mt-auto px-1">
-              <button onClick={handleLogout} className="w-full rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white">Logout</button>
-            </div>
-          </div>
-        </aside>
+        <Sidebar profile={profile} />
 
         <main className="min-w-0 flex-1 px-2 py-6 sm:px-4 lg:px-6">
           <div className="rounded-[28px] border border-slate-200 bg-white shadow-sm">
@@ -360,11 +306,51 @@ export default function DashboardPage() {
                         }} className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-100">
                           View Analytics
                         </button>
-                        <button className="rounded-full border border-slate-200 bg-white p-2 text-slate-500 hover:bg-slate-50">
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
-                            <path d="M12 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 7.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 7.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3z" />
-                          </svg>
-                        </button>
+                        <div className="relative">
+                          <button onClick={() => setOpenMenuId(openMenuId === item.id ? null : item.id)} className="rounded-full border border-slate-200 bg-white p-2 text-slate-500 hover:bg-slate-50">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
+                              <path d="M12 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 7.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 7.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3z" />
+                            </svg>
+                          </button>
+
+                          {openMenuId === item.id ? (
+                            <div className="absolute right-0 top-10 z-40 w-48 rounded-xl border border-slate-200 bg-white shadow-lg">
+                              <ul className="py-2">
+                                <li>
+                                  <button onClick={() => { setOpenMenuId(null); navigate('/create', { state: { prefill: item, edit: true } }) }} className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Edit</button>
+                                </li>
+                                <li>
+                                  <button onClick={() => { setOpenMenuId(null); setNewLinkData({ url: item.shortUrl, qr: item.qrCodeUrl }); setShowNewLinkModal(true) }} className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">QR Code</button>
+                                </li>
+                                <li>
+                                  <button onClick={() => { setOpenMenuId(null); copy(item.shortUrl) }} className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Copy Link ID</button>
+                                </li>
+                                <li>
+                                  <button onClick={() => { setOpenMenuId(null); navigate('/create', { state: { prefill: { destination: item.originalUrl, title: item.title, description: item.description }, duplicate: true } }) }} className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Duplicate</button>
+                                </li>
+                                <li>
+                                  <button onClick={async () => {
+                                    setOpenMenuId(null);
+                                    const folderName = window.prompt('Move to folder (type folder name):', item.folder || '')
+                                    if (folderName) {
+                                      // No backend endpoint exposed yet; show a simple confirmation toast
+                                      alert(`Requested move of ${item.shortUrl} to folder: ${folderName} (not persisted)`)
+                                    }
+                                  }} className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Move</button>
+                                </li>
+                                <li>
+                                  <button onClick={() => { setOpenMenuId(null); alert('Archive is not implemented yet') }} className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Archive</button>
+                                </li>
+                                <li>
+                                  <button onClick={() => { setOpenMenuId(null); const target = window.prompt('Transfer to (email):'); if (target) alert('Transfer is not implemented yet') }} className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Transfer</button>
+                                </li>
+                                <li>
+                                  <button onClick={() => { setOpenMenuId(null); if (window.confirm('Delete this link? This action cannot be undone.')) { alert('Delete is not implemented on the server yet') } }} className="w-full text-left px-4 py-2 text-sm text-rose-600 hover:bg-slate-50">Delete</button>
+                                </li>
+                              </ul>
+                            </div>
+                          ) : null}
+                        </div>
                       </div>
                     </div>
                   ))

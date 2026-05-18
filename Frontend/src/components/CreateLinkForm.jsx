@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { shortenUrl, getFolders, generateAiSuggestion } from '../api/shortUrlapi.js'
 import { getCurrentUser } from '../api/user.api.js'
 import { useNavigate } from 'react-router-dom'
@@ -36,6 +37,9 @@ export default function CreateLinkForm() {
   const [createdShort, setCreatedShort] = useState('')
   const [folderOptions, setFolderOptions] = useState([])
   const [aiLoading, setAiLoading] = useState(null)
+  const location = useLocation()
+  const isEdit = location?.state?.edit || false
+  const prefill = location?.state?.prefill || null
 
   const handleAiGenerate = async (field) => {
     if (!destination) {
@@ -120,6 +124,17 @@ export default function CreateLinkForm() {
 
     fetchFolders()
     checkAuth()
+    // apply prefill if provided via navigation state
+    if (prefill) {
+      if (prefill.destination || prefill.originalUrl) setDestination(prefill.destination || prefill.originalUrl || '')
+      if (prefill.alias) setAlias(prefill.alias)
+      if (prefill.tags) setTags(prefill.tags)
+      if (prefill.comments) setComments(prefill.comments)
+      if (typeof prefill.conversion === 'boolean') setConversion(prefill.conversion)
+      if (prefill.folder) setFolder(prefill.folder)
+      if (prefill.title) setTitle(prefill.title)
+      if (prefill.description) setDescription(prefill.description)
+    }
     return () => { mounted = false }
   }, [])
 
@@ -224,7 +239,7 @@ export default function CreateLinkForm() {
           <div>
             {error ? <div className="text-sm text-red-600 mr-4 inline">{error}</div> : null}
             <button type="submit" disabled={loading} className="rounded-lg bg-slate-900 px-5 py-2 text-sm font-semibold text-white hover:bg-black">
-              {loading ? 'Creating…' : 'Create link'}
+              {loading ? (isEdit ? 'Updating…' : 'Creating…') : (isEdit ? 'Update link' : 'Create link')}
             </button>
           </div>
         </div>

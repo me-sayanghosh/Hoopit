@@ -256,12 +256,15 @@ function AnalyticsPage() {
     }
 
     loadAnalytics()
-  }, [navigate])
+  }, [navigate, shortUrl])
 
 
 
   const topUrl = analytics.topUrl || urls[0] || null
-  const chartSegments = getChartSegments(urls, analytics.totalClicks)
+  const chartSourceUrls = shortUrl
+    ? (topUrl ? [topUrl] : [])
+    : urls
+  const chartSegments = getChartSegments(chartSourceUrls, analytics.totalClicks)
   const chartTotal = chartSegments.reduce((sum, segment) => sum + segment.value, 0)
   const growthSeries = getGrowthSeries(urls)
   const realtimeSeries = analytics.realtimeClicks || []

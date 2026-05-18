@@ -7,8 +7,7 @@ const navItems = [
   { label: 'Analytics', icon: 'chart', to: '/analytics' },
   { label: 'Folders', icon: 'folder', to: '/folders' },
   { label: 'Customers', icon: 'user', to: '/customers' },
-  { label: 'Creations', icon: 'spark', to: '/creations' },
-  { label: 'Custom URL', icon: 'tag', to: '/custom-url' },
+  
 ]
 
 function Icon({ name, active = false }) {

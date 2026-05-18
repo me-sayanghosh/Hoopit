@@ -94,6 +94,11 @@ const shortUrlSchema = new mongoose.Schema({
         type: String,
         default: ''
     }
+    ,
+    archived: {
+        type: Boolean,
+        default: false
+    }
 });
 
 
