@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getCurrentUser } from '../api/user.api.js'
-import { createFolder, getFolders, getMyShortUrls, updateFolder } from '../api/shortUrlapi.js'
+import { createFolder, getFolders, getMyShortUrls, updateFolder, deleteFolder } from '../api/shortUrlapi.js'
 import AppShell from '../components/AppShell.jsx'
 
 const formatDate = (value) => {
@@ -13,45 +13,6 @@ const formatDate = (value) => {
   }).format(new Date(value))
 }
 
-function SidebarIcon({ name, active = false }) {
-  const className = active ? 'text-blue-600' : 'text-slate-500'
-
-  if (name === 'link') {
-    return (
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor" className={`h-4 w-4 ${className}`}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
-      </svg>
-    )
-  }
-
-  if (name === 'globe') {
-    return (
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor" className={`h-4 w-4 ${className}`}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18z" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3.6 9h16.8M3.6 15h16.8M12 3a15.3 15.3 0 010 18M12 3a15.3 15.3 0 000 18" />
-      </svg>
-    )
-  }
-
-  if (name === 'chart') {
-    return (
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor" className={`h-4 w-4 ${className}`}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v18h18" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M7 14l3-3 3 2 4-5" />
-      </svg>
-    )
-  }
-
-  if (name === 'folder') {
-    return (
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor" className={`h-4 w-4 ${className}`}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75A2.25 2.25 0 014.5 4.5h4.379a2.25 2.25 0 011.59.659l1.372 1.372a2.25 2.25 0 001.59.659H19.5A2.25 2.25 0 0121.75 9.75v7.5A2.25 2.25 0 0119.5 19.5h-15a2.25 2.25 0 01-2.25-2.25v-10.5z" />
-      </svg>
-    )
-  }
-
-  return null
-}
 
 export default function FoldersPage() {
   const navigate = useNavigate()
@@ -66,6 +27,10 @@ export default function FoldersPage() {
   const [editingId, setEditingId] = useState('')
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
+  const [deletingId, setDeletingId] = useState('')
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState(null)
+  const [deleteVerifyText, setDeleteVerifyText] = useState('')
 
   useEffect(() => {
     const load = async () => {
@@ -106,13 +71,26 @@ export default function FoldersPage() {
     setError('')
   }
 
+  function ConfirmModal({ title, children, onCancel, onConfirm, confirmLabel = 'Confirm', danger = false, disabled = false }) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
+        <div className="w-full max-w-md overflow-hidden rounded-2xl bg-white text-left shadow-2xl">
+          <div className="px-6 py-4 border-b">
+            <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
+          </div>
+          <div className="p-6">{children}</div>
+          <div className="flex items-center justify-end gap-3 border-t px-4 py-3">
+            <button onClick={onCancel} className="rounded-md bg-white border px-4 py-2 text-sm">Cancel</button>
+            <button disabled={disabled} onClick={onConfirm} className={`rounded-md px-4 py-2 text-sm ${danger ? 'bg-rose-600 text-white' : 'bg-slate-900 text-white'}`}>{confirmLabel}</button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   const startEdit = (folder) => {
-    setEditingId(folder.id)
-    setName(folder.name || '')
-    setDescription(folder.description || '')
-    setSelectedIds(folder.shortUrlIds || [])
-    setError('')
-    setNotice('')
+    // navigate to create/edit page with folder in state
+    navigate('/folders/new', { state: { folder } })
   }
 
   const toggleSelection = (urlId) => {
@@ -185,8 +163,8 @@ export default function FoldersPage() {
           <button onClick={() => navigate('/dashboard')} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
             Back to dashboard
           </button>
-          <button onClick={resetForm} className="rounded-lg bg-slate-950 px-4 py-2 text-sm font-semibold text-white hover:bg-black">
-            New folder
+          <button onClick={() => navigate('/folders/new')} className="rounded-lg bg-slate-950 px-4 py-2 text-sm font-semibold text-white hover:bg-black">
+            New folder +
           </button>
         </div>
       )}
@@ -198,84 +176,7 @@ export default function FoldersPage() {
               <p className="mt-1 text-sm text-slate-500">Create folders from your existing links and update them later.</p>
             </div>
 
-            <div className="grid gap-6 px-6 py-6 lg:grid-cols-[420px_minmax(0,1fr)]">
-              <form onSubmit={handleSubmit} className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <div className="text-lg font-semibold text-slate-900">{editingId ? 'Update folder' : 'Create folder'}</div>
-                    <p className="mt-1 text-sm text-slate-500">Pick the links you want to group together.</p>
-                  </div>
-                  {editingId ? <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">Editing</span> : null}
-                </div>
-
-                <div className="mt-5 space-y-4">
-                  <div>
-                    <label className="mb-2 block text-sm font-medium text-slate-700">Folder name</label>
-                    <input
-                      value={name}
-                      onChange={(event) => setName(event.target.value)}
-                      placeholder="Marketing, Social, Launch"
-                      className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="mb-2 block text-sm font-medium text-slate-700">Description</label>
-                    <textarea
-                      value={description}
-                      onChange={(event) => setDescription(event.target.value)}
-                      rows={3}
-                      placeholder="What lives in this folder?"
-                      className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <div className="mb-2 flex items-center justify-between">
-                      <label className="block text-sm font-medium text-slate-700">Links in folder</label>
-                      <span className="text-xs text-slate-400">{selectedIds.length} selected</span>
-                    </div>
-                    <div className="max-h-90 space-y-2 overflow-auto rounded-xl border border-slate-200 bg-white p-3">
-                      {urls.length ? urls.map((item) => {
-                        const checked = selectedIds.includes(item.id)
-
-                        return (
-                          <label key={item.id} className={`flex cursor-pointer items-start gap-3 rounded-lg border px-3 py-3 text-sm transition ${checked ? 'border-blue-200 bg-blue-50' : 'border-slate-200 hover:bg-slate-50'}`}>
-                            <input
-                              type="checkbox"
-                              checked={checked}
-                              onChange={() => toggleSelection(item.id)}
-                              className="mt-1 rounded border-slate-300"
-                            />
-                            <div className="min-w-0">
-                              <div className="truncate font-medium text-slate-900">{item.shortUrl}</div>
-                              <div className="mt-1 truncate text-xs text-slate-500">{item.originalUrl}</div>
-                              {item.folder ? <div className="mt-1 text-xs text-slate-400">Current folder: {item.folder}</div> : null}
-                            </div>
-                          </label>
-                        )
-                      }) : (
-                        <div className="rounded-lg border border-dashed border-slate-200 px-4 py-6 text-sm text-slate-500">
-                          No saved links yet. Create a short link first, then come back to group it here.
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {error ? <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
-                  {notice ? <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{notice}</div> : null}
-
-                  <div className="flex items-center justify-between gap-3 pt-2">
-                    <button type="button" onClick={resetForm} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-white">
-                      Clear
-                    </button>
-                    <button disabled={saving} type="submit" className="rounded-lg bg-slate-950 px-4 py-2 text-sm font-semibold text-white hover:bg-black disabled:opacity-60">
-                      {saving ? 'Saving…' : (editingId ? 'Update folder' : 'Create folder')}
-                    </button>
-                  </div>
-                </div>
-              </form>
-
+            <div className="grid gap-6 px-6 py-6">
               <div>
                 <div className="mb-4 flex items-center justify-between">
                   <div>
@@ -293,9 +194,21 @@ export default function FoldersPage() {
                           <div className="truncate text-base font-semibold text-slate-900">{folder.name}</div>
                           <div className="mt-1 text-sm text-slate-500">{folder.description || 'No description provided.'}</div>
                         </div>
-                        <button onClick={() => startEdit(folder)} className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50">
-                          Edit
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => startEdit(folder)} className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => {
+                              setDeleteTarget(folder)
+                              setDeleteVerifyText('')
+                              setShowDeleteModal(true)
+                            }}
+                            className="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50"
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </div>
 
                       <div className="mt-4 flex flex-wrap gap-2">
@@ -317,7 +230,7 @@ export default function FoldersPage() {
                     </div>
                   )) : (
                     <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-8 text-sm text-slate-500 xl:col-span-2">
-                      No folders yet. Create one on the left and assign any of your saved links to it.
+                      No folders yet. Click "New folder" to create one and assign any of your saved links to it.
                     </div>
                   )}
                 </div>
@@ -341,6 +254,36 @@ export default function FoldersPage() {
                   </div>
                 </div>
               </div>
+              {showDeleteModal && deleteTarget ? (
+                <ConfirmModal
+                  title="Delete folder"
+                  onCancel={() => setShowDeleteModal(false)}
+                  onConfirm={async () => {
+                    try {
+                      if ((deleteVerifyText || '').trim() !== (deleteTarget.name || '').trim()) {
+                        alert('Please type the exact folder name to confirm deletion.')
+                        return
+                      }
+
+                      setShowDeleteModal(false)
+                      setDeletingId(deleteTarget.id)
+                      await deleteFolder(deleteTarget.id)
+                      await refresh()
+                      setNotice('Folder deleted.')
+                    } catch (err) {
+                      setError(err?.message || 'Failed to delete folder.')
+                    } finally {
+                      setDeletingId('')
+                    }
+                  }}
+                  confirmLabel="Delete"
+                  danger
+                  disabled={!deleteVerifyText || deleteVerifyText.trim() !== (deleteTarget.name || '').trim()}
+                >
+                  <div className="text-sm text-slate-700 mb-3">Deleting <strong className="text-slate-900">{deleteTarget.name}</strong> will unassign its {deleteTarget.shortUrls?.length || 0} links. This can't be undone.</div>
+                  <input value={deleteVerifyText} onChange={(e) => setDeleteVerifyText(e.target.value)} className="w-full rounded-lg border px-3 py-2" placeholder="Type the full folder name to confirm" />
+                </ConfirmModal>
+              ) : null}
             </div>
           </div>
       </main>

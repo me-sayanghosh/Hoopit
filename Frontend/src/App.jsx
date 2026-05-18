@@ -7,6 +7,7 @@ import AnalyticsPage from './pages/AnalyticsPage.jsx'
 import TryNowPage from './pages/TryNowPage.jsx'
 import CustomersPage from './pages/CustomersPage.jsx'
 import FoldersPage from './pages/FoldersPage.jsx'
+import CreateFolderPage from './pages/CreateFolderPage.jsx'
 import CreateShortUrlPage from './pages/CreateShortUrlPage.jsx'
 import ArchivePage from './pages/ArchivePage.jsx'
 import TagsPage from './pages/TagsPage.jsx'
@@ -30,6 +31,7 @@ const App = () => {
         <Route path="/tags/:tag" element={<TagsPage />} />
         <Route path="/customers" element={<CustomersPage />} />
         <Route path="/folders" element={<FoldersPage />} />
+        <Route path="/folders/new" element={<CreateFolderPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

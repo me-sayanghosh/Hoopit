@@ -1,5 +1,5 @@
 import wrapasync from '../utils/errorHandeler.js';
-import { createFolder, listFoldersByOwner, updateFolder } from '../dao/folder.js';
+import { createFolder, listFoldersByOwner, updateFolder, deleteFolder as daoDeleteFolder } from '../dao/folder.js';
 import { AppError } from '../utils/httpError.js';
 
 export const getFolders = wrapasync(async (req, res) => {
@@ -35,4 +35,12 @@ export const putFolder = wrapasync(async (req, res) => {
     }, req.user?._id);
 
     res.status(200).json({ folder: updated });
+});
+
+export const deleteFolder = wrapasync(async (req, res) => {
+    const { id } = req.params;
+
+    await daoDeleteFolder(id, req.user?._id);
+
+    res.status(200).json({ success: true });
 });

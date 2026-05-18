@@ -4,66 +4,8 @@ import { getMyShortUrlAnalytics, getMyShortUrls, getSingleShortUrlAnalytics } fr
 import GrowthBarChart from '../components/GrowthBarChart.jsx'
 import ChannelGauge from '../components/ChannelGauge.jsx'
 import GeoMapView from '../components/GeoMapView.jsx'
-import { getCurrentUser, logOutUser } from '../api/user.api.js'
-
-const sidebarItems = [
-  { label: 'Links', icon: 'link', active: true, to: '/dashboard' },
-  { label: 'Analytics', icon: 'chart', to: '/analytics' },
-  { label: 'Folders', icon: 'folder', to: '/folders' },
-  { label: 'Tags', icon: 'tag' },
-]
-
-function SidebarIcon({ name, active = false }) {
-  const className = active ? 'text-blue-600' : 'text-slate-500'
-
-  if (name === 'link') {
-    return (
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor" className={`h-4 w-4 ${className}`}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
-      </svg>
-    )
-  }
-
-  if (name === 'globe') {
-    return (
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor" className={`h-4 w-4 ${className}`}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18z" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3.6 9h16.8M3.6 15h16.8M12 3a15.3 15.3 0 010 18M12 3a15.3 15.3 0 000 18" />
-      </svg>
-    )
-  }
-
-  if (name === 'chart') {
-    return (
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor" className={`h-4 w-4 ${className}`}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v18h18" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M7 14l3-3 3 2 4-5" />
-      </svg>
-    )
-  }
-
-  if (name === 'spark') {
-    return (
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor" className={`h-4 w-4 ${className}`}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 3.75l1.06 4.24a2.25 2.25 0 001.66 1.66l4.24 1.06-4.24 1.06a2.25 2.25 0 00-1.66 1.66l-1.06 4.24-1.06-4.24a2.25 2.25 0 00-1.66-1.66l-4.24-1.06 4.24-1.06a2.25 2.25 0 001.66-1.66l1.06-4.24z" />
-      </svg>
-    )
-  }
-
-  if (name === 'folder') {
-    return (
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor" className={`h-4 w-4 ${className}`}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75A2.25 2.25 0 014.5 4.5h4.379a2.25 2.25 0 011.59.659l1.372 1.372a2.25 2.25 0 001.59.659H19.5A2.25 2.25 0 0121.75 9.75v7.5A2.25 2.25 0 0119.5 19.5h-15a2.25 2.25 0 01-2.25-2.25v-10.5z" />
-      </svg>
-    )
-  }
-
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor" className={`h-4 w-4 ${className}`}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 12a5.25 5.25 0 1110.5 0 5.25 5.25 0 01-10.5 0z" />
-    </svg>
-  )
-}
+import { getCurrentUser } from '../api/user.api.js'
+import AppShell from '../components/AppShell.jsx'
 
 
 const formatDate = (value) => {
@@ -293,85 +235,18 @@ function AnalyticsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fafafa] text-slate-900">
-      <div className="flex min-h-screen w-full">
-        <aside className="hidden lg:flex w-64 flex-col px-2 py-6 sticky top-6 self-start h-[calc(100vh-48px)] overflow-auto">
-          <div className="rounded-3xl bg-[#f3f4f6] p-3 shadow-sm border border-slate-200 flex flex-col h-full">
-            <div className="flex items-center gap-3 px-2">
-              <div className="text-2xl font-extrabold text-slate-900">dub</div>
-              <div className="ml-auto">
-                <img
-                  src={profile?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.name || 'User')}`}
-                  alt="avatar"
-                  className="h-8 w-8 rounded-full object-cover ring-1 ring-slate-200"
-                />
-              </div>
-            </div>
-
-                <div className="mt-4 rounded-xl bg-white p-4 shadow-sm shrink-0">
-              <div className="text-sm font-semibold text-slate-900">Short Links</div>
-              <nav className="mt-3 space-y-1">
-                {sidebarItems.map((item) => (
-                  <button
-                    key={item.label}
-                    type="button"
-                    onClick={() => { if (item.to) navigate(item.to) }}
-                    className={`relative flex w-full items-center gap-3 rounded-lg pl-4 pr-3 py-2 text-left text-sm ${item.active ? 'bg-blue-50 font-medium text-blue-600' : 'text-slate-600 hover:bg-slate-50'}`}
-                  >
-                    {item.active ? <span className="absolute left-0 top-0 h-full w-1 rounded-r-md bg-blue-500" /> : null}
-                    <SidebarIcon name={item.icon} active={item.active} />
-                    <span>{item.label}</span>
-                  </button>
-                ))}
-              </nav>
-
-              <div className="mt-4 text-sm text-slate-500">Insights</div>
-              <nav className="mt-2 space-y-1">
-                <button onClick={() => navigate('/analytics')} className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 transition">
-                  <SidebarIcon name="chart" />
-                  <span>Analytics</span>
-                </button>
-                <button onClick={() => navigate('/customers')} className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 transition">
-                  <SidebarIcon name="user" />
-                  <span>Customers</span>
-                </button>
-              </nav>
-
-              <div className="mt-4 text-sm text-slate-500">Library</div>
-              <nav className="mt-2 space-y-1">
-                <button onClick={() => navigate('/folders')} className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 transition">
-                  <SidebarIcon name="folder" />
-                  <span>Folders</span>
-                </button>
-              </nav>
-            </div>
-
-            <div className="mt-auto px-1">
-                <button onClick={async () => { try { await logOutUser(); navigate('/'); } catch { /* ignore */ } }} className="w-full rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white">Logout</button>
-            </div>
-          </div>
-        </aside>
-
-        <main className="min-w-0 flex-1 px-2 py-6 sm:px-4 lg:px-6">
-          <div className="rounded-[28px] border border-slate-200 bg-white shadow-sm">
-            <div className="flex flex-col gap-4 border-b border-slate-200 px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                <div className="text-2xl font-semibold tracking-tight text-slate-900">
-                  {shortUrl ? `Analytics for /${shortUrl}` : 'Analytics'}
-                </div>
-                <p className="mt-1 text-sm text-slate-500">Overview of your links and click activity.</p>
-              </div>
-
-              <div className="flex items-center gap-3">
-                {shortUrl && (
-                  <button onClick={() => navigate('/analytics')} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition">
-                    &larr; Back to All Analytics
-                  </button>
-                )}
-              </div>
-            </div>
-
-            <div className="px-5 py-4">
+    <AppShell
+      title={shortUrl ? `Analytics for /${shortUrl}` : 'Analytics'}
+      subtitle="Overview of your links and click activity."
+      profile={profile}
+      rightSlot={shortUrl ? (
+        <button onClick={() => navigate('/analytics')} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition">
+          &larr; Back to All Analytics
+        </button>
+      ) : null}
+    >
+      <div className="rounded-[28px] border border-slate-200 bg-white shadow-sm">
+        <div className="px-5 py-4">
               {pageError ? (
                 <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                   {pageError}
@@ -711,9 +586,7 @@ function AnalyticsPage() {
               </div>
             </div>
           </div>
-        </main>
-      </div>
-    </div>
+    </AppShell>
   )
 }
 

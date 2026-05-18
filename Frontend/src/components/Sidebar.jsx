@@ -1,24 +1,17 @@
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, NavLink } from 'react-router-dom'
 import { logOutUser } from '../api/user.api.js'
 
 function NavItem({ label, icon, to }) {
-  const navigate = useNavigate()
-  const location = useLocation()
-
-  let isActive = false
-  if (to === '/dashboard' && location.pathname === '/dashboard') isActive = true
-  if (to !== '/dashboard' && location.pathname.startsWith(to)) isActive = true
-
   return (
-    <button 
-      key={label}
-      onClick={() => navigate(to)} 
-      className={`relative w-full text-left flex items-center gap-3 rounded-lg pl-4 pr-3 py-2 text-sm ${isActive ? 'bg-blue-50 font-medium text-blue-600' : 'text-slate-600 hover:bg-slate-50 transition'}`}
-    >
-      {isActive ? <span className="absolute left-0 top-0 h-full w-1 rounded-r-md bg-blue-500" /> : null}
-      <SidebarIcon name={icon} active={isActive} />
-      <span>{label}</span>
-    </button>
+    <NavLink to={to} end className={({ isActive }) => `relative w-full text-left flex items-center gap-3 rounded-lg pl-4 pr-3 py-2 text-sm ${isActive ? 'bg-blue-50 font-medium text-blue-600' : 'text-slate-600 hover:bg-slate-50 transition'}`}>
+      {({ isActive }) => (
+        <div className="w-full flex items-center gap-3">
+          {isActive ? <span className="absolute left-0 top-0 h-full w-1 rounded-r-md bg-blue-500" /> : null}
+          <SidebarIcon name={icon} active={isActive} />
+          <span>{label}</span>
+        </div>
+      )}
+    </NavLink>
   )
 }
 
@@ -132,4 +125,4 @@ export default function Sidebar({ profile }) {
       </div>
     </aside>
   )
-}
+}[]

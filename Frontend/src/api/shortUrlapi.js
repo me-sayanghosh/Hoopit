@@ -79,3 +79,8 @@ export const updateFolder = async (folderId, body) => {
         const { data } = await axiosInstance.put(`/api/folders/${folderId}`, body);
         return data?.folder;
 };
+
+export const deleteFolder = async (folderId) => {
+        const { data } = await axiosInstance.delete(`/api/folders/${folderId}`);
+        return data;
+};

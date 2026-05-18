@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import Sidebar from '../components/Sidebar.jsx'
+import AppShell from '../components/AppShell.jsx'
 import { getMyShortUrls, updateShortUrl, deleteShortUrl, transferShortUrl } from '../api/shortUrlapi.js'
 import { getCurrentUser } from '../api/user.api.js'
 
@@ -201,41 +201,35 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fafafa] text-slate-900">
-      <div className="flex min-h-screen w-full">
-        <Sidebar profile={profile} />
-
-        <main className="min-w-0 flex-1 px-2 py-6 sm:px-4 lg:px-6">
-          <div className="rounded-[28px] border border-slate-200 bg-white shadow-sm">
-            <div className="flex flex-col gap-4 border-b border-slate-200 px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                <div className="text-2xl font-semibold tracking-tight text-slate-900">Links</div>
-                <p className="mt-1 text-sm text-slate-500">Manage short links, custom aliases, and analytics in one place.</p>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-3">
-                <div className="hidden items-center gap-2 lg:flex">
-                  <button className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">Filter</button>
-                  <button className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">Display</button>
-                </div>
-                <div className="relative">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15z" />
-                  </svg>
-                  <input
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder="Search by short link or URL"
-                    className="w-96 rounded-lg border border-slate-200 bg-white py-2.5 pl-9 pr-4 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-300"
-                  />
-                </div>
-                <button onClick={() => navigate('/create')} className="relative rounded-full bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white hover:bg-black">
-                  Create link
-                  <span className="ml-2 inline-block rounded-md bg-slate-800 px-2 py-0.5 text-xs font-medium text-white opacity-80">C</span>
-                </button>
-              </div>
-            </div>
-
+    <AppShell
+      title="Links"
+      subtitle="Manage short links, custom aliases, and analytics in one place."
+      profile={profile}
+      rightSlot={(
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="hidden items-center gap-2 lg:flex">
+            <button className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">Filter</button>
+            <button className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">Display</button>
+          </div>
+          <div className="relative">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400">
+              <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15z" />
+            </svg>
+            <input
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search by short link or URL"
+              className="w-96 rounded-lg border border-slate-200 bg-white py-2.5 pl-9 pr-4 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-300"
+            />
+          </div>
+          <button onClick={() => navigate('/create')} className="relative rounded-full bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white hover:bg-black">
+            Create link
+            <span className="ml-2 inline-block rounded-md bg-slate-800 px-2 py-0.5 text-xs font-medium text-white opacity-80">C</span>
+          </button>
+        </div>
+      )}
+    >
+      <div className="rounded-[28px] border border-slate-200 bg-white shadow-sm">
             <div className="px-5 py-4">
               {pageError ? (
                 <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -341,11 +335,8 @@ export default function DashboardPage() {
                   <button className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-500">Next</button>
                 </div>
               </div>
-            </div>
           </div>
-        </main>
       </div>
-
       {showNewLinkModal ? <NewLinkModal urlData={newLinkData} onClose={() => setShowNewLinkModal(false)} /> : null}
       {copiedValue ? <CopyToast value={copiedValue} /> : null}
       {showMoveModal && moveTarget ? (
@@ -424,6 +415,6 @@ export default function DashboardPage() {
       ) : null}
 
       <Snackbar message={snackbar.message} actionLabel={snackbar.actionLabel} onAction={snackbar.action} onClose={() => setSnackbar({ message: '', actionLabel: '', action: null })} />
-    </div>
+    </AppShell>
   )
 }

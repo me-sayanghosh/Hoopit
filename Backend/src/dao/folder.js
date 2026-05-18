@@ -146,3 +146,24 @@ export const updateFolder = async (folderId, { name, description = '', shortUrlI
         throw new AppError(err.message || 'Failed to update folder.', 500);
     }
 };
+
+export const deleteFolder = async (folderId, ownerId) => {
+    try {
+        const folder = await Folder.findOne({ _id: folderId, owner: ownerId });
+        if (!folder) {
+            throw new AppError('Folder not found.', 404);
+        }
+
+        const previousName = folder.name;
+
+        await folder.deleteOne();
+
+        // Clear folder field from user's short urls that referenced this folder name
+        await urlSchema.updateMany({ user: ownerId, folder: previousName }, { $set: { folder: '' } });
+
+        return true;
+    } catch (err) {
+        if (err instanceof AppError) throw err;
+        throw new AppError(err.message || 'Failed to delete folder.', 500);
+    }
+};

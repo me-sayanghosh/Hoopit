@@ -1,31 +1,26 @@
-import { useEffect, useMemo, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { NavLink, useLocation, useNavigate } from 'react-router-dom'
+import { logOutUser, getCurrentUser } from '../api/user.api.js'
 
-const navItems = [
+const shortLinksNav = [
   { label: 'Links', icon: 'link', to: '/dashboard' },
-  { label: 'Create', icon: 'spark', to: '/create' },
-  { label: 'Analytics', icon: 'chart', to: '/analytics' },
   { label: 'Folders', icon: 'folder', to: '/folders' },
-  { label: 'Customers', icon: 'user', to: '/customers' },
-  
+  { label: 'Tags', icon: 'tag', to: '/tags' },
+  { label: 'Archived', icon: 'spark', to: '/archived' },
 ]
 
-function Icon({ name, active = false }) {
+const insightsNav = [
+  { label: 'Analytics', icon: 'chart', to: '/analytics' },
+  { label: 'Customers', icon: 'user', to: '/customers' },
+]
+
+function SidebarIcon({ name, active = false }) {
   const className = active ? 'text-blue-600' : 'text-slate-500'
 
   if (name === 'link') {
     return (
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor" className={`h-4 w-4 ${className}`}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
-      </svg>
-    )
-  }
-
-  if (name === 'globe') {
-    return (
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor" className={`h-4 w-4 ${className}`}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18z" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3.6 9h16.8M3.6 15h16.8M12 3a15.3 15.3 0 010 18M12 3a15.3 15.3 0 000 18" />
       </svg>
     )
   }
@@ -76,17 +71,29 @@ function Icon({ name, active = false }) {
   return null
 }
 
-function SidebarLink({ item, active, onNavigate }) {
+function SidebarNavItem({ item }) {
   return (
-    <button
-      type="button"
-      onClick={() => onNavigate(item.to)}
-      className={`relative w-full text-left flex items-center gap-3 rounded-lg pl-4 pr-3 py-2 text-sm ${active ? 'bg-blue-50 font-medium text-blue-600' : 'text-slate-600 hover:bg-slate-50'}`}
+    <NavLink
+      to={item.to}
+      end={item.to === '/dashboard'}
+      className={({ isActive }) =>
+        `relative w-full text-left flex items-center gap-3 rounded-lg pl-4 pr-3 py-2 text-sm transition ${
+          isActive
+            ? 'bg-blue-50 font-medium text-blue-600'
+            : 'text-slate-600 hover:bg-slate-50'
+        }`
+      }
     >
-      {active ? <span className="absolute left-0 top-0 h-full w-1 rounded-r-md bg-blue-500" /> : null}
-      <Icon name={item.icon} active={active} />
-      <span>{item.label}</span>
-    </button>
+      {({ isActive }) => (
+        <div className="w-full flex items-center gap-3">
+          {isActive ? (
+            <span className="absolute left-0 top-0 h-full w-1 rounded-r-md bg-blue-500" />
+          ) : null}
+          <SidebarIcon name={item.icon} active={isActive} />
+          <span>{item.label}</span>
+        </div>
+      )}
+    </NavLink>
   )
 }
 
@@ -95,26 +102,50 @@ export default function AppShell({ title, subtitle, children, profile, onLogout,
   const location = useLocation()
   const [mobileOpen, setMobileOpen] = useState(false)
 
+  // Single source-of-truth profile used in sidebar/header to avoid inconsistencies
+  const [internalProfile, setInternalProfile] = useState(profile || null)
+
+  useEffect(() => {
+    let mounted = true
+    const load = async () => {
+      try {
+        const res = await getCurrentUser()
+        if (!mounted) return
+        setInternalProfile(res?.user || null)
+      } catch {
+        // ignore failures and keep provided profile if any
+      }
+    }
+
+    load()
+    return () => { mounted = false }
+  }, [])
+
   useEffect(() => {
     setMobileOpen(false)
   }, [location.pathname])
 
-  const activePath = useMemo(() => {
-    return navItems.find((item) => location.pathname.startsWith(item.to))?.to || '/dashboard'
-  }, [location.pathname])
+  const handleLogout = async () => {
+    if (onLogout) {
+      onLogout()
+      return
+    }
 
-  const handleNavigate = (to) => {
-    setMobileOpen(false)
-    navigate(to)
+    try {
+      await logOutUser()
+      navigate('/')
+    } catch {
+      // ignore
+    }
   }
 
   const sidebar = (
     <div className="rounded-3xl bg-[#f3f4f6] p-3 shadow-sm border border-slate-200 flex flex-col h-full">
-      <div className="flex items-center gap-3 px-2">
-        <div className="text-2xl font-extrabold text-slate-900">dub</div>
+          <div className="flex items-center gap-3 px-2">
+        <div className="text-2xl font-extrabold text-slate-900">HoopIt</div>
         <div className="ml-auto">
           <img
-            src={profile?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.name || 'User')}`}
+            src={internalProfile?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(internalProfile?.name || 'User')}`}
             alt="avatar"
             className="h-8 w-8 rounded-full object-cover ring-1 ring-slate-200"
           />
@@ -122,41 +153,29 @@ export default function AppShell({ title, subtitle, children, profile, onLogout,
       </div>
 
       <div className="mt-4 rounded-xl bg-white p-4 shadow-sm shrink-0">
-        <div className="text-sm font-semibold text-slate-900">Workspace</div>
+        <div className="text-sm font-semibold text-slate-900">Short Links</div>
         <nav className="mt-3 space-y-1">
-          {navItems.map((item) => (
-            <SidebarLink
-              key={item.label}
-              item={item}
-              active={activePath === item.to}
-              onNavigate={handleNavigate}
-            />
+          {shortLinksNav.map((item) => (
+            <SidebarNavItem key={item.label} item={item} />
+          ))}
+        </nav>
+
+        <div className="mt-4 text-sm text-slate-500">Insights</div>
+        <nav className="mt-2 space-y-1">
+          {insightsNav.map((item) => (
+            <SidebarNavItem key={item.label} item={item} />
           ))}
         </nav>
       </div>
 
-      <div className="mt-4 border-t border-slate-200 pt-4 px-1">
-        <div className="text-xs font-medium text-slate-500">Quick actions</div>
-        <div className="mt-3 space-y-1">
-          <button onClick={() => handleNavigate('/create')} className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-600 hover:bg-slate-50 transition">
-            Create link
-          </button>
-          <button onClick={() => handleNavigate('/dashboard')} className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-600 hover:bg-slate-50 transition">
-            Dashboard
-          </button>
-          <button onClick={() => handleNavigate('/analytics')} className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-600 hover:bg-slate-50 transition">
-            Analytics
-          </button>
-        </div>
+      <div className="mt-auto px-1 pt-4">
+        <button
+          onClick={handleLogout}
+          className="w-full rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
+        >
+          Logout
+        </button>
       </div>
-
-      {onLogout ? (
-        <div className="mt-auto px-1 pt-4">
-          <button onClick={onLogout} className="w-full rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white">
-            Logout
-          </button>
-        </div>
-      ) : null}
     </div>
   )
 
@@ -169,13 +188,17 @@ export default function AppShell({ title, subtitle, children, profile, onLogout,
 
         <div className="min-w-0 flex-1">
           <header className="mb-4 flex items-center justify-between rounded-3xl border border-slate-200 bg-white px-4 py-3 shadow-sm lg:hidden">
-            <button type="button" onClick={() => setMobileOpen((value) => !value)} className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+            <button
+              type="button"
+              onClick={() => setMobileOpen((value) => !value)}
+              className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
               Menu
             </button>
             <div className="text-sm font-semibold text-slate-900">{title || 'Dashboard'}</div>
             <div className="h-9 w-9 overflow-hidden rounded-full border border-slate-200 bg-slate-100">
               <img
-                src={profile?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.name || 'User')}`}
+                src={internalProfile?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(internalProfile?.name || 'User')}`}
                 alt="avatar"
                 className="h-full w-full object-cover"
               />
@@ -186,7 +209,11 @@ export default function AppShell({ title, subtitle, children, profile, onLogout,
             <div className="fixed inset-0 z-50 bg-slate-950/40 p-3 lg:hidden">
               <div className="h-full max-w-xs">
                 <div className="mb-2 flex justify-end">
-                  <button type="button" onClick={() => setMobileOpen(false)} className="rounded-full bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm">
+                  <button
+                    type="button"
+                    onClick={() => setMobileOpen(false)}
+                    className="rounded-full bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm"
+                  >
                     Close
                   </button>
                 </div>
