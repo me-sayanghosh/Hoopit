@@ -58,9 +58,13 @@ export default function FoldersPage() {
   }, [navigate])
 
   const refresh = async () => {
-    const [foldersRes, urlsRes] = await Promise.all([getFolders(), getMyShortUrls()])
-    setFolders(foldersRes || [])
-    setUrls(urlsRes?.urls || [])
+    try {
+      const [foldersRes, urlsRes] = await Promise.all([getFolders(), getMyShortUrls()])
+      setFolders(foldersRes || [])
+      setUrls(urlsRes?.urls || [])
+    } catch (err) {
+      setError(err?.message || 'Failed to refresh data.')
+    }
   }
 
   const resetForm = () => {
@@ -142,6 +146,13 @@ export default function FoldersPage() {
       setSaving(false)
     }
   }
+
+  // auto-hide notices after a short delay
+  useEffect(() => {
+    if (!notice) return
+    const id = setTimeout(() => setNotice(''), 3000)
+    return () => clearTimeout(id)
+  }, [notice])
 
   if (loading) {
     return (
@@ -286,6 +297,13 @@ export default function FoldersPage() {
               ) : null}
             </div>
           </div>
+          {notice ? (
+            <div className="fixed right-6 top-6 z-50 animate-slide-in">
+              <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 shadow">
+                <div className="text-sm font-medium text-slate-900">{notice}</div>
+              </div>
+            </div>
+          ) : null}
       </main>
     </AppShell>
   )
