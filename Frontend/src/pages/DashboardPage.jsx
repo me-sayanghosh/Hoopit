@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { getMyShortUrls } from '../api/shortUrlapi.js'
 import { getCurrentUser, logOutUser } from '../api/user.api.js'
 
@@ -103,14 +103,62 @@ function SidebarIcon({ name, active = false }) {
   )
 }
 
+function NewLinkModal({ urlData, onClose }) {
+  if (!urlData) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-sm overflow-hidden rounded-[24px] bg-white text-center shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+        <div className="bg-emerald-50 px-6 py-6">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="h-6 w-6">
+              <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold text-slate-900">Link created!</h2>
+          <p className="mt-2 text-sm font-medium text-emerald-700">Short URL successfully copied to clipboard</p>
+        </div>
+        
+        <div className="p-6">
+          {urlData.qr && (
+            <div className="mb-5 flex flex-col items-center">
+               <img src={urlData.qr} alt="QR Code" className="h-40 w-40 rounded-2xl border border-slate-200 shadow-sm p-2" />
+               <div className="mt-2 text-xs font-medium text-slate-500">Real-time QR Code generated</div>
+            </div>
+          )}
+          
+          <div className="mb-6 truncate rounded-xl bg-slate-50 px-4 py-3 text-sm font-semibold text-blue-600 border border-slate-100">
+             <a href={urlData.url} target="_blank" rel="noreferrer" className="hover:underline">{urlData.url}</a>
+          </div>
+          
+          <button onClick={onClose} className="w-full rounded-xl bg-slate-900 py-3.5 text-sm font-bold text-white hover:bg-black transition-colors">
+            Got it, thanks!
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function DashboardPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [pageError, setPageError] = useState('')
   const [urls, setUrls] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [copiedValue, setCopiedValue] = useState('')
+  const [showNewLinkModal, setShowNewLinkModal] = useState(false)
+  const [newLinkData, setNewLinkData] = useState(null)
+
+  useEffect(() => {
+    if (location.state?.newLink) {
+      setNewLinkData({ url: location.state.newLink, qr: location.state.newQr })
+      setShowNewLinkModal(true)
+      // Clear state so it doesn't show again on refresh
+      navigate('/dashboard', { replace: true, state: {} })
+    }
+  }, [location, navigate])
 
   useEffect(() => {
     const load = async () => {
@@ -343,6 +391,7 @@ export default function DashboardPage() {
         </main>
       </div>
 
+      {showNewLinkModal ? <NewLinkModal urlData={newLinkData} onClose={() => setShowNewLinkModal(false)} /> : null}
       {copiedValue ? <CopyToast value={copiedValue} /> : null}
     </div>
   )

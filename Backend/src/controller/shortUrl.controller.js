@@ -25,30 +25,28 @@ export const createShortUrl = wrapasync(async (req, res) => {
         conversionTracking: !!conversionTracking
     };
 
-    let short;
+    let result;
     if (req.user) {
         // Authenticated: allow custom alias or generated
-        short = await shortUrlServicewithUser(url, req.user._id, shortAlias || null, opts);
+        result = await shortUrlServicewithUser(url, req.user._id, shortAlias || null, opts);
     } else {
         // Unauthenticated: no user metadata is stored other than url
-        short = await shortUrlServiceWithoutUser(url, opts);
+        result = await shortUrlServiceWithoutUser(url, opts);
     }
 
-    // fetch created record to include qrCodeUrl if available
-    const record = await getCustomShortUrl(short);
-
     res.status(201).json({
-        shortUrl: process.env.APP_URL + short,
-        qrCodeUrl: record?.qrCodeUrl || ''
+        shortUrl: process.env.APP_URL + result.shortUrl,
+        qrCodeUrl: result.qrCodeUrl || ''
     });
 });
 
 export const createCustomShortUrl = wrapasync(async (req, res) => {
     const { url, slug, customAlias } = req.body;
     const shortAlias = slug || customAlias;
-    const shortUrl = await shortUrlServicewithUser(url, req.user._id, shortAlias);
+    const result = await shortUrlServicewithUser(url, req.user._id, shortAlias);
     res.status(201).json({
-        shortUrl: process.env.APP_URL + shortUrl
+        shortUrl: process.env.APP_URL + result.shortUrl,
+        qrCodeUrl: result.qrCodeUrl || ''
     });
 });
 
@@ -75,6 +73,7 @@ export const getMyShortUrls = wrapasync(async (req, res) => {
             folder: item.folder || '',
             clicks: item.clicks,
             createdAt: item.createdAt,
+            qrCodeUrl: item.qrCodeUrl || ''
         })),
     });
 });

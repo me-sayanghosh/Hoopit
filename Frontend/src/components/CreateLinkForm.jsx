@@ -19,6 +19,7 @@ function AIGenerateButton({ onClick, loading }) {
 }
 
 export default function CreateLinkForm() {
+  const navigate = useNavigate()
   
   const [destination, setDestination] = useState('')
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -53,7 +54,7 @@ export default function CreateLinkForm() {
         if (field === 'description') setDescription(res.suggestion)
       }
     } catch (err) {
-      setError(err?.message || 'Failed to generate AI suggestion.')
+      setError(err?.response?.data?.message || err?.message || 'Failed to generate AI suggestion.')
     } finally {
       setAiLoading(null)
     }
@@ -79,11 +80,14 @@ export default function CreateLinkForm() {
       const res = await shortenUrl(body)
       const short = res?.shortUrl || ''
       if (!short) throw new Error('No short url returned')
-      // show returned QR code if provided
-      if (res?.qrCodeUrl) setQrCode(res.qrCodeUrl)
-      setCreatedShort(short)
+      
+      // Copy to clipboard
+      await navigator.clipboard.writeText(short)
+      
+      // Redirect to dashboard with state to show the popup
+      navigate('/dashboard', { state: { newLink: short, newQr: res?.qrCodeUrl } })
     } catch (err) {
-      setError(err?.message || 'Failed to create link')
+      setError(err?.response?.data?.message || err?.message || 'Failed to create link')
     } finally {
       setLoading(false)
     }
@@ -179,23 +183,21 @@ export default function CreateLinkForm() {
             </select>
           </div>
 
-          <div className="rounded-lg border border-slate-200 p-3 text-center">
-            <div className="mb-2 text-sm font-medium text-slate-700">QR Code</div>
-            {qrCode ? (
-              <img src={qrCode} alt="QR Code" className="mx-auto my-2 h-28 w-28 rounded bg-white" />
-            ) : (
-              <div className="mx-auto my-2 h-28 w-28 rounded bg-slate-50 border border-dashed" />
-            )}
-            <div className="mt-2 text-xs text-slate-500">QR code preview</div>
-            {createdShort ? (
+          {createdShort && (
+            <div className="rounded-lg border border-slate-200 p-3 text-center">
+              <div className="mb-2 text-sm font-medium text-slate-700">QR Code</div>
+              {qrCode ? (
+                <img src={qrCode} alt="QR Code" className="mx-auto my-2 h-28 w-28 rounded bg-white" />
+              ) : null}
+              <div className="mt-2 text-xs text-slate-500">QR code preview</div>
               <div className="mt-3 text-sm">
                 <div className="truncate text-blue-700"><a href={createdShort} target="_blank" rel="noreferrer">{createdShort}</a></div>
                 <div className="mt-2">
                   <button onClick={() => navigate('/dashboard')} className="rounded-md bg-slate-900 px-3 py-1 text-xs font-semibold text-white">Back to dashboard</button>
                 </div>
               </div>
-            ) : null}
-          </div>
+            </div>
+          )}
 
           {/* Custom link preview removed per request */}
 

@@ -42,6 +42,7 @@ export const generateSuggestion = wrapasync(async (req, res) => {
 
         res.status(200).json({ suggestion: text });
     } catch (error) {
+        console.error('AI Generation Error:', error);
         if (error.message && error.message.includes('429')) {
             throw new AppError('AI rate limit exceeded (max 5 requests per minute). Please wait a few seconds and try again.', 429);
         }
