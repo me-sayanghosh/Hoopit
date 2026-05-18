@@ -79,7 +79,9 @@ const getLocation = async (req, ip) => {
 
     if (ip) {
         try {
-            const response = await fetch(`http://ip-api.com/json/${ip}`);
+            const response = await fetch(`http://ip-api.com/json/${ip}`, {
+                signal: AbortSignal.timeout(1500)
+            });
             if (response.ok) {
                 const data = await response.json();
                 if (data.status === 'success') {

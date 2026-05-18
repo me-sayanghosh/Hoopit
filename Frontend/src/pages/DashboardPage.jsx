@@ -332,8 +332,8 @@ export default function DashboardPage() {
                 {filteredUrls.length ? (
                   filteredUrls.map((item) => (
                     <div key={item.id} className="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white px-5 py-4 shadow-sm lg:flex-row lg:items-center lg:justify-between">
-                      <div className="flex min-w-0 items-start gap-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-500">
+                      <div className="flex min-w-0 flex-1 items-start gap-4">
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-500">
                           {((item.shortUrl || 'L').replace(/^https?:\/\//, '').charAt(0) || 'L').toUpperCase()}
                         </div>
                         <div className="min-w-0">
@@ -350,8 +350,8 @@ export default function DashboardPage() {
                         </div>
                       </div>
 
-                      <div className="flex flex-col items-start gap-2 lg:flex-row lg:items-center lg:gap-3">
-                        <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700">
+                      <div className="flex shrink-0 flex-col items-start gap-2 lg:flex-row lg:items-center lg:gap-3">
+                        <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 whitespace-nowrap">
                           {item.clicks || 0} clicks
                         </div>
                         <button onClick={() => {

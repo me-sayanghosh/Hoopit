@@ -18,7 +18,7 @@ function TryNowPage() {
 
     try {
       // Unauthenticated call
-      const data = await shortenUrl(url)
+      const data = await shortenUrl({ url })
       setShortUrl(data.shortUrl)
     } catch (err) {
       setError(err?.response?.data?.message || 'Failed to shorten URL. Please try again.')
@@ -34,10 +34,17 @@ function TryNowPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f7f7f8] flex flex-col items-center justify-center p-6">
+    <div className="min-h-screen bg-[#f7f7f8] flex flex-col items-center justify-center p-6 relative">
+      <div className="absolute top-6 left-6 sm:top-8 sm:left-8">
+        <Link to="/" className="inline-flex items-center text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors bg-white/50 hover:bg-white px-3 py-2 rounded-lg border border-slate-200/60 shadow-sm backdrop-blur-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+          </svg>
+          Back to Home
+        </Link>
+      </div>
+
       <div className="w-full max-w-md bg-white rounded-2xl p-6 sm:p-8 border border-slate-200/60 shadow-sm">
-        <div className="mb-4" />
-        
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Try Hoopit</h1>
           <p className="text-sm text-slate-500 mt-2">Shorten your URL instantly. No account required.</p>

@@ -53,7 +53,9 @@ export const createCustomShortUrl = wrapasync(async (req, res) => {
 
 export const redirectfromShortUrl = wrapasync(async (req, res) => {
     const { id } = req.params;
+    console.log(`[redirect] Started for id: ${id}`);
     const url = await recordShortUrlClick(id, req, res);
+    console.log(`[redirect] recordShortUrlClick returned URL: ${url}`);
 
     if (!url) {
         throw new AppError('Short URL not found.', 404);
@@ -64,6 +66,11 @@ export const redirectfromShortUrl = wrapasync(async (req, res) => {
 
 export const getMyShortUrls = wrapasync(async (req, res) => {
     const urls = await getUserShortUrls(req.user._id);
+
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    res.setHeader('Surrogate-Control', 'no-store');
 
     res.status(200).json({
         urls: urls.map((item) => ({
