@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import Sidebar from '../components/Sidebar.jsx'
-import { getMyShortUrls } from '../api/shortUrlapi.js'
-import { getCurrentUser, logOutUser } from '../api/user.api.js'
+import { getMyShortUrls, updateShortUrl, deleteShortUrl, transferShortUrl } from '../api/shortUrlapi.js'
+import { getCurrentUser } from '../api/user.api.js'
 
 function CopyToast({ value }) {
   if (!value) return null
@@ -26,13 +26,6 @@ function CopyToast({ value }) {
   )
 }
 
-const sidebarItems = [
-  { label: 'Links', icon: 'link', active: true },
-  { label: 'Analytics', icon: 'chart' },
-  { label: 'Folders', icon: 'folder' },
-  { label: 'Tags', icon: 'tag' },
-]
-
 const formatDate = (value) => {
   if (!value) return 'Just now'
 
@@ -43,72 +36,13 @@ const formatDate = (value) => {
   }).format(new Date(value))
 }
 
-function SidebarIcon({ name, active = false }) {
-  const className = active ? 'text-blue-600' : 'text-slate-500'
 
-  if (name === 'link') {
-    return (
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor" className={`h-4 w-4 ${className}`}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
-      </svg>
-    )
-  }
-
-  if (name === 'globe') {
-    return (
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor" className={`h-4 w-4 ${className}`}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18z" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3.6 9h16.8M3.6 15h16.8M12 3a15.3 15.3 0 010 18M12 3a15.3 15.3 0 000 18" />
-      </svg>
-    )
-  }
-
-  if (name === 'chart') {
-    return (
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor" className={`h-4 w-4 ${className}`}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v18h18" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M7 14l3-3 3 2 4-5" />
-      </svg>
-    )
-  }
-
-  if (name === 'spark') {
-    return (
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor" className={`h-4 w-4 ${className}`}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 3.75l1.06 4.24a2.25 2.25 0 001.66 1.66l4.24 1.06-4.24 1.06a2.25 2.25 0 00-1.66 1.66l-1.06 4.24-1.06-4.24a2.25 2.25 0 00-1.66-1.66l-4.24-1.06 4.24-1.06a2.25 2.25 0 001.66-1.66l1.06-4.24z" />
-      </svg>
-    )
-  }
-
-  if (name === 'user') {
-    return (
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor" className={`h-4 w-4 ${className}`}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6.75a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 20.25a7.5 7.5 0 0115 0" />
-      </svg>
-    )
-  }
-
-  if (name === 'folder') {
-    return (
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor" className={`h-4 w-4 ${className}`}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75A2.25 2.25 0 014.5 4.5h4.379a2.25 2.25 0 011.59.659l1.372 1.372a2.25 2.25 0 001.59.659H19.5A2.25 2.25 0 0121.75 9.75v7.5A2.25 2.25 0 0119.5 19.5h-15a2.25 2.25 0 01-2.25-2.25v-10.5z" />
-      </svg>
-    )
-  }
-
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor" className={`h-4 w-4 ${className}`}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 12a5.25 5.25 0 1110.5 0 5.25 5.25 0 01-10.5 0z" />
-    </svg>
-  )
-}
 
 function NewLinkModal({ urlData, onClose }) {
   if (!urlData) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-sm overflow-hidden rounded-[24px] bg-white text-center shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+      <div className="w-full max-w-sm overflow-hidden rounded-3xl bg-white text-center shadow-2xl animate-in fade-in zoom-in-95 duration-200">
         <div className="bg-emerald-50 px-6 py-6">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 mb-4">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="h-6 w-6">
@@ -140,6 +74,36 @@ function NewLinkModal({ urlData, onClose }) {
   )
 }
 
+function ConfirmModal({ title, children, onCancel, onConfirm, confirmLabel = 'Confirm', danger = false, disabled = false }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
+      <div className="w-full max-w-md overflow-hidden rounded-2xl bg-white text-left shadow-2xl">
+        <div className="px-6 py-4 border-b">
+          <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
+        </div>
+        <div className="p-6">{children}</div>
+        <div className="flex items-center justify-end gap-3 border-t px-4 py-3">
+          <button onClick={onCancel} className="rounded-md bg-white border px-4 py-2 text-sm">Cancel</button>
+          <button disabled={disabled} onClick={onConfirm} className={`rounded-md px-4 py-2 text-sm ${danger ? 'bg-rose-600 text-white' : 'bg-slate-900 text-white'}`}>{confirmLabel}</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function Snackbar({ message, actionLabel, onAction, onClose }) {
+  if (!message) return null
+  return (
+    <div className="fixed right-4 bottom-6 z-50">
+      <div className="flex items-center gap-4 rounded-lg bg-white px-4 py-3 shadow"> 
+        <div className="text-sm text-slate-700">{message}</div>
+        {actionLabel ? <button onClick={onAction} className="rounded-md bg-black px-3 py-1 text-white text-sm">{actionLabel}</button> : null}
+        <button onClick={onClose} className="text-sm text-slate-400">✕</button>
+      </div>
+    </div>
+  )
+}
+
 export default function DashboardPage() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -152,13 +116,32 @@ export default function DashboardPage() {
   const [showNewLinkModal, setShowNewLinkModal] = useState(false)
   const [newLinkData, setNewLinkData] = useState(null)
   const [openMenuId, setOpenMenuId] = useState(null)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState(null)
+  const [deleteVerifyText, setDeleteVerifyText] = useState('')
+
+  const [showArchiveModal, setShowArchiveModal] = useState(false)
+  const [archiveTarget, setArchiveTarget] = useState(null)
+
+  const [showTransferModal, setShowTransferModal] = useState(false)
+  const [transferTarget, setTransferTarget] = useState(null)
+  const [transferEmail, setTransferEmail] = useState('')
+
+  const [showMoveModal, setShowMoveModal] = useState(false)
+  const [moveTarget, setMoveTarget] = useState(null)
+  const [moveFolderName, setMoveFolderName] = useState('')
+
+  const [snackbar, setSnackbar] = useState({ message: '', actionLabel: '', action: null })
 
   useEffect(() => {
     if (location.state?.newLink) {
-      setNewLinkData({ url: location.state.newLink, qr: location.state.newQr })
-      setShowNewLinkModal(true)
-      // Clear state so it doesn't show again on refresh
-      navigate('/dashboard', { replace: true, state: {} })
+      // schedule state updates to avoid synchronous setState within effect
+      setTimeout(() => {
+        setNewLinkData({ url: location.state.newLink, qr: location.state.newQr })
+        setShowNewLinkModal(true)
+        // Clear state so it doesn't show again on refresh
+        navigate('/dashboard', { replace: true, state: {} })
+      }, 0)
     }
   }, [location, navigate])
 
@@ -184,14 +167,7 @@ export default function DashboardPage() {
     load()
   }, [navigate])
 
-  const handleLogout = async () => {
-    try {
-      await logOutUser()
-      navigate('/')
-    } catch (err) {
-      setPageError(err?.message || 'Logout failed')
-    }
-  }
+  
 
   const copy = async (value) => {
     await navigator.clipboard.writeText(value)
@@ -329,23 +305,16 @@ export default function DashboardPage() {
                                   <button onClick={() => { setOpenMenuId(null); navigate('/create', { state: { prefill: { destination: item.originalUrl, title: item.title, description: item.description }, duplicate: true } }) }} className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Duplicate</button>
                                 </li>
                                 <li>
-                                  <button onClick={async () => {
-                                    setOpenMenuId(null);
-                                    const folderName = window.prompt('Move to folder (type folder name):', item.folder || '')
-                                    if (folderName) {
-                                      // No backend endpoint exposed yet; show a simple confirmation toast
-                                      alert(`Requested move of ${item.shortUrl} to folder: ${folderName} (not persisted)`)
-                                    }
-                                  }} className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Move</button>
+                                  <button onClick={() => { setOpenMenuId(null); setMoveTarget(item); setMoveFolderName(item.folder || ''); setShowMoveModal(true) }} className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Move</button>
                                 </li>
                                 <li>
-                                  <button onClick={() => { setOpenMenuId(null); alert('Archive is not implemented yet') }} className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Archive</button>
+                                  <button onClick={() => { setOpenMenuId(null); setArchiveTarget(item); setShowArchiveModal(true) }} className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Archive</button>
                                 </li>
                                 <li>
-                                  <button onClick={() => { setOpenMenuId(null); const target = window.prompt('Transfer to (email):'); if (target) alert('Transfer is not implemented yet') }} className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Transfer</button>
+                                  <button onClick={() => { setOpenMenuId(null); setTransferTarget(item); setTransferEmail(''); setShowTransferModal(true) }} className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Transfer</button>
                                 </li>
                                 <li>
-                                  <button onClick={() => { setOpenMenuId(null); if (window.confirm('Delete this link? This action cannot be undone.')) { alert('Delete is not implemented on the server yet') } }} className="w-full text-left px-4 py-2 text-sm text-rose-600 hover:bg-slate-50">Delete</button>
+                                  <button onClick={() => { setOpenMenuId(null); setDeleteTarget(item); setDeleteVerifyText(''); setShowDeleteModal(true) }} className="w-full text-left px-4 py-2 text-sm text-rose-600 hover:bg-slate-50">Delete</button>
                                 </li>
                               </ul>
                             </div>
@@ -379,6 +348,82 @@ export default function DashboardPage() {
 
       {showNewLinkModal ? <NewLinkModal urlData={newLinkData} onClose={() => setShowNewLinkModal(false)} /> : null}
       {copiedValue ? <CopyToast value={copiedValue} /> : null}
+      {showMoveModal && moveTarget ? (
+        <ConfirmModal title="Move link" onCancel={() => setShowMoveModal(false)} onConfirm={async () => {
+          try {
+            await updateShortUrl(moveTarget.id, { folder: moveFolderName })
+            const refreshed = await getMyShortUrls()
+            setUrls(refreshed?.urls || [])
+            setShowMoveModal(false)
+            setSnackbar({ message: 'Link moved', actionLabel: '', action: null })
+          } catch (err) {
+            alert(err?.response?.data?.message || err?.message || 'Move failed')
+          }
+        }} confirmLabel="Move">
+          <div className="text-sm text-slate-700 mb-3">Move <strong className="text-slate-900">{moveTarget.shortUrl}</strong> to a folder.</div>
+          <input value={moveFolderName} onChange={(e) => setMoveFolderName(e.target.value)} className="w-full rounded-lg border px-3 py-2" placeholder="Folder name" />
+        </ConfirmModal>
+      ) : null}
+
+      {showArchiveModal && archiveTarget ? (
+        <ConfirmModal title="Archive link" onCancel={() => setShowArchiveModal(false)} onConfirm={async () => {
+          try {
+            await updateShortUrl(archiveTarget.id, { archived: true })
+            const refreshed = await getMyShortUrls()
+            setUrls(refreshed?.urls || [])
+            setShowArchiveModal(false)
+            setSnackbar({ message: 'Successfully archived link!', actionLabel: 'Undo', action: async () => {
+              try { await updateShortUrl(archiveTarget.id, { archived: false }); const refreshed2 = await getMyShortUrls(); setUrls(refreshed2?.urls || []); setSnackbar({ message: '', actionLabel: '', action: null }) } catch { /* ignore */ }
+            } })
+          } catch (err) {
+            alert(err?.response?.data?.message || err?.message || 'Archive failed')
+          }
+        }} confirmLabel="Archive" danger={false}>
+          <div className="text-sm text-slate-700 mb-3">Are you sure you want to archive <strong className="text-slate-900">{archiveTarget.shortUrl}</strong>?</div>
+        </ConfirmModal>
+      ) : null}
+
+      {showTransferModal && transferTarget ? (
+        <ConfirmModal title="Transfer link" onCancel={() => setShowTransferModal(false)} onConfirm={async () => {
+          try {
+            await transferShortUrl(transferTarget.id, transferEmail)
+            const refreshed = await getMyShortUrls()
+            setUrls(refreshed?.urls || [])
+            setShowTransferModal(false)
+            setSnackbar({ message: 'Transfer completed', actionLabel: '', action: null })
+          } catch (err) {
+            alert(err?.response?.data?.message || err?.message || 'Transfer failed')
+          }
+        }} confirmLabel="Transfer">
+          <div className="text-sm text-slate-700 mb-3">Transfer <strong className="text-slate-900">{transferTarget.shortUrl}</strong> to another user by email.</div>
+          <input value={transferEmail} onChange={(e) => setTransferEmail(e.target.value)} className="w-full rounded-lg border px-3 py-2" placeholder="Target user's email" />
+        </ConfirmModal>
+      ) : null}
+
+      {showDeleteModal && deleteTarget ? (
+        <ConfirmModal title="Delete link" onCancel={() => setShowDeleteModal(false)} onConfirm={async () => {
+          try {
+            if ((deleteVerifyText || '').trim() !== (deleteTarget.shortUrl || '').trim()) {
+              alert('Please type the exact short link to confirm deletion.')
+              return
+            }
+            await deleteShortUrl(deleteTarget.id)
+            const refreshed = await getMyShortUrls()
+            setUrls(refreshed?.urls || [])
+            setShowDeleteModal(false)
+            setSnackbar({ message: 'Link deleted', actionLabel: '', action: null })
+          } catch (err) {
+            alert(err?.response?.data?.message || err?.message || 'Delete failed')
+          }
+        }} confirmLabel="Delete" danger={true} disabled={!deleteVerifyText || deleteVerifyText.trim() !== (deleteTarget.shortUrl || '').trim()}>
+          <div className="text-sm text-slate-700 mb-3">Deleting this link will remove all analytics. This action cannot be undone.</div>
+          <div className="mb-3 rounded-md border bg-slate-50 p-3 text-sm">{deleteTarget.shortUrl}<div className="text-xs text-slate-400">{deleteTarget.originalUrl}</div></div>
+          <div className="text-sm text-slate-700 mb-2">To verify, type <strong className="text-slate-900">{deleteTarget.shortUrl}</strong> below</div>
+          <input value={deleteVerifyText} onChange={(e) => setDeleteVerifyText(e.target.value)} className="w-full rounded-lg border px-3 py-2" placeholder="Type the full short link to confirm" />
+        </ConfirmModal>
+      ) : null}
+
+      <Snackbar message={snackbar.message} actionLabel={snackbar.actionLabel} onAction={snackbar.action} onClose={() => setSnackbar({ message: '', actionLabel: '', action: null })} />
     </div>
   )
 }

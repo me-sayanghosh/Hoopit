@@ -1,5 +1,5 @@
 import express from 'express';
-import { createShortUrl, createCustomShortUrl, getMyShortUrls, getMyShortUrlAnalytics, recordLocationForClick, getSingleShortUrlAnalytics } from '../controller/shortUrl.controller.js';
+import { createShortUrl, createCustomShortUrl, getMyShortUrls, getMyShortUrlAnalytics, recordLocationForClick, getSingleShortUrlAnalytics, updateShortUrl, deleteShortUrl, transferShortUrl, getArchivedShortUrls, getTags, getUrlsByTag } from '../controller/shortUrl.controller.js';
 import { generateSuggestion } from '../controller/ai.controller.js';
 import { AppError } from '../utils/httpError.js';
 import { authMiddleware } from '../middleware/auth.middleware.js';
@@ -39,5 +39,11 @@ router.post("/track-location", recordLocationForClick);
 router.get('/mine', authMiddleware, getMyShortUrls);
 router.get('/analytics', authMiddleware, getMyShortUrlAnalytics);
 router.get('/analytics/:shortUrl', authMiddleware, getSingleShortUrlAnalytics);
+router.patch('/:id', authMiddleware, updateShortUrl);
+router.delete('/:id', authMiddleware, deleteShortUrl);
+router.post('/:id/transfer', authMiddleware, transferShortUrl);
+router.get('/archived', authMiddleware, getArchivedShortUrls);
+router.get('/tags', authMiddleware, getTags);
+router.get('/tags/:tag', authMiddleware, getUrlsByTag);
 
 export default router;

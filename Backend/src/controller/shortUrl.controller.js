@@ -1,6 +1,8 @@
 import { shortUrlServiceWithoutUser, shortUrlServicewithUser, getUserShortUrls, getUserUrlAnalytics, getSingleUserUrlAnalytics } from '../services/shortUrl.service.js';
-import { getCustomShortUrl } from '../dao/shortUrl.js';
+import { getCustomShortUrl, updateShortUrlById, deleteShortUrlById, transferShortUrlToUserId } from '../dao/shortUrl.js';
+import { getArchivedShortUrlsByUserId, getTagsForUser, getUrlsByTagForUser } from '../dao/shortUrl.js';
 import { recordShortUrlClick } from '../dao/shortUrl.js';
+import { findUserByEmail } from '../dao/user.dao.js';
 import { AppError } from '../utils/httpError.js';
 import wrapasync from '../utils/errorHandeler.js';
 
@@ -148,4 +150,62 @@ export const recordLocationForClick = wrapasync(async (req, res) => {
         message: 'Location recorded',
         updated: targetIndex >= 0
     });
+});
+
+export const updateShortUrl = wrapasync(async (req, res) => {
+    const { id } = req.params;
+    if (!id) throw new AppError('URL id is required', 400);
+    const updates = req.body || {};
+
+    const updated = await updateShortUrlById(id, req.user._id, updates);
+
+    res.status(200).json({ success: true, url: {
+        id: updated._id,
+        originalUrl: updated.originalUrl,
+        shortUrl: process.env.APP_URL + updated.shortUrl,
+        folder: updated.folder,
+        clicks: updated.clicks,
+        createdAt: updated.createdAt,
+        archived: !!updated.archived
+    }});
+});
+
+export const deleteShortUrl = wrapasync(async (req, res) => {
+    const { id } = req.params;
+    if (!id) throw new AppError('URL id is required', 400);
+
+    await deleteShortUrlById(id, req.user._id);
+
+    res.status(200).json({ success: true });
+});
+
+export const transferShortUrl = wrapasync(async (req, res) => {
+    const { id } = req.params;
+    const { email } = req.body || {};
+    if (!id) throw new AppError('URL id is required', 400);
+    if (!email) throw new AppError('Target email is required', 400);
+
+    const target = await findUserByEmail(email);
+    if (!target) throw new AppError('Target user not found', 404);
+
+    const updated = await transferShortUrlToUserId(id, req.user._id, target._id);
+
+    res.status(200).json({ success: true, url: { id: updated._id } });
+});
+
+export const getArchivedShortUrls = wrapasync(async (req, res) => {
+    const list = await getArchivedShortUrlsByUserId(req.user._id);
+    res.status(200).json({ urls: list.map(item => ({ id: item._id, originalUrl: item.originalUrl, shortUrl: process.env.APP_URL + item.shortUrl, folder: item.folder || '', clicks: item.clicks, createdAt: item.createdAt, qrCodeUrl: item.qrCodeUrl || '' })) });
+});
+
+export const getTags = wrapasync(async (req, res) => {
+    const tags = await getTagsForUser(req.user._id);
+    res.status(200).json({ tags });
+});
+
+export const getUrlsByTag = wrapasync(async (req, res) => {
+    const { tag } = req.params;
+    if (!tag) throw new AppError('Tag is required', 400);
+    const urls = await getUrlsByTagForUser(req.user._id, tag);
+    res.status(200).json({ urls: urls.map(item => ({ id: item._id, originalUrl: item.originalUrl, shortUrl: process.env.APP_URL + item.shortUrl, folder: item.folder || '', clicks: item.clicks, createdAt: item.createdAt, qrCodeUrl: item.qrCodeUrl || '' })) });
 });

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
-import { shortenUrl, getFolders, generateAiSuggestion } from '../api/shortUrlapi.js'
+import { shortenUrl, getFolders, generateAiSuggestion, updateShortUrl } from '../api/shortUrlapi.js'
 import { getCurrentUser } from '../api/user.api.js'
 import { useNavigate } from 'react-router-dom'
 
@@ -81,15 +81,22 @@ export default function CreateLinkForm() {
         conversionTracking: conversion
       }
 
-      const res = await shortenUrl(body)
-      const short = res?.shortUrl || ''
-      if (!short) throw new Error('No short url returned')
-      
-      // Copy to clipboard
-      await navigator.clipboard.writeText(short)
-      
-      // Redirect to dashboard with state to show the popup
-      navigate('/dashboard', { state: { newLink: short, newQr: res?.qrCodeUrl } })
+      if (isEdit && prefill) {
+        const id = prefill.id || prefill._id
+        if (!id) throw new Error('Missing id for update')
+        await updateShortUrl(id, body)
+        navigate('/dashboard', { state: { updated: true } })
+      } else {
+        const res = await shortenUrl(body)
+        const short = res?.shortUrl || ''
+        if (!short) throw new Error('No short url returned')
+        
+        // Copy to clipboard
+        await navigator.clipboard.writeText(short)
+        
+        // Redirect to dashboard with state to show the popup
+        navigate('/dashboard', { state: { newLink: short, newQr: res?.qrCodeUrl } })
+      }
     } catch (err) {
       setError(err?.response?.data?.message || err?.message || 'Failed to create link')
     } finally {

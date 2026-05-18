@@ -34,6 +34,36 @@ export const generateAiSuggestion = async (url, field) => {
         return data;
 };
 
+export const updateShortUrl = async (id, body) => {
+        const { data } = await axiosInstance.patch(`/api/create/${id}`, body);
+        return data;
+};
+
+export const deleteShortUrl = async (id) => {
+        const { data } = await axiosInstance.delete(`/api/create/${id}`);
+        return data;
+};
+
+export const transferShortUrl = async (id, email) => {
+        const { data } = await axiosInstance.post(`/api/create/${id}/transfer`, { email });
+        return data;
+};
+
+export const getArchivedShortUrls = async () => {
+        const { data } = await axiosInstance.get('/api/create/archived');
+        return data;
+};
+
+export const getTags = async () => {
+        const { data } = await axiosInstance.get('/api/create/tags');
+        return data;
+};
+
+export const getUrlsByTag = async (tag) => {
+        const { data } = await axiosInstance.get(`/api/create/tags/${encodeURIComponent(tag)}`);
+        return data;
+};
+
 
 export const getFolders = async () => {
         const { data } = await axiosInstance.get('/api/folders');

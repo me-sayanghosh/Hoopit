@@ -1,6 +1,27 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { logOutUser } from '../api/user.api.js'
 
+function NavItem({ label, icon, to }) {
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  let isActive = false
+  if (to === '/dashboard' && location.pathname === '/dashboard') isActive = true
+  if (to !== '/dashboard' && location.pathname.startsWith(to)) isActive = true
+
+  return (
+    <button 
+      key={label}
+      onClick={() => navigate(to)} 
+      className={`relative w-full text-left flex items-center gap-3 rounded-lg pl-4 pr-3 py-2 text-sm ${isActive ? 'bg-blue-50 font-medium text-blue-600' : 'text-slate-600 hover:bg-slate-50 transition'}`}
+    >
+      {isActive ? <span className="absolute left-0 top-0 h-full w-1 rounded-r-md bg-blue-500" /> : null}
+      <SidebarIcon name={icon} active={isActive} />
+      <span>{label}</span>
+    </button>
+  )
+}
+
 function SidebarIcon({ name, active = false }) {
   const className = active ? 'text-blue-600' : 'text-slate-500'
 
@@ -64,7 +85,6 @@ function SidebarIcon({ name, active = false }) {
 
 export default function Sidebar({ profile }) {
   const navigate = useNavigate()
-  const location = useLocation()
 
   const handleLogout = async () => {
     try {
@@ -73,25 +93,6 @@ export default function Sidebar({ profile }) {
     } catch {
       // ignore
     }
-  }
-
-  const NavItem = ({ label, icon, to }) => {
-    // Determine active state based on route
-    let isActive = false
-    if (to === '/dashboard' && location.pathname === '/dashboard') isActive = true
-    if (to !== '/dashboard' && location.pathname.startsWith(to)) isActive = true
-
-    return (
-      <button 
-        key={label}
-        onClick={() => navigate(to)} 
-        className={`relative w-full text-left flex items-center gap-3 rounded-lg pl-4 pr-3 py-2 text-sm ${isActive ? 'bg-blue-50 font-medium text-blue-600' : 'text-slate-600 hover:bg-slate-50 transition'}`}
-      >
-        {isActive ? <span className="absolute left-0 top-0 h-full w-1 rounded-r-md bg-blue-500" /> : null}
-        <SidebarIcon name={icon} active={isActive} />
-        <span>{label}</span>
-      </button>
-    )
   }
 
   return (
@@ -110,10 +111,11 @@ export default function Sidebar({ profile }) {
 
         <div className="mt-4 rounded-xl bg-white p-4 shadow-sm shrink-0">
           <div className="text-sm font-semibold text-slate-900">Short Links</div>
-          <nav className="mt-3 space-y-1">
+            <nav className="mt-3 space-y-1">
             <NavItem label="Links" icon="link" to="/dashboard" />
             <NavItem label="Folders" icon="folder" to="/folders" />
             <NavItem label="Tags" icon="tag" to="/tags" />
+            <NavItem label="Archived" icon="spark" to="/archived" />
           </nav>
 
           <div className="mt-4 text-sm text-slate-500">Insights</div>
@@ -121,10 +123,7 @@ export default function Sidebar({ profile }) {
             <NavItem label="Customers" icon="user" to="/customers" />
           </nav>
 
-          <div className="mt-4 text-sm text-slate-500">Library</div>
-          <nav className="mt-2 space-y-1">
-            <NavItem label="Folders" icon="folder" to="/folders" />
-          </nav>
+          
         </div>
 
         <div className="mt-auto px-1">

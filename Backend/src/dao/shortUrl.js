@@ -245,3 +245,87 @@ export const getShortUrlsByUserId = async (userId) => {
         throw new AppError(err.message || 'Failed to fetch user URLs.', 500);
     }
 }
+
+export const getArchivedShortUrlsByUserId = async (userId) => {
+    try {
+        return await urlSchema
+            .find({ user: userId, archived: true })
+            .sort({ createdAt: -1 });
+    } catch (err) {
+        throw new AppError(err.message || 'Failed to fetch archived URLs.', 500);
+    }
+}
+
+export const getTagsForUser = async (userId) => {
+    try {
+        // unwind tags and count occurrences
+        const rows = await urlSchema.aggregate([
+            { $match: { user: userId } },
+            { $unwind: { path: '$tags', preserveNullAndEmptyArrays: false } },
+            { $group: { _id: '$tags', count: { $sum: 1 } } },
+            { $sort: { count: -1, _id: 1 } }
+        ]);
+
+        return rows.map(r => ({ tag: r._id, count: r.count }));
+    } catch (err) {
+        throw new AppError(err.message || 'Failed to fetch tags.', 500);
+    }
+}
+
+export const getUrlsByTagForUser = async (userId, tag) => {
+    try {
+        return await urlSchema.find({ user: userId, tags: tag }).sort({ createdAt: -1 });
+    } catch (err) {
+        throw new AppError(err.message || 'Failed to fetch URLs for tag.', 500);
+    }
+}
+
+export const updateShortUrlById = async (id, userId, updates = {}) => {
+    try {
+        const query = { _id: id };
+        if (userId) query.user = userId;
+
+        const allowed = ['originalUrl', 'alias', 'title', 'description', 'folder', 'tags', 'comments', 'conversionTracking', 'qrCodeUrl', 'archived'];
+        const set = {};
+        allowed.forEach((k) => {
+            if (Object.prototype.hasOwnProperty.call(updates, k)) set[k] = updates[k];
+        });
+
+        if (Object.keys(set).length === 0) {
+            throw new AppError('No valid fields to update', 400);
+        }
+
+        const updated = await urlSchema.findOneAndUpdate(query, { $set: set }, { new: true });
+        if (!updated) throw new AppError('URL not found or not owned by user', 404);
+        return updated;
+    } catch (err) {
+        if (err instanceof AppError) throw err;
+        throw new AppError(err.message || 'Failed to update URL', 500);
+    }
+}
+
+export const deleteShortUrlById = async (id, userId) => {
+    try {
+        const query = { _id: id };
+        if (userId) query.user = userId;
+
+        const removed = await urlSchema.findOneAndDelete(query);
+        if (!removed) throw new AppError('URL not found or not owned by user', 404);
+        return removed;
+    } catch (err) {
+        if (err instanceof AppError) throw err;
+        throw new AppError(err.message || 'Failed to delete URL', 500);
+    }
+}
+
+export const transferShortUrlToUserId = async (id, userId, targetUserId) => {
+    try {
+        const query = { _id: id, user: userId };
+        const updated = await urlSchema.findOneAndUpdate(query, { $set: { user: targetUserId } }, { new: true });
+        if (!updated) throw new AppError('URL not found or not owned by user', 404);
+        return updated;
+    } catch (err) {
+        if (err instanceof AppError) throw err;
+        throw new AppError(err.message || 'Failed to transfer URL', 500);
+    }
+}
