@@ -26,27 +26,28 @@ export default function CustomersPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#fafafa] flex items-center justify-center">
-        <div className="rounded-2xl border border-slate-200 bg-white px-6 py-4 text-sm text-slate-600 shadow-sm">
-          Loading...
+      <AppShell title="Customers" subtitle="Track and manage your customer profiles.">
+        <div className="flex h-64 items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600" />
         </div>
-      </div>
+      </AppShell>
     )
   }
 
   return (
     <AppShell
       title="Customers"
-      subtitle="Track and manage your customers."
+      subtitle="Track and manage your customer profiles."
       profile={profile}
     >
-      <div className="rounded-[28px] border border-slate-200 bg-white shadow-sm">
-        <div className="px-6 py-12 text-center">
-          <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-6 py-12">
-            <p className="text-lg font-semibold text-slate-900">No customers yet</p>
-            <p className="mt-2 text-sm text-slate-500">Customers will appear here as you track links.</p>
-          </div>
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-12 text-center shadow-[0_4px_24px_rgba(0,0,0,0.04)]">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 border border-blue-100 mb-4 text-blue-600 text-lg font-bold">
+          &uarr;&darr;
         </div>
+        <h3 className="text-lg font-bold text-slate-900">No customers yet</h3>
+        <p className="mt-1 text-sm font-medium text-slate-500 max-w-sm mx-auto">
+          Customer segments and visitor profiles will automatically populate here as they click your tracked short links.
+        </p>
       </div>
     </AppShell>
   )

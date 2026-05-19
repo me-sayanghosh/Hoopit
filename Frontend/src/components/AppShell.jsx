@@ -15,7 +15,7 @@ const insightsNav = [
 ]
 
 function SidebarIcon({ name, active = false }) {
-  const className = active ? 'text-blue-600' : 'text-slate-500'
+  const className = active ? 'text-white' : 'text-slate-500 transition-colors group-hover:text-slate-900'
 
   if (name === 'link') {
     return (
@@ -77,18 +77,15 @@ function SidebarNavItem({ item }) {
       to={item.to}
       end={item.to === '/dashboard'}
       className={({ isActive }) =>
-        `relative w-full text-left flex items-center gap-3 rounded-lg pl-4 pr-3 py-2 text-sm transition ${
+        `group relative w-full text-left flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-200 ${
           isActive
-            ? 'bg-blue-50 font-medium text-blue-600'
-            : 'text-slate-600 hover:bg-slate-50'
+            ? 'bg-[#2563EB] text-white shadow-[0_4px_14px_rgba(37,99,235,0.3)]'
+            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
         }`
       }
     >
       {({ isActive }) => (
         <div className="w-full flex items-center gap-3">
-          {isActive ? (
-            <span className="absolute left-0 top-0 h-full w-1 rounded-r-md bg-blue-500" />
-          ) : null}
           <SidebarIcon name={item.icon} active={isActive} />
           <span>{item.label}</span>
         </div>
@@ -140,38 +137,45 @@ export default function AppShell({ title, subtitle, children, profile, onLogout,
   }
 
   const sidebar = (
-    <div className="rounded-3xl bg-[#f3f4f6] p-3 shadow-sm border border-slate-200 flex flex-col h-full">
-          <div className="flex items-center gap-3 px-2">
-        <div className="text-2xl font-extrabold text-slate-900">HoopIt</div>
+    <div className="rounded-[24px] bg-white p-4 shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-slate-200/80 flex flex-col h-full z-10">
+      <div className="flex items-center gap-3 px-2 py-1">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-[#111] flex items-center justify-center gap-0.5 flex-wrap p-1.5 shrink-0">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className={`w-2.5 h-2.5 rounded-sm ${i === 0 || i === 1 ? 'bg-[#2563EB]' : 'bg-white'}`} style={{ opacity: i < 2 ? 1 : 0.9 }} />
+            ))}
+          </div>
+          <span className="font-extrabold text-lg tracking-tight text-slate-900">HoopIt</span>
+        </div>
         <div className="ml-auto">
           <img
             src={internalProfile?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(internalProfile?.name || 'User')}`}
             alt="avatar"
-            className="h-8 w-8 rounded-full object-cover ring-1 ring-slate-200"
+            className="h-8 w-8 rounded-full object-cover ring-2 ring-slate-100 shadow-sm"
           />
         </div>
       </div>
 
-      <div className="mt-4 rounded-xl bg-white p-4 shadow-sm shrink-0">
-        <div className="text-sm font-semibold text-slate-900">Short Links</div>
-        <nav className="mt-3 space-y-1">
+      <div className="mt-6 flex-1 shrink-0">
+        <div className="text-xs font-bold uppercase tracking-[0.15em] text-slate-400 px-3">Short Links</div>
+        <nav className="mt-3 space-y-1.5">
           {shortLinksNav.map((item) => (
             <SidebarNavItem key={item.label} item={item} />
           ))}
         </nav>
 
-        <div className="mt-4 text-sm text-slate-500">Insights</div>
-        <nav className="mt-2 space-y-1">
+        <div className="mt-6 text-xs font-bold uppercase tracking-[0.15em] text-slate-400 px-3">Insights</div>
+        <nav className="mt-3 space-y-1.5">
           {insightsNav.map((item) => (
             <SidebarNavItem key={item.label} item={item} />
           ))}
         </nav>
       </div>
 
-      <div className="mt-auto px-1 pt-4">
+      <div className="mt-auto pt-4 border-t border-slate-100">
         <button
           onClick={handleLogout}
-          className="w-full rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
+          className="w-full rounded-xl bg-slate-900 hover:bg-black px-4 py-3 text-sm font-bold text-white shadow-sm hover:shadow transition-all duration-200"
         >
           Logout
         </button>
@@ -180,14 +184,16 @@ export default function AppShell({ title, subtitle, children, profile, onLogout,
   )
 
   return (
-    <div className="min-h-screen bg-[#fafafa] text-slate-900">
-      <div className="mx-auto flex min-h-screen w-full gap-4 px-3 py-3 sm:px-4 lg:px-6 lg:py-6">
-        <aside className="sticky top-6 hidden h-[calc(100vh-3rem)] w-72 shrink-0 overflow-auto lg:block">
+    <div className="min-h-screen bg-[#f5f5f5] text-slate-900 relative font-sans">
+      {/* Full-page dotted overlay (behind content) */}
+      <div className="fixed inset-0 pointer-events-none radial-dots-bg z-0 opacity-100" />
+      <div className="relative z-10 mx-auto flex min-h-screen w-full gap-6 px-4 py-4 sm:px-6 lg:px-8 lg:py-8">
+        <aside className="sticky top-8 hidden h-[calc(100vh-4rem)] w-72 shrink-0 overflow-auto lg:block">
           {sidebar}
         </aside>
 
         <div className="min-w-0 flex-1">
-          <header className="mb-4 flex items-center justify-between rounded-3xl border border-slate-200 bg-white px-4 py-3 shadow-sm lg:hidden">
+          <header className="mb-4 flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm lg:hidden">
             <button
               type="button"
               onClick={() => setMobileOpen((value) => !value)}
@@ -223,13 +229,13 @@ export default function AppShell({ title, subtitle, children, profile, onLogout,
           ) : null}
 
           {(title || subtitle || rightSlot) ? (
-            <div className="mb-4 rounded-[28px] border border-slate-200 bg-white px-4 py-4 shadow-sm sm:px-6">
+            <div className="mb-6 rounded-2xl border border-slate-200/80 bg-white p-6 sm:p-7 shadow-[0_4px_24px_rgba(0,0,0,0.05)]">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  {title ? <div className="text-2xl font-semibold tracking-tight text-slate-900">{title}</div> : null}
-                  {subtitle ? <p className="mt-1 text-sm text-slate-500">{subtitle}</p> : null}
+                  {title ? <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 leading-tight">{title}</h1> : null}
+                  {subtitle ? <p className="mt-1.5 text-sm sm:text-base text-slate-500 font-medium">{subtitle}</p> : null}
                 </div>
-                {rightSlot ? <div>{rightSlot}</div> : null}
+                {rightSlot ? <div className="shrink-0">{rightSlot}</div> : null}
               </div>
             </div>
           ) : null}

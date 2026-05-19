@@ -90,37 +90,40 @@ export default function Sidebar({ profile }) {
 
   return (
     <aside className="hidden lg:flex w-64 flex-col px-2 py-6 sticky top-6 self-start h-[calc(100vh-48px)] overflow-auto">
-      <div className="rounded-3xl bg-[#f3f4f6] p-3 shadow-sm border border-slate-200 flex flex-col h-full">
-        <div className="flex items-center gap-3 px-2">
-          <div className="text-2xl font-extrabold text-slate-900">dub</div>
+      <div className="rounded-3xl bg-white shadow-[0_4px_24px_rgba(0,0,0,0.04)] border border-slate-200/80 p-4 flex flex-col h-full">
+        <div className="flex items-center gap-3 px-2 mb-2">
+          <div className="text-2xl font-extrabold tracking-tight text-blue-600">hoopit</div>
           <div className="ml-auto">
             <img
               src={profile?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.name || 'User')}`}
               alt="avatar"
-              className="h-8 w-8 rounded-full object-cover ring-1 ring-slate-200"
+              className="h-8 w-8 rounded-full object-cover ring-2 ring-slate-100 shadow-sm"
             />
           </div>
         </div>
 
-        <div className="mt-4 rounded-xl bg-white p-4 shadow-sm shrink-0">
-          <div className="text-sm font-semibold text-slate-900">Short Links</div>
-            <nav className="mt-3 space-y-1">
+        <div className="mt-4 rounded-2xl bg-slate-50/50 border border-slate-100 p-4 shadow-sm shrink-0">
+          <div className="text-xs font-bold uppercase tracking-wider text-slate-400">Short Links</div>
+          <nav className="mt-3 space-y-1">
             <NavItem label="Links" icon="link" to="/dashboard" />
             <NavItem label="Folders" icon="folder" to="/folders" />
             <NavItem label="Tags" icon="tag" to="/tags" />
             <NavItem label="Archived" icon="spark" to="/archived" />
           </nav>
 
-          <div className="mt-4 text-sm text-slate-500">Insights</div>
+          <div className="mt-5 text-xs font-bold uppercase tracking-wider text-slate-400">Insights</div>
           <nav className="mt-2 space-y-1">
             <NavItem label="Customers" icon="user" to="/customers" />
           </nav>
-
-          
         </div>
 
-        <div className="mt-auto px-1">
-          <button onClick={handleLogout} className="w-full rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white">Logout</button>
+        <div className="mt-auto px-1 pt-4">
+          <button
+            onClick={handleLogout}
+            className="w-full rounded-full border border-slate-200 bg-white hover:bg-slate-50 px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition"
+          >
+            Logout
+          </button>
         </div>
       </div>
     </aside>
