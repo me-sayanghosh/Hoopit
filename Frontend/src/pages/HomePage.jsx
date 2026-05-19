@@ -150,7 +150,7 @@ export default function HomePage() {
           <QRCard />
         </div>
 
-        <div style={{ position: 'absolute', bottom: '8%', left: '5%', animation: 'floatB 6s ease-in-out infinite 0.5s' }}>
+        <div className="hide-on-mobile" style={{ position: 'absolute', bottom: '8%', left: '5%', animation: 'floatB 6s ease-in-out infinite 0.5s' }}>
           <TodayTasksCard />
         </div>
 
@@ -159,7 +159,7 @@ export default function HomePage() {
         </div>
 
         <div style={{ textAlign: 'center', zIndex: 10, maxWidth: 700 }}>
-          <h1 style={{ fontSize: 'clamp(48px, 7vw, 76px)', fontWeight: 800, lineHeight: 1.08, letterSpacing: '-2px', margin: '0 0 4px', color: '#111' }}>Think, plan, and track</h1>
+          <h1 style={{ fontSize: 'clamp(48px, 7vw, 76px)', fontWeight: 800, lineHeight: 1.08, letterSpacing: '-2px', margin: '0 0 4px', color: '#111' }}>Paste, Short, and track</h1>
           <h1 style={{ fontSize: 'clamp(48px, 7vw, 76px)', fontWeight: 800, lineHeight: 1.08, letterSpacing: '-2px', margin: '0 0 28px', color: '#c8c8c8' }}>all in one place</h1>
           <p style={{ fontSize: 16, color: '#666', marginBottom: 36, lineHeight: 1.6 }}>Efficiently manage your tasks and boost productivity.</p>
           <Link to="/try-now" style={{ background: '#2563EB', color: 'white', border: 'none', borderRadius: 50, padding: '14px 36px', fontSize: 15, fontWeight: 600, textDecoration: 'none', boxShadow: '0 4px 20px rgba(37,99,235,0.35)' }}>Get free demo</Link>
@@ -207,6 +207,10 @@ export default function HomePage() {
         @keyframes floatB {
           0%, 100% { transform: translateY(0px); }
           50% { transform: translateY(-8px); }
+        }
+        /* Hide quick actions on small screens */
+        @media (max-width: 640px) {
+          .hide-on-mobile { display: none !important; }
         }
       `}</style>
     </div>
