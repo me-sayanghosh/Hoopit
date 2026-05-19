@@ -2,6 +2,7 @@ import './App.css'
 import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage.jsx'
 import RegisterPage from './pages/RegisterPage.jsx'
+import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx'
 import DashboardPage from './pages/DashboardPage.jsx'
 import AnalyticsPage from './pages/AnalyticsPage.jsx'
 import TryNowPage from './pages/TryNowPage.jsx'
@@ -24,6 +25,7 @@ const App = () => {
         <Route path="/try-now" element={<TryNowPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/create" element={<CreateShortUrlPage />} />
         <Route path="/analytics" element={<AnalyticsPage />} />

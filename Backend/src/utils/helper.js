@@ -9,7 +9,7 @@ export const generateNanoid = (length) => {
 export const signToken = (payload) => {
     const secret = process.env.JWT_SECRET;
     if (!secret) throw new AppError('JWT_SECRET is not set in environment', 500);
-    return jwt.sign(payload, secret, { expiresIn: '1h' });
+    return jwt.sign(payload, secret, { expiresIn: '30d' });
 };
 
 export const verifyToken = (token) => {

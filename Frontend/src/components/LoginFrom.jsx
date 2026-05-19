@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import AuthPasswordField from './AuthPasswordField.jsx'
 
 function LoginFrom({ onSubmit, onSuccess }) {
 	const [email, setEmail] = useState('')
@@ -54,26 +55,22 @@ function LoginFrom({ onSubmit, onSuccess }) {
 				/>
 			</label>
 
-			<label className="field">
-				<span>Password</span>
-				<input
-					type="password"
-					value={password}
-					onChange={(event) => setPassword(event.target.value)}
-					placeholder="Enter your password"
-					autoComplete="current-password"
-					required
-				/>
-			</label>
+			<AuthPasswordField
+				label="Password"
+				value={password}
+				onChange={(event) => setPassword(event.target.value)}
+				placeholder="Enter your password"
+				autoComplete="current-password"
+			/>
 
 			<div className="auth-row">
 				<label className="auth-check">
 					<input type="checkbox" defaultChecked />
 					<span>Keep me signed in</span>
 				</label>
-				<button type="button" className="auth-link">
+				<Link to="/forgot-password" className="auth-link">
 					Forgot password?
-				</button>
+				</Link>
 			</div>
 
 			<button type="submit" className="auth-button" disabled={loading}>

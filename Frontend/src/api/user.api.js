@@ -16,6 +16,21 @@ export const logOutUser = async () => {
     await axiosInstance.post(`${AUTH_BASE_PATH}/logout`);
 }
 
+export const requestPasswordReset = async (email) => {
+    const { data } = await axiosInstance.post(`${AUTH_BASE_PATH}/forgot-password`, { email });
+    return data;
+}
+
+export const verifyPasswordResetCode = async (email, code) => {
+    const { data } = await axiosInstance.post(`${AUTH_BASE_PATH}/verify-reset-code`, { email, code });
+    return data;
+}
+
+export const resetPassword = async (email, code, password) => {
+    const { data } = await axiosInstance.post(`${AUTH_BASE_PATH}/reset-password`, { email, code, password });
+    return data;
+}
+
 export const getCurrentUser = async () => {
     const { data } = await axiosInstance.get(`${AUTH_BASE_PATH}/me`);
     return data;
