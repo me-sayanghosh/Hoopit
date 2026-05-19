@@ -130,7 +130,7 @@ const getDeviceInfo = (req) => {
 
 
 export const saveShortUrl = async (opts = {}) => {
-    const { originalUrl, shortUrl, userId, alias, domain, tags, comments, title, description, folder, conversionTracking, qrCodeUrl } = opts;
+    const { originalUrl, shortUrl, userId, alias, domain, tags, comments, title, description, folder, conversionTracking, qrCodeUrl, isDraft } = opts;
     try {
         const newUrl = new urlSchema({
             originalUrl,
@@ -143,7 +143,8 @@ export const saveShortUrl = async (opts = {}) => {
             description: description || '',
             folder: folder || '',
             conversionTracking: !!conversionTracking,
-            qrCodeUrl: qrCodeUrl || ''
+            qrCodeUrl: qrCodeUrl || '',
+            isDraft: !!isDraft
         });
 
         if (userId) {
@@ -238,7 +239,7 @@ export const getShortUrlByOriginalUrl = async (originalUrl) => {
 export const getShortUrlsByUserId = async (userId) => {
     try {
         return await urlSchema
-            .find({ user: userId })
+            .find({ user: userId, isDraft: { $ne: true } })
             .sort({ createdAt: -1 });
     }
     catch (err) {
@@ -246,10 +247,21 @@ export const getShortUrlsByUserId = async (userId) => {
     }
 }
 
+export const getDraftShortUrlsByUserId = async (userId) => {
+    try {
+        return await urlSchema
+            .find({ user: userId, isDraft: true })
+            .sort({ createdAt: -1 });
+    }
+    catch (err) {
+        throw new AppError(err.message || 'Failed to fetch user drafts.', 500);
+    }
+}
+
 export const getArchivedShortUrlsByUserId = async (userId) => {
     try {
         return await urlSchema
-            .find({ user: userId, archived: true })
+            .find({ user: userId, archived: true, isDraft: { $ne: true } })
             .sort({ createdAt: -1 });
     } catch (err) {
         throw new AppError(err.message || 'Failed to fetch archived URLs.', 500);
@@ -285,7 +297,7 @@ export const updateShortUrlById = async (id, userId, updates = {}) => {
         const query = { _id: id };
         if (userId) query.user = userId;
 
-        const allowed = ['originalUrl', 'alias', 'title', 'description', 'folder', 'tags', 'comments', 'conversionTracking', 'qrCodeUrl', 'archived'];
+        const allowed = ['originalUrl', 'alias', 'title', 'description', 'folder', 'tags', 'comments', 'conversionTracking', 'qrCodeUrl', 'archived', 'isDraft'];
         const set = {};
         allowed.forEach((k) => {
             if (Object.prototype.hasOwnProperty.call(updates, k)) set[k] = updates[k];

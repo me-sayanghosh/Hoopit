@@ -1,5 +1,5 @@
 import { generateNanoid } from "../utils/helper.js";
-import { saveShortUrl, getCustomShortUrl, getShortUrlByOriginalUrl, getShortUrlsByUserId } from "../dao/shortUrl.js";
+import { saveShortUrl, getCustomShortUrl, getShortUrlByOriginalUrl, getShortUrlsByUserId, getDraftShortUrlsByUserId } from "../dao/shortUrl.js";
 import { toDataURL } from 'qrcode';
 import { AppError } from "../utils/httpError.js";
 
@@ -121,6 +121,23 @@ export const getUserShortUrls = async (userId) => {
         }
 
         throw new AppError(err.message || 'Failed to fetch user URLs.', 500);
+    }
+}
+
+export const getUserDraftUrls = async (userId) => {
+    try {
+        if (!userId) {
+            throw new AppError('User id is required.', 400);
+        }
+
+        return await getDraftShortUrlsByUserId(userId);
+    }
+    catch (err) {
+        if (err instanceof AppError) {
+            throw err;
+        }
+
+        throw new AppError(err.message || 'Failed to fetch user drafts.', 500);
     }
 }
 
