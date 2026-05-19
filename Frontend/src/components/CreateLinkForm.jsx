@@ -243,17 +243,6 @@ export default function CreateLinkForm() {
           />
         </div>
 
-        <div className="flex items-center gap-3 py-1">
-          <label className="inline-flex items-center gap-2.5 text-sm font-bold text-slate-700 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={conversion}
-              onChange={(e) => setConversion(e.target.checked)}
-              className="rounded border-slate-200 text-blue-600 focus:ring-blue-500 h-4 w-4"
-            />
-            <span>Enable Conversion Tracking</span>
-          </label>
-        </div>
       </div>
 
       <aside className="col-span-12 lg:col-span-4 space-y-5">
@@ -263,9 +252,9 @@ export default function CreateLinkForm() {
             <button
               type="button"
               onClick={() => setShowDropdown(!showDropdown)}
-              className="w-full flex items-center justify-between rounded-full border border-slate-200 px-5 py-3.5 text-sm font-semibold outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition bg-white cursor-pointer shadow-sm hover:border-slate-300 active:scale-[0.99]"
+              className="w-full flex items-center justify-between rounded-full border-2 border-blue-400 px-5 py-3.5 text-sm font-semibold outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition bg-white cursor-pointer shadow-[0_4px_14px_rgba(59,130,246,0.08)] hover:border-blue-500 active:scale-[0.99]"
             >
-              <span>{folder || 'No folder'}</span>
+              <span>{folder || 'Create folder'}</span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 20 20"
@@ -279,23 +268,21 @@ export default function CreateLinkForm() {
             {showDropdown && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setShowDropdown(false)} />
-                <div className="absolute right-0 left-0 mt-2 z-50 rounded-2xl border border-slate-150 bg-white p-2 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.08),0_8px_16px_-6px_rgba(0,0,0,0.04)] focus:outline-none animate-in fade-in slide-in-from-top-2 duration-150">
+                <div className="absolute right-0 left-0 mt-3 z-50 rounded-[22px] border border-slate-300 bg-white p-3 shadow-[0_14px_30px_-8px_rgba(15,23,42,0.18)] focus:outline-none animate-in fade-in slide-in-from-top-2 duration-150">
                   <button
                     type="button"
                     onClick={() => {
-                      setFolder('')
                       setShowDropdown(false)
+                      navigate('/folders/new', { state: { returnTo: '/create' } })
                     }}
-                    className={`w-full flex items-center justify-between rounded-xl px-4 py-2.5 text-sm font-semibold transition ${
-                      !folder ? 'bg-blue-50 text-blue-600' : 'text-slate-700 hover:bg-slate-50'
-                    }`}
+                    className="w-full flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-bold transition text-blue-600 bg-slate-50 hover:bg-blue-50"
                   >
-                    <span>No folder</span>
-                    {!folder && (
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4.5 w-4.5 text-blue-600">
-                        <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
+                    <span>Create folder</span>
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white text-blue-600 shadow-sm border border-blue-100">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4.5 w-4.5">
+                        <path fillRule="evenodd" d="M10 3.25a.75.75 0 01.75.75v5.25H16a.75.75 0 010 1.5h-5.25V16a.75.75 0 01-1.5 0v-5.25H4a.75.75 0 010-1.5h5.25V4a.75.75 0 01.75-.75z" clipRule="evenodd" />
                       </svg>
-                    )}
+                    </span>
                   </button>
 
                   {folderOptions.map((item) => {
@@ -308,15 +295,17 @@ export default function CreateLinkForm() {
                           setFolder(item.name)
                           setShowDropdown(false)
                         }}
-                        className={`w-full flex items-center justify-between rounded-xl px-4 py-2.5 text-sm font-semibold transition ${
-                          isSelected ? 'bg-blue-50 text-blue-600' : 'text-slate-700 hover:bg-slate-50'
+                        className={`w-full flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-bold transition ${
+                          isSelected ? 'bg-blue-50 text-blue-700' : 'text-slate-700 hover:bg-slate-50'
                         }`}
                       >
                         <span className="truncate">{item.name}</span>
                         {isSelected && (
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4.5 w-4.5 text-blue-600">
-                            <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
-                          </svg>
+                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white text-blue-600 shadow-sm border border-blue-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4.5 w-4.5">
+                              <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
+                            </svg>
+                          </span>
                         )}
                       </button>
                     )

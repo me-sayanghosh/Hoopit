@@ -40,7 +40,7 @@ const getDomainFavicon = (url) => {
   try {
     const domain = new URL(url).hostname
     return `https://www.google.com/s2/favicons?sz=64&domain=${domain}`
-  } catch (e) {
+  } catch {
     return ''
   }
 }
@@ -166,6 +166,7 @@ export default function DashboardPage() {
   const [showFilterPopover, setShowFilterPopover] = useState(false)
   const [filterTag, setFilterTag] = useState('')
   const [filterFolder, setFilterFolder] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
 
   useEffect(() => {
     if (location.state?.newLink) {
@@ -185,7 +186,14 @@ export default function DashboardPage() {
 
   useEffect(() => {
     let mounted = true
+
     const load = async () => {
+      setLoading(true)
+      setPageError('')
+      setProfile(null)
+      setUrls([])
+      setDrafts([])
+
       try {
         const uRes = await getCurrentUser()
         if (!mounted) return
@@ -195,7 +203,7 @@ export default function DashboardPage() {
         if (!mounted) return
         setUrls(urlsRes?.urls || [])
         setDrafts(urlsRes?.drafts || [])
-      } catch (err) {
+      } catch {
         if (!mounted) return
         setPageError('Failed to fetch dashboard data. Please try again.')
       } finally {
@@ -235,6 +243,9 @@ export default function DashboardPage() {
       }
     })
 
+  const totalPages = Math.ceil(filteredUrls.length / 10) || 1
+  const paginatedUrls = filteredUrls.slice((currentPage - 1) * 10, currentPage * 10)
+
   if (loading) {
     return (
       <AppShell title="Links" subtitle="Loading your dashboard...">
@@ -272,7 +283,9 @@ export default function DashboardPage() {
               </button>
 
               {showFilterPopover && (
-                <div className="absolute left-1/2 -translate-x-1/2 md:left-0 md:translate-x-0 top-12 z-50 w-[290px] xs:w-80 rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_20px_50px_rgba(0,0,0,0.12)] animate-in fade-in slide-in-from-top-2 duration-200 text-left">
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowFilterPopover(false)} />
+                  <div className="absolute left-1/2 -translate-x-1/2 md:left-0 md:translate-x-0 top-12 z-50 w-72.5 xs:w-80 max-h-[70vh] overflow-y-auto rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_20px_50px_rgba(0,0,0,0.12)] animate-in fade-in slide-in-from-top-2 duration-200 text-left">
                   <div className="space-y-4">
                     {/* Folders Section */}
                     <div>
@@ -284,9 +297,9 @@ export default function DashboardPage() {
                           </button>
                         )}
                       </div>
-                      <div className="space-y-1 max-h-36 overflow-y-auto pr-1 scrollbar-thin">
+                      <div className="space-y-1 max-h-80 overflow-y-auto pr-1 scrollbar-thin">
                         <button
-                          onClick={() => { setFilterFolder(''); }}
+                          onClick={() => { setFilterFolder(''); setCurrentPage(1); }}
                           className={`w-full flex items-center justify-between rounded-xl px-3 py-2.5 text-xs font-bold transition ${
                             !filterFolder
                               ? 'bg-blue-50/50 text-blue-600'
@@ -307,7 +320,7 @@ export default function DashboardPage() {
                           return (
                             <button
                               key={folder}
-                              onClick={() => { setFilterFolder(isSelected ? '' : folder); }}
+                              onClick={() => { setFilterFolder(isSelected ? '' : folder); setCurrentPage(1); }}
                               className={`w-full flex items-center justify-between rounded-xl px-3 py-2.5 text-xs font-bold transition ${
                                 isSelected
                                   ? 'bg-blue-50 text-blue-600'
@@ -339,7 +352,7 @@ export default function DashboardPage() {
                       </div>
                       <div className="space-y-1 max-h-36 overflow-y-auto pr-1 scrollbar-thin">
                         <button
-                          onClick={() => { setFilterTag(''); }}
+                          onClick={() => { setFilterTag(''); setCurrentPage(1); }}
                           className={`w-full flex items-center justify-between rounded-xl px-3 py-2.5 text-xs font-bold transition ${
                             !filterTag
                               ? 'bg-blue-50/50 text-blue-600'
@@ -361,7 +374,7 @@ export default function DashboardPage() {
                           return (
                             <button
                               key={tag}
-                              onClick={() => { setFilterTag(isSelected ? '' : tag); }}
+                              onClick={() => { setFilterTag(isSelected ? '' : tag); setCurrentPage(1); }}
                               className={`w-full flex items-center justify-between rounded-xl px-3 py-2.5 text-xs font-bold transition ${
                                 isSelected
                                   ? 'bg-blue-50 text-blue-600'
@@ -393,6 +406,7 @@ export default function DashboardPage() {
                     ) : null}
                   </div>
                 </div>
+                </>
               )}
             </div>
 
@@ -417,11 +431,13 @@ export default function DashboardPage() {
               </button>
 
               {showDisplayPopover && (
-                <div className="absolute right-1/2 translate-x-1/2 md:right-0 md:translate-x-0 top-12 z-50 w-[290px] xs:w-[340px] rounded-3xl border border-slate-200 bg-white p-5 shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200">
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowDisplayPopover(false)} />
+                  <div className="absolute right-1/2 translate-x-1/2 md:right-0 md:translate-x-0 top-12 z-50 w-72.5 xs:w-85 rounded-3xl border border-slate-200 bg-white p-5 shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200">
                   {/* Top layout options */}
                   <div className="grid grid-cols-2 gap-3 mb-4">
                     <button
-                      onClick={() => setLayoutMode('cards')}
+                      onClick={() => { setLayoutMode('cards'); setCurrentPage(1); }}
                       className={`flex flex-col items-center justify-center gap-2 rounded-2xl border p-4 text-center transition-all ${
                         layoutMode === 'cards'
                           ? 'border-slate-300 bg-slate-50/80 text-slate-900 font-bold'
@@ -434,7 +450,7 @@ export default function DashboardPage() {
                       <span className="text-xs">Cards</span>
                     </button>
                     <button
-                      onClick={() => setLayoutMode('rows')}
+                      onClick={() => { setLayoutMode('rows'); setCurrentPage(1); }}
                       className={`flex flex-col items-center justify-center gap-2 rounded-2xl border p-4 text-center transition-all ${
                         layoutMode === 'rows'
                           ? 'border-slate-350 bg-slate-50/80 text-slate-900 font-bold'
@@ -458,7 +474,7 @@ export default function DashboardPage() {
                     </span>
                     <select
                       value={orderBy}
-                      onChange={(e) => setOrderBy(e.target.value)}
+                      onChange={(e) => { setOrderBy(e.target.value); setCurrentPage(1); }}
                       className="rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-bold text-slate-700 outline-none hover:bg-slate-50 transition cursor-pointer"
                     >
                       <option value="createdAt">Date created</option>
@@ -475,7 +491,7 @@ export default function DashboardPage() {
                       Show archived links
                     </span>
                     <button
-                      onClick={() => setShowArchived(!showArchived)}
+                      onClick={() => { setShowArchived(!showArchived); setCurrentPage(1); }}
                       className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
                         showArchived ? 'bg-blue-600' : 'bg-slate-200'
                       }`}
@@ -539,6 +555,7 @@ export default function DashboardPage() {
                         setLayoutMode('cards')
                         setOrderBy('createdAt')
                         setShowArchived(false)
+                        setCurrentPage(1)
                       }}
                       className="text-slate-500 hover:text-slate-800 font-bold transition"
                     >
@@ -555,6 +572,7 @@ export default function DashboardPage() {
                     </button>
                   </div>
                 </div>
+                </>
               )}
             </div>
           </div>
@@ -618,7 +636,7 @@ export default function DashboardPage() {
                             setUrls(refreshed?.urls || []);
                             setDrafts(refreshed?.drafts || []);
                             setSnackbar({ message: 'Draft deleted', actionLabel: '', action: null });
-                          } catch (err) {
+                          } catch {
                             setSnackbar({ message: 'Failed to delete draft', actionLabel: '', action: null });
                           }
                         }}
@@ -643,14 +661,16 @@ export default function DashboardPage() {
           </div>
         )}
 
-        <div className="flex items-center justify-between text-sm font-bold text-slate-500 px-1">
-          <span>Viewing {filteredUrls.length || 0} of {urls.length} links</span>
-          <span>{profile?.name || 'User'}</span>
+        <div className="flex items-center text-sm font-bold text-slate-500 px-1">
+          <span>
+            Showing {filteredUrls.length ? (currentPage - 1) * 10 + 1 : 0} -{' '}
+            {Math.min(currentPage * 10, filteredUrls.length)} of {filteredUrls.length} links
+          </span>
         </div>
 
         <div className="space-y-4">
           {filteredUrls.length ? (
-            filteredUrls.map((item) => {
+            paginatedUrls.map((item) => {
               if (layoutMode === 'rows') {
                 return (
                   <div key={item.id} className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 rounded-xl border border-slate-200/60 bg-white px-5 py-3.5 shadow-sm hover:shadow-[0_4px_16px_rgba(0,0,0,0.02)] hover:border-slate-350 transition duration-150">
@@ -919,13 +939,36 @@ export default function DashboardPage() {
           )}
         </div>
 
-        <div className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white px-5 py-4 text-sm font-bold text-slate-600 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
-          <span>Viewing {filteredUrls.length} of {urls.length} links</span>
-          <div className="flex gap-2">
-            <button className="rounded-full border border-slate-200 hover:bg-slate-50 bg-white px-4 py-2 text-xs font-bold text-slate-700 transition duration-150 cursor-pointer">Previous</button>
-            <button className="rounded-full border border-slate-200 hover:bg-slate-50 bg-white px-4 py-2 text-xs font-bold text-slate-700 transition duration-150 cursor-pointer">Next</button>
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-600 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
+            <button
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+              className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-white hover:bg-slate-50 px-4 py-2 text-xs font-bold text-slate-600 shadow-sm transition disabled:opacity-50 active:scale-95 disabled:pointer-events-none"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-3.5 w-3.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+              </svg>
+              Previous
+            </button>
+
+            <span className="text-xs font-bold text-slate-500">
+              Page <span className="text-slate-800">{currentPage}</span> of <span className="text-slate-800">{totalPages}</span>
+            </span>
+
+            <button
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+              className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-white hover:bg-slate-50 px-4 py-2 text-xs font-bold text-slate-600 shadow-sm transition disabled:opacity-50 active:scale-95 disabled:pointer-events-none"
+            >
+              Next
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-3.5 w-3.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
+            </button>
           </div>
-        </div>
+        )}
       </div>
       {showNewLinkModal ? <NewLinkModal urlData={newLinkData} onClose={() => setShowNewLinkModal(false)} /> : null}
       {copiedValue ? <CopyToast value={copiedValue} /> : null}

@@ -8,6 +8,7 @@ export default function CreateFolderPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const editingFolder = location.state?.folder || null
+  const returnTo = location.state?.returnTo || '/folders'
 
   const [profile, setProfile] = useState(null)
   const [saving, setSaving] = useState(false)
@@ -79,7 +80,7 @@ export default function CreateFolderPage() {
         await createFolder(payload)
       }
 
-      navigate('/folders')
+      navigate(returnTo)
     } catch (err) {
       setError(err?.message || 'Failed to save folder.')
     } finally {
@@ -170,7 +171,7 @@ export default function CreateFolderPage() {
 
           {/* Right Links Selection Panel */}
           <div>
-            <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_4px_24px_rgba(0,0,0,0.04)] flex flex-col h-[520px]">
+            <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_4px_24px_rgba(0,0,0,0.04)] flex flex-col h-130">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-4 mb-4">
                 <div>
                   <div className="text-lg font-bold text-slate-900">All Short Links</div>

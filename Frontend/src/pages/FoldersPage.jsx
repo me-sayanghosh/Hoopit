@@ -185,11 +185,11 @@ export default function FoldersPage() {
       subtitle="Organize your short links into folders."
       profile={profile}
       rightSlot={(
-        <div className="flex items-center gap-3">
-          <button onClick={() => navigate('/dashboard')} className="rounded-full border border-slate-200 bg-white hover:bg-slate-50 px-5 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition">
+        <div className="flex flex-wrap items-center gap-2">
+          <button onClick={() => navigate('/dashboard')} className="rounded-full border border-slate-200 bg-white hover:bg-slate-50 px-4 py-2 text-xs sm:text-sm font-bold text-slate-700 shadow-sm transition active:scale-95">
             Back to Dashboard
           </button>
-          <button onClick={() => navigate('/folders/new')} className="rounded-full bg-blue-600 text-white hover:bg-blue-700 px-5 py-2.5 text-sm font-bold shadow-[0_4px_20px_rgba(37,99,235,0.3)] transition">
+          <button onClick={() => navigate('/folders/new')} className="rounded-full bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 text-xs sm:text-sm font-bold shadow-[0_4px_20px_rgba(37,99,235,0.3)] transition active:scale-95">
             New Folder +
           </button>
         </div>
@@ -202,17 +202,17 @@ export default function FoldersPage() {
           </div>
         ) : null}
 
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Your folders</h3>
             <p className="mt-1 text-sm font-medium text-slate-500">Folders stay synced with the links you picked.</p>
           </div>
-          <span className="rounded-full bg-blue-50 border border-blue-200 px-3.5 py-1 text-xs font-bold text-blue-600">{folders.length} total</span>
+          <span className="self-start sm:self-auto rounded-full bg-blue-50 border border-blue-200 px-3.5 py-1 text-xs font-bold text-blue-600">{folders.length} total</span>
         </div>
 
-        <div className="grid gap-6 xl:grid-cols-2">
+        <div className="grid gap-6 grid-cols-1 xl:grid-cols-2">
           {folders.length ? folders.map((folder) => (
-            <div key={folder.id} className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_4px_24px_rgba(0,0,0,0.04)] transition hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] flex flex-col justify-between">
+            <div key={folder.id} className="rounded-2xl border border-slate-200/80 bg-white p-4 sm:p-6 shadow-[0_4px_24px_rgba(0,0,0,0.04)] transition hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] flex flex-col justify-between min-w-0 overflow-hidden">
               <div>
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0 cursor-pointer group flex-1" onClick={() => setViewFolder(folder)}>
@@ -293,7 +293,7 @@ export default function FoldersPage() {
 
                 <div className="mt-5 space-y-2.5 max-h-48 overflow-y-auto pr-1 bg-slate-50/20 rounded-xl p-1.5 border border-slate-100/60 scrollbar-thin">
                   {(folder.shortUrls || []).map((item) => (
-                    <div key={item.id} className="rounded-xl border border-slate-100 bg-white px-4 py-2.5 text-sm hover:border-slate-250 transition shadow-xs flex items-center justify-between gap-3">
+                    <div key={item.id} className="rounded-xl border border-slate-100 bg-white px-3 sm:px-4 py-2.5 text-sm hover:border-slate-250 transition shadow-xs flex items-center justify-between gap-3 min-w-0 overflow-hidden">
                       <div className="min-w-0 flex-1">
                         <div className="truncate font-bold text-slate-800">{item.shortUrl}</div>
                         <div className="truncate text-xs font-medium text-slate-400 mt-0.5">{item.originalUrl}</div>
@@ -369,10 +369,10 @@ export default function FoldersPage() {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
             <div className="w-full max-w-2xl overflow-hidden rounded-[28px] border border-slate-100 bg-white shadow-[0_24px_60px_rgba(0,0,0,0.15)] flex flex-col max-h-[85vh] animate-scale-up">
               {/* Modal Header */}
-              <div className="p-6 border-b border-slate-100 flex items-start justify-between bg-slate-50/20">
+              <div className="p-4 sm:p-6 border-b border-slate-100 flex items-start justify-between bg-slate-50/20">
                 <div className="min-w-0 pr-4">
-                  <h3 className="text-xl font-extrabold text-slate-900 truncate">{viewFolder.name}</h3>
-                  <p className="mt-1 text-sm font-medium text-slate-500 line-clamp-2">{viewFolder.description || 'No description provided.'}</p>
+                  <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 truncate">{viewFolder.name}</h3>
+                  <p className="mt-1 text-xs sm:text-sm font-medium text-slate-500 line-clamp-2">{viewFolder.description || 'No description provided.'}</p>
                 </div>
                 <button onClick={() => { setViewFolder(null); setFolderSearch(''); }} className="rounded-full bg-slate-100 hover:bg-slate-200 p-2 text-slate-400 hover:text-slate-700 transition shrink-0">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="h-5 w-5">
@@ -382,16 +382,16 @@ export default function FoldersPage() {
               </div>
 
               {/* Search inside Folder */}
-              <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/45 flex flex-wrap items-center justify-between gap-3">
-                <div className="relative flex-1 min-w-[200px]">
+              <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-100 bg-slate-50/45 flex flex-wrap items-center justify-between gap-3">
+                <div className="relative flex-1 min-w-[160px]">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400">
                     <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15z" />
                   </svg>
                   <input
                     value={folderSearch}
                     onChange={(e) => setFolderSearch(e.target.value)}
-                    placeholder="Search links in this folder..."
-                    className="w-full rounded-full border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-xs font-semibold text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
+                    placeholder="Search links..."
+                    className="w-full rounded-full border border-slate-200 bg-white py-2 pl-9 pr-4 text-xs font-semibold text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
                   />
                 </div>
                 <div className="flex items-center gap-2">
@@ -401,7 +401,7 @@ export default function FoldersPage() {
                       navigator.clipboard.writeText(allLinks)
                       setNotice('All short links copied to clipboard!')
                     }}
-                    className="rounded-full border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition shadow-xs"
+                    className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition shadow-xs whitespace-nowrap"
                   >
                     Copy all links
                   </button>
@@ -409,14 +409,14 @@ export default function FoldersPage() {
               </div>
 
               {/* Links list inside folder (Scrollable) */}
-              <div className="flex-1 overflow-y-auto p-6 space-y-3.5 bg-slate-50/10">
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3 bg-slate-50/10">
                 {(viewFolder.shortUrls || [])
                   .filter(item => 
                     item.shortUrl.toLowerCase().includes(folderSearch.toLowerCase()) || 
                     item.originalUrl.toLowerCase().includes(folderSearch.toLowerCase())
                   )
                   .map((item) => (
-                    <div key={item.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-2xl border border-slate-100 bg-white p-4.5 hover:border-slate-250 hover:shadow-sm transition">
+                    <div key={item.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-2xl border border-slate-100 bg-white p-3.5 hover:border-slate-250 hover:shadow-sm transition">
                       <div className="min-w-0 flex-1">
                         <a href={item.shortUrl} target="_blank" rel="noreferrer" className="text-sm font-bold text-slate-900 hover:text-blue-600 transition block truncate">
                           {item.shortUrl}
@@ -446,14 +446,14 @@ export default function FoldersPage() {
                     </div>
                   ))}
                 {!(viewFolder.shortUrls || []).length && (
-                  <div className="text-center py-12 text-sm font-semibold text-slate-400 bg-white rounded-2xl border border-dashed border-slate-200">
+                  <div className="text-center py-12 text-xs font-semibold text-slate-400 bg-white rounded-2xl border border-dashed border-slate-200">
                     This folder has no links assigned yet.
                   </div>
                 )}
               </div>
 
               {/* Modal Footer */}
-              <div className="p-6 border-t border-slate-100 bg-slate-50/25 flex items-center justify-between">
+              <div className="p-4 sm:p-6 border-t border-slate-100 bg-slate-50/25 flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-400">Total: {(viewFolder.shortUrls || []).length} links</span>
                 <div className="flex items-center gap-3">
                   <button
@@ -461,7 +461,7 @@ export default function FoldersPage() {
                       setViewFolder(null)
                       startEdit(viewFolder)
                     }}
-                    className="rounded-full bg-slate-900 hover:bg-black px-5 py-2.5 text-xs font-bold text-white transition shadow-sm"
+                    className="rounded-full bg-slate-900 hover:bg-black px-4 py-2 text-xs font-bold text-white transition shadow-sm"
                   >
                     Edit Folder
                   </button>

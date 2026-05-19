@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { NavLink, useLocation, useNavigate } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { logOutUser, getCurrentUser } from '../api/user.api.js'
 
 const shortLinksNav = [
@@ -12,7 +12,10 @@ const shortLinksNav = [
 
 const insightsNav = [
   { label: 'Analytics', icon: 'chart', to: '/analytics' },
-  { label: 'Customers', icon: 'user', to: '/customers' },
+]
+
+const accountNav = [
+  { label: 'Profile Settings', icon: 'cog', to: '/profile' },
 ]
 
 function SidebarIcon({ name, active = false }) {
@@ -68,6 +71,15 @@ function SidebarIcon({ name, active = false }) {
     )
   }
 
+  if (name === 'cog') {
+    return (
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor" className={`h-4 w-4 ${className}`}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.43l-1.003.828c-.293.241-.438.613-.43.992a7.723 7.723 0 010 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.43l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.991l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.645-.869l.214-1.28z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+      </svg>
+    )
+  }
+
   if (name === 'tag') {
     return (
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor" className={`h-4 w-4 ${className}`}>
@@ -105,7 +117,6 @@ function SidebarNavItem({ item }) {
 
 export default function AppShell({ title, subtitle, children, profile, onLogout, rightSlot }) {
   const navigate = useNavigate()
-  const location = useLocation()
   const [mobileOpen, setMobileOpen] = useState(false)
 
   // Single source-of-truth profile used in sidebar/header to avoid inconsistencies
@@ -127,10 +138,6 @@ export default function AppShell({ title, subtitle, children, profile, onLogout,
     return () => { mounted = false }
   }, [])
 
-  useEffect(() => {
-    setMobileOpen(false)
-  }, [location.pathname])
-
   const handleLogout = async () => {
     if (onLogout) {
       onLogout()
@@ -145,8 +152,10 @@ export default function AppShell({ title, subtitle, children, profile, onLogout,
     }
   }
 
+  const resolvedProfile = profile || internalProfile
+
   const sidebar = (
-    <div className="rounded-[24px] bg-white p-4 shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-slate-200/80 flex flex-col h-full z-10">
+    <div className="rounded-3xl bg-white p-4 shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-slate-200/80 flex flex-col h-full z-10">
       <div className="flex items-center gap-3 px-2 py-1">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-[#111] flex items-center justify-center gap-0.5 flex-wrap p-1.5 shrink-0">
@@ -155,13 +164,6 @@ export default function AppShell({ title, subtitle, children, profile, onLogout,
             ))}
           </div>
           <span className="font-extrabold text-lg tracking-tight text-slate-900">HoopIt</span>
-        </div>
-        <div className="ml-auto">
-          <img
-            src={internalProfile?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(internalProfile?.name || 'User')}`}
-            alt="avatar"
-            className="h-8 w-8 rounded-full object-cover ring-2 ring-slate-100 shadow-sm"
-          />
         </div>
       </div>
 
@@ -179,9 +181,40 @@ export default function AppShell({ title, subtitle, children, profile, onLogout,
             <SidebarNavItem key={item.label} item={item} />
           ))}
         </nav>
+
+        <div className="mt-6 text-xs font-bold uppercase tracking-[0.15em] text-slate-400 px-3">Account</div>
+        <nav className="mt-3 space-y-1.5">
+          {accountNav.map((item) => (
+            <SidebarNavItem key={item.label} item={item} />
+          ))}
+        </nav>
       </div>
 
-      <div className="mt-auto pt-4 border-t border-slate-100">
+      <div className="mt-auto pt-4 border-t border-slate-100 space-y-3">
+        {/* Profile card */}
+        <button
+          onClick={() => navigate('/profile')}
+          className="w-full flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50/70 hover:bg-slate-100/80 px-3 py-2.5 text-left transition group active:scale-[0.98]"
+        >
+          <img
+            src={resolvedProfile?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(resolvedProfile?.name || 'User')}&background=2563EB&color=fff`}
+            alt="avatar"
+            className="h-9 w-9 rounded-full object-cover ring-2 ring-white shadow-sm shrink-0"
+          />
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-bold text-slate-900 group-hover:text-blue-600 transition leading-tight">
+              {resolvedProfile?.name || 'User'}
+            </p>
+            <p className="truncate text-[11px] font-medium text-slate-400 leading-tight mt-0.5">
+              {resolvedProfile?.email || ''}
+            </p>
+          </div>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-3.5 w-3.5 text-slate-300 group-hover:text-blue-400 shrink-0 transition">
+            <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+          </svg>
+        </button>
+
+        {/* Logout */}
         <button
           onClick={handleLogout}
           className="w-full rounded-xl bg-slate-900 hover:bg-black px-4 py-3 text-sm font-bold text-white shadow-sm hover:shadow transition-all duration-200"
@@ -201,7 +234,7 @@ export default function AppShell({ title, subtitle, children, profile, onLogout,
           {sidebar}
         </aside>
 
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1 min-h-0 flex flex-col">
           <header className="mb-4 flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm lg:hidden">
             <button
               type="button"
@@ -211,13 +244,17 @@ export default function AppShell({ title, subtitle, children, profile, onLogout,
               Menu
             </button>
             <div className="text-sm font-semibold text-slate-900">{title || 'Dashboard'}</div>
-            <div className="h-9 w-9 overflow-hidden rounded-full border border-slate-200 bg-slate-100">
+            <button
+              onClick={() => navigate('/profile')}
+              title="View Profile"
+              className="h-9 w-9 overflow-hidden rounded-full border border-slate-200 bg-slate-100 hover:scale-105 active:scale-95 transition-transform duration-200 focus:outline-none"
+            >
               <img
-                src={internalProfile?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(internalProfile?.name || 'User')}`}
+                src={resolvedProfile?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(resolvedProfile?.name || 'User')}`}
                 alt="avatar"
                 className="h-full w-full object-cover"
               />
-            </div>
+            </button>
           </header>
 
           {mobileOpen ? (
@@ -249,7 +286,9 @@ export default function AppShell({ title, subtitle, children, profile, onLogout,
             </div>
           ) : null}
 
-          {children}
+          <div className="min-h-0 flex-1 overflow-y-auto pr-1 pb-2">
+            {children}
+          </div>
         </div>
       </div>
     </div>

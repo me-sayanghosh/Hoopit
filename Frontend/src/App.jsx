@@ -12,6 +12,7 @@ import CreateShortUrlPage from './pages/CreateShortUrlPage.jsx'
 import ArchivePage from './pages/ArchivePage.jsx'
 import TagsPage from './pages/TagsPage.jsx'
 import DraftsPage from './pages/DraftsPage.jsx'
+import ProfilePage from './pages/ProfilePage.jsx'
 
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 
@@ -29,6 +30,7 @@ const App = () => {
         <Route path="/analytics/:shortUrl" element={<AnalyticsPage />} />
         <Route path="/archived" element={<ArchivePage />} />
         <Route path="/drafts" element={<DraftsPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
         <Route path="/tags" element={<TagsPage />} />
         <Route path="/tags/:tag" element={<TagsPage />} />
         <Route path="/customers" element={<CustomersPage />} />
