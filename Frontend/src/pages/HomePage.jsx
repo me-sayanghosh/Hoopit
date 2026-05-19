@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import StickyNote from '../components/HeroStickyNote.jsx'
+import { ClockIcon, QRCard } from '../components/HeroExtras.jsx'
 
 const CheckIcon = () => (
   <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
@@ -8,174 +10,75 @@ const CheckIcon = () => (
   </svg>
 )
 
-const StickyNote = () => (
-  <div style={{
-    width: 175,
-    background: '#FEF08A',
-    borderRadius: 4,
-    padding: '16px 16px 28px',
-    boxShadow: '0 4px 16px rgba(0,0,0,0.10)',
-    transform: 'rotate(-2deg)',
-    fontFamily: "'Caveat', cursive",
-    fontSize: 15,
-    lineHeight: 1.5,
-    color: '#333',
-    position: 'relative',
-  }}>
-    <div style={{
-      position: 'absolute',
-      top: -8,
-      left: '50%',
-      transform: 'translateX(-50%)',
-      width: 14,
-      height: 14,
-      borderRadius: '50%',
-      background: '#ef4444',
-      boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
-    }} />
-    Take notes to keep track of crucial details, and accomplish more tasks with ease.
-  </div>
-)
+// ReminderCard removed per request
 
-const ReminderCard = () => (
+
+const TodayTasksCard = () => {
+  const items = [
+    { key: 'shorturls', title: 'Short URLs', desc: 'Create and manage short links', count: 24, to: '/create-short-url', color: '#2563EB' },
+    { key: 'folders', title: 'Folders', desc: 'Organize links into folders', count: 6, to: '/folders', color: '#10B981' },
+    { key: 'tags', title: 'Tags', desc: 'Filter and group links by tags', count: 12, to: '/tags', color: '#F59E0B' },
+  ]
+
+  return (
+    <div style={{
+      background: 'white',
+      borderRadius: 16,
+      padding: '18px 20px',
+      boxShadow: '0 4px 24px rgba(0,0,0,0.10)',
+      width: 260,
+      fontSize: 13,
+    }}>
+      <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 14, color: '#111' }}>Quick actions</div>
+      {items.map((it, i) => (
+        <div key={it.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: i < items.length - 1 ? 12 : 0 }}>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+            <div style={{ width: 44, height: 44, borderRadius: 10, background: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ width: 28, height: 28, borderRadius: 6, background: it.color }} />
+            </div>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: 14, color: '#111' }}>{it.title} <span style={{ fontWeight: 600, color: '#6b7280', fontSize: 12, marginLeft: 8 }}>{it.count}</span></div>
+              <div style={{ fontSize: 12, color: '#6b7280' }}>{it.desc}</div>
+            </div>
+          </div>
+          <Link to={it.to} style={{ background: 'transparent', border: '1px solid #e5e7eb', borderRadius: 10, padding: '8px 12px', fontSize: 13, textDecoration: 'none', color: '#111' }}>Open</Link>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+const LocationTypeCard = ({ title = 'Find where ?' }) => (
   <div style={{
     background: 'white',
     borderRadius: 16,
-    padding: '16px 20px',
-    boxShadow: '0 4px 24px rgba(0,0,0,0.10)',
+    padding: '16px',
+    boxShadow: '0 6px 20px rgba(0,0,0,0.06)',
     width: 220,
     fontSize: 13,
-  }}>
-    <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 10, color: '#111' }}>Reminders</div>
-    <div style={{ fontSize: 11, color: '#aaa', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Meetings</div>
-    <div style={{ fontWeight: 600, fontSize: 13, color: '#111' }}>Today's Meeting</div>
-    <div style={{ fontSize: 11, color: '#999', marginBottom: 10 }}>Call with marketing team</div>
-    <div style={{ fontSize: 11, color: '#777', marginBottom: 4 }}>Time</div>
-    <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      gap: 6,
-      background: '#EFF6FF',
-      borderRadius: 8,
-      padding: '6px 10px',
-      marginBottom: 12,
-    }}>
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2">
-        <circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" />
-      </svg>
-      <span style={{ color: '#2563EB', fontWeight: 600, fontSize: 12 }}>13:00 - 13:45</span>
-    </div>
-    <div style={{ borderTop: '1px solid #f0f0f0', paddingTop: 10 }}>
-      <div style={{ fontSize: 11, color: '#777', marginBottom: 6 }}>Meeting Link</div>
-      <div style={{
-        background: '#f7f7f7',
-        borderRadius: 8,
-        padding: '8px 10px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 8,
-      }}>
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2.2" strokeLinecap="round">
-          <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
-          <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
-        </svg>
-        <div style={{ flex: 1, overflow: 'hidden' }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#2563EB', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>chrono.link/meet-today</div>
-          <div style={{ fontSize: 10, color: '#bbb', marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>meet.google.com/abc-def-ghi</div>
-        </div>
-      </div>
-    </div>
-  </div>
-)
-
-const TodayTasksCard = () => (
-  <div style={{
-    background: 'white',
-    borderRadius: 16,
-    padding: '18px 20px',
-    boxShadow: '0 4px 24px rgba(0,0,0,0.10)',
-    width: 240,
-    fontSize: 13,
-  }}>
-    <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 14, color: '#111' }}>Today's tasks</div>
-    {[
-      { num: 8, title: 'New Ideas for campaign', percent: 60, color: '#2563EB', date: 'Sep 10' },
-      { num: 3, title: 'Design PPT #4', percent: 112, color: '#EF4444', date: 'Sep 18' },
-    ].map((task, i) => (
-      <div key={task.title} style={{ marginBottom: i === 0 ? 14 : 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-          <div style={{ width: 20, height: 20, borderRadius: 5, background: task.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{task.num}</div>
-          <span style={{ fontSize: 12, fontWeight: 500, color: '#222' }}>{task.title}</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingLeft: 28 }}>
-          <span style={{ fontSize: 11, color: '#999', minWidth: 36 }}>{task.date}</span>
-          <div style={{ flex: 1, height: 4, background: '#f0f0f0', borderRadius: 2, overflow: 'hidden' }}>
-            <div style={{ height: '100%', borderRadius: 2, width: `${Math.min(task.percent, 100)}%`, background: task.color }} />
-          </div>
-          <span style={{ fontSize: 11, color: '#999', minWidth: 32, textAlign: 'right' }}>{task.percent}%</span>
-        </div>
-      </div>
-    ))}
-  </div>
-)
-
-const IntegrationsCard = () => (
-  <div style={{
-    background: 'white',
-    borderRadius: 16,
-    padding: '18px 20px',
-    boxShadow: '0 4px 24px rgba(0,0,0,0.10)',
-    width: 200,
-  }}>
-    <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 14, color: '#111' }}>100+ Integrations</div>
-    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-      <div style={{ width: 44, height: 44, borderRadius: 10, background: 'white', boxShadow: '0 2px 8px rgba(0,0,0,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <svg width="28" height="28" viewBox="0 0 48 48">
-          <path fill="#EA4335" d="M6 40h8V24L4 16v20c0 2.2 1.8 4 4 4z" />
-          <path fill="#34A853" d="M34 40h8c2.2 0 4-1.8 4-4V16l-12 8z" />
-          <path fill="#4285F4" d="M34 8h-4L24 14 18 8H6L24 22 42 8z" />
-          <path fill="#FBBC05" d="M14 24V8H6c-2.2 0-4 1.8-4 4v4l12 8z" />
-        </svg>
-      </div>
-      <div style={{ width: 44, height: 44, borderRadius: 10, background: 'white', boxShadow: '0 2px 8px rgba(0,0,0,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <svg width="26" height="26" viewBox="0 0 48 48">
-          <path fill="#E01E5A" d="M14 28a4 4 0 01-4 4 4 4 0 01-4-4 4 4 0 014-4h4v4z" />
-          <path fill="#36C5F0" d="M20 14a4 4 0 01-4-4 4 4 0 014-4 4 4 0 014 4v4h-4z" />
-          <path fill="#2EB67D" d="M34 20a4 4 0 014 4 4 4 0 01-4 4h-4v-4a4 4 0 014-4z" />
-          <path fill="#ECB22E" d="M28 34a4 4 0 01-4 4 4 4 0 01-4-4v-4h4a4 4 0 014 4z" />
-        </svg>
-      </div>
-      <div style={{ width: 44, height: 44, borderRadius: 10, background: 'white', boxShadow: '0 2px 8px rgba(0,0,0,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <svg width="26" height="26" viewBox="0 0 48 48">
-          <rect x="6" y="6" width="36" height="36" rx="4" fill="white" stroke="#E0E0E0" strokeWidth="2" />
-          <rect x="6" y="6" width="36" height="12" rx="4" fill="#1A73E8" />
-          <text x="24" y="36" textAnchor="middle" fill="#1A73E8" fontSize="14" fontWeight="bold" fontFamily="Arial">31</text>
-        </svg>
-      </div>
-    </div>
-  </div>
-)
-
-const ClockIcon = () => (
-  <div style={{
-    width: 64,
-    height: 64,
-    borderRadius: 16,
-    background: 'white',
-    boxShadow: '0 4px 16px rgba(0,0,0,0.10)',
     display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
+    gap: 12,
+    alignItems: 'center'
   }}>
-    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-      <circle cx="20" cy="20" r="18" fill="white" stroke="#e8e8e8" strokeWidth="1.5" />
-      <circle cx="20" cy="20" r="15" fill="#fafafa" />
-      <line x1="20" y1="20" x2="13.5" y2="13" stroke="#333" strokeWidth="2.2" strokeLinecap="round" />
-      <line x1="20" y1="20" x2="27" y2="10" stroke="#333" strokeWidth="1.6" strokeLinecap="round" />
-      <circle cx="20" cy="20" r="2" fill="#ef4444" />
-    </svg>
+    <div style={{ width: 64, height: 64, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 6px 18px rgba(0,0,0,0.04)' }}>
+      <svg width="56" height="56" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M32 6C23 6 16 13.5 16 22.5 16 36 32 54 32 54s16-18 16-31.5C48 13.5 41 6 32 6z" fill="#EF4444" />
+        <circle cx="32" cy="22.5" r="6.5" fill="#fff" />
+        <g stroke="#111827" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none">
+          <circle cx="46" cy="46" r="7" />
+          <line x1="51" y1="51" x2="58" y2="58" />
+        </g>
+      </svg>
+    </div>
+
+    <div style={{ flex: 1 }}>
+      <div style={{ fontWeight: 800, fontSize: 15, color: '#111', marginBottom: 6 }}>{title}</div>
+      <div style={{ fontSize: 13, color: '#6b7280' }}>Locate visitors and map activity quickly.</div>
+    </div>
   </div>
 )
+
+// ClockIcon and QRCard are now shared in ../components/HeroExtras.jsx
 
 export default function HomePage() {
   const [scrolled, setScrolled] = useState(false)
@@ -189,6 +92,9 @@ export default function HomePage() {
   return (
     <div style={{ fontFamily: "'DM Sans', 'Helvetica Neue', Arial, sans-serif", background: '#f5f5f5', minHeight: '100vh', color: '#111' }}>
       <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Caveat:wght@500&display=swap" rel="stylesheet" />
+      {/* Full-page dotted overlay (behind content) */}
+      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', backgroundImage: 'radial-gradient(circle, rgba(160,160,160,0.28) 1px, transparent 1px)', backgroundSize: '28px 28px', zIndex: 0, opacity: 1 }} />
+      <div style={{ position: 'relative', zIndex: 10 }}>
 
       <nav style={{
         position: 'sticky',
@@ -229,28 +135,19 @@ export default function HomePage() {
         justifyContent: 'center',
         padding: '60px 48px 80px',
         overflow: 'hidden',
-        backgroundImage: 'radial-gradient(circle, #d0d0d0 1px, transparent 1px)',
-        backgroundSize: '24px 24px',
       }}>
         <div style={{ position: 'absolute', top: '10%', left: '6%', animation: 'floatA 6s ease-in-out infinite' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <StickyNote />
+            <StickyNote>Take notes to keep track of crucial details, and accomplish more tasks with ease.</StickyNote>
             <div style={{ marginTop: 8 }}><CheckIcon /></div>
           </div>
         </div>
 
-        <div style={{ position: 'absolute', top: '8%', left: '50%', transform: 'translateX(-50%)', animation: 'floatB 7s ease-in-out infinite' }}>
-          <div style={{ width: 72, height: 72, borderRadius: 18, background: 'white', boxShadow: '0 4px 24px rgba(0,0,0,0.10)', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 6, padding: 10 }}>
-            <div style={{ width: 22, height: 22, borderRadius: 5, background: '#2563EB' }} />
-            <div style={{ width: 22, height: 22, borderRadius: 5, background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ width: 8, height: 8, borderRadius: '50%', background: 'white' }} /></div>
-            <div style={{ width: 22, height: 22, borderRadius: 5, background: '#111' }} />
-            <div style={{ width: 22, height: 22, borderRadius: 5, background: '#111' }} />
-          </div>
-        </div>
+        {/* Floating four-square icon removed per request */}
 
-        <div style={{ position: 'absolute', top: '8%', right: '5%', display: 'flex', alignItems: 'flex-start', gap: 12, animation: 'floatA 5s ease-in-out infinite 1s' }}>
+        <div style={{ position: 'absolute', top: '8%', right: '5%', display: 'flex', alignItems: 'flex-start', gap: 12, animation: 'floatA 5s ease-in-out infinite 1s', zIndex: 20 }}>
           <ClockIcon />
-          <ReminderCard />
+          <QRCard />
         </div>
 
         <div style={{ position: 'absolute', bottom: '8%', left: '5%', animation: 'floatB 6s ease-in-out infinite 0.5s' }}>
@@ -258,7 +155,7 @@ export default function HomePage() {
         </div>
 
         <div style={{ position: 'absolute', bottom: '8%', right: '5%', animation: 'floatA 7s ease-in-out infinite 1.5s' }}>
-          <IntegrationsCard />
+          <LocationTypeCard />
         </div>
 
         <div style={{ textAlign: 'center', zIndex: 10, maxWidth: 700 }}>
@@ -301,6 +198,7 @@ export default function HomePage() {
         </div>
       </section>
 
+      </div>
       <style>{`
         @keyframes floatA {
           0%, 100% { transform: translateY(0px); }

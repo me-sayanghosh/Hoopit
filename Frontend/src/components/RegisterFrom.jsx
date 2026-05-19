@@ -15,6 +15,20 @@ function RegisterFrom({ onSubmit }) {
 		setError('')
 		setMessage('')
 
+		const emailRegex = /^\S+@\S+\.\S+$/;
+		if (!emailRegex.test(email)) {
+			setError('Please enter a valid email address.')
+			setLoading(false)
+			return
+		}
+
+		const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+		if (!passwordRegex.test(password)) {
+			setError('Password must be at least 8 characters and include uppercase, lowercase, number and special character')
+			setLoading(false)
+			return
+		}
+
 		try {
 			await onSubmit(name, email, password)
 			setMessage('Account created successfully.')

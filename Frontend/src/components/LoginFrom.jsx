@@ -14,6 +14,13 @@ function LoginFrom({ onSubmit, onSuccess }) {
 		setError('')
 		setMessage('')
 
+		const emailRegex = /^\S+@\S+\.\S+$/;
+		if (!emailRegex.test(email)) {
+			setError('Please enter a valid email address.')
+			setLoading(false)
+			return
+		}
+
 		try {
 			await onSubmit(email, password)
 			setPassword('')

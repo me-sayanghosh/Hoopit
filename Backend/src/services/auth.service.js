@@ -3,6 +3,10 @@ import { signToken } from '../utils/helper.js';
 import { AppError } from '../utils/httpError.js';
 
 export const registerUser = async (name, email, password) => {
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+    if (!passwordRegex.test(password)) {
+        throw new AppError('Password must be at least 8 characters and include uppercase, lowercase, number and special character', 400);
+    }
     const user = await findUserByEmail(email);
     if (user) throw new AppError('User already exists', 409);
 

@@ -7,10 +7,7 @@ function LoginPage() {
   const navigate = useNavigate()
 
   return (
-    <AuthLayout
-      title="Welcome back"
-      description="Enter your credentials to access your account."
-    >
+    <AuthLayout>
       <LoginFrom onSubmit={loginUser} onSuccess={() => navigate('/dashboard')} />
     </AuthLayout>
   )
