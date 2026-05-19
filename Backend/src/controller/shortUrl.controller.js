@@ -1,4 +1,4 @@
-import { shortUrlServiceWithoutUser, shortUrlServicewithUser, getUserShortUrls, getUserUrlAnalytics, getSingleUserUrlAnalytics } from '../services/shortUrl.service.js';
+import { shortUrlServiceWithoutUser, shortUrlServicewithUser, getUserShortUrls, getUserDraftUrls, getUserUrlAnalytics, getSingleUserUrlAnalytics } from '../services/shortUrl.service.js';
 import { getCustomShortUrl, updateShortUrlById, deleteShortUrlById, transferShortUrlToUserId } from '../dao/shortUrl.js';
 import { getArchivedShortUrlsByUserId, getTagsForUser, getUrlsByTagForUser } from '../dao/shortUrl.js';
 import { recordShortUrlClick } from '../dao/shortUrl.js';
@@ -13,7 +13,7 @@ dotenv.config({ path: './.env' });
 
 
 export const createShortUrl = wrapasync(async (req, res) => {
-    const { url, slug, customAlias, tags, comments, title, description, folder, conversionTracking } = req.body;
+    const { url, slug, customAlias, tags, comments, title, description, folder, conversionTracking, isDraft } = req.body;
     const shortAlias = slug || customAlias;
 
     // Build options to pass through
@@ -24,7 +24,8 @@ export const createShortUrl = wrapasync(async (req, res) => {
         title: title || '',
         description: description || '',
         folder: folder || '',
-        conversionTracking: !!conversionTracking
+        conversionTracking: !!conversionTracking,
+        isDraft: !!isDraft
     };
 
     let result;
@@ -68,6 +69,7 @@ export const redirectfromShortUrl = wrapasync(async (req, res) => {
 
 export const getMyShortUrls = wrapasync(async (req, res) => {
     const urls = await getUserShortUrls(req.user._id);
+    const drafts = await getUserDraftUrls(req.user._id);
 
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
@@ -84,6 +86,18 @@ export const getMyShortUrls = wrapasync(async (req, res) => {
             createdAt: item.createdAt,
             qrCodeUrl: item.qrCodeUrl || ''
         })),
+        drafts: drafts.map((item) => ({
+            id: item._id,
+            destination: item.originalUrl,
+            alias: item.shortUrl,
+            tags: item.tags?.join(', ') || '',
+            comments: item.comments || '',
+            conversion: item.conversionTracking,
+            folder: item.folder || '',
+            title: item.title || '',
+            description: item.description || '',
+            updatedAt: item.createdAt || new Date().toISOString()
+        }))
     });
 });
 

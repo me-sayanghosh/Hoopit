@@ -20,3 +20,13 @@ export const getCurrentUser = async () => {
     const { data } = await axiosInstance.get(`${AUTH_BASE_PATH}/me`);
     return data;
 }
+
+export const updateUserProfile = async (name) => {
+    const { data } = await axiosInstance.put(`${AUTH_BASE_PATH}/me`, { name });
+    return data;
+}
+
+export const deleteUserProfile = async () => {
+    const { data } = await axiosInstance.delete(`${AUTH_BASE_PATH}/me`);
+    return data;
+}

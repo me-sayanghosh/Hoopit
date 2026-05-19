@@ -1,15 +1,15 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Caveat:wght@500&display=swap');
 @import "tailwindcss";
 
 :root {
   color-scheme: light;
-  background: #ffffff;
+  background: #f5f5f5;
   color: #111827;
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-  --primary-blue: #0066ff;
-  --primary-blue-hover: #0052cc;
-  --bg-light: #f8f9fa;
-  --bg-card: #f1f3f5;
+  --font-sans: 'DM Sans', 'Helvetica Neue', Arial, system-ui, -apple-system, sans-serif;
+  --primary-blue: #2563EB;
+  --primary-blue-hover: #1d4ed8;
+  --bg-light: #f5f5f5;
+  --bg-card: #ffffff;
   --border-light: #e5e7eb;
 }
 
@@ -61,4 +61,9 @@ body {
 
 .delay-600 {
   animation-delay: 600ms;
+}
+
+.radial-dots-bg {
+  background-image: radial-gradient(circle, rgba(160, 160, 160, 0.28) 1px, transparent 1px);
+  background-size: 28px 28px;
 }

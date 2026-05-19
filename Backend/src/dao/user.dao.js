@@ -16,23 +16,17 @@ export const createUser = async (name, email, password) => {
     return newUser;
 };
 
-/*
-export const updateUser = async (id, name, email, password) => {
+export const updateUser = async (id, updates) => {
     const user = await User.findById(id);
-    if (!user) throw new Error('User not found')
-    user.name = name;
-    user.email = email;
-    user.password = password;
+    if (!user) throw new Error('User not found');
+    if (updates.name !== undefined) user.name = updates.name;
     await user.save();
     return user;
-
 };
 
 export const deleteUser = async (id) => {
     const user = await User.findById(id);
-    if (!user) throw new Error('User not found')
-    await user.remove();
+    if (!user) throw new Error('User not found');
+    await User.deleteOne({ _id: id });
     return user;
-}
-   
-*/
+};

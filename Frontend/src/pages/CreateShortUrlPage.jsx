@@ -25,19 +25,20 @@ export default function CreateShortUrlPage() {
 
   return (
     <AppShell
-      title="Create link"
-      subtitle="Build a new short link from the same workspace navigation as every other page."
+      title="Create Link"
+      subtitle="Configure and design a brand-new short link."
       profile={profile}
       rightSlot={(
-        <button onClick={() => navigate(-1)} className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50">
-          Close
+        <button
+          onClick={() => navigate(-1)}
+          className="rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
+        >
+          Cancel
         </button>
       )}
     >
-      <div className="rounded-[28px] border border-slate-200 bg-white shadow-2xl">
-        <div className="px-4 py-4 sm:px-6">
-          <CreateLinkForm />
-        </div>
+      <div className="max-w-2xl">
+        <CreateLinkForm />
       </div>
     </AppShell>
   )

@@ -34,7 +34,7 @@ export default function GeoMapView({ points = [] }) {
   const maxClicksAtLocation = Math.max(...validPoints.map((point) => point.clicks || 1), 1)
 
   return (
-    <div className="rounded-[26px] border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="rounded-[26px] border border-slate-200 bg-white p-4 shadow-sm lg:p-5">
       <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Live click map</p>
@@ -46,13 +46,13 @@ export default function GeoMapView({ points = [] }) {
       </div>
 
       {validPoints.length ? (
-        <div className="grid gap-5 lg:grid-cols-[1.4fr_0.6fr] lg:items-start">
-          <div className="overflow-hidden rounded-[24px] border border-slate-200">
+        <div className="grid gap-4 lg:grid-cols-[1.25fr_0.75fr] lg:items-start">
+          <div className="overflow-hidden rounded-3xl border border-slate-200">
             <MapContainer
               center={center}
               zoom={2}
               scrollWheelZoom
-              className="h-[420px] w-full"
+              className="h-80 w-full lg:h-90"
               worldCopyJump
             >
               <TileLayer
@@ -91,8 +91,8 @@ export default function GeoMapView({ points = [] }) {
             </MapContainer>
           </div>
 
-          <div className="grid gap-3">
-            {validPoints.slice(0, 8).map((point, index) => (
+          <div className="max-h-80 overflow-y-auto pr-1 grid gap-3 lg:max-h-90">
+            {validPoints.map((point, index) => (
               <div key={`${point.latitude}-${point.longitude}-${index}`} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-sm font-medium text-slate-900">

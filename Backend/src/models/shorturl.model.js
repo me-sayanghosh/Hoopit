@@ -98,6 +98,10 @@ const shortUrlSchema = new mongoose.Schema({
     archived: {
         type: Boolean,
         default: false
+    },
+    isDraft: {
+        type: Boolean,
+        default: false
     }
 });
 

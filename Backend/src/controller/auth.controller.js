@@ -39,3 +39,37 @@ export const getCurrentUser = wrapasync(async (req, res) => {
     });
 });
 
+import { updateUser as updateUserDao, deleteUser as deleteUserDao } from '../dao/user.dao.js';
+
+export const updateProfile = wrapasync(async (req, res) => {
+    const user = req.user;
+    if (!user) {
+        return res.status(401).json({ message: 'Unauthorized' });
+    }
+    const { name } = req.body;
+    if (!name) {
+        return res.status(400).json({ message: 'Name is required' });
+    }
+    const updated = await updateUserDao(user._id, { name });
+    res.status(200).json({
+        message: 'Profile updated successfully',
+        user: {
+            id: updated._id,
+            name: updated.name,
+            email: updated.email,
+            avatar: updated.avater,
+        }
+    });
+});
+
+export const deleteAccount = wrapasync(async (req, res) => {
+    const user = req.user;
+    if (!user) {
+        return res.status(401).json({ message: 'Unauthorized' });
+    }
+    await deleteUserDao(user._id);
+    res.clearCookie('token', cookieOptions);
+    res.status(200).json({ message: 'Profile deleted successfully' });
+});
+
+
