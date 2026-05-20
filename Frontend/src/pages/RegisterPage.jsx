@@ -3,8 +3,8 @@ import AuthLayout from '../components/AuthLayout.jsx'
 import RegisterFrom from '../components/RegisterFrom.jsx'
 import { googleLoginUser, registerUser } from '../api/user.api.js'
 import { Link, useNavigate } from 'react-router-dom'
-import { GoogleLogin } from '@react-oauth/google'
 import AuthSuccessOverlay from '../components/AuthSuccessOverlay.jsx'
+import GoogleAuthButton from '../components/GoogleAuthButton.jsx'
 
 function RegisterPage() {
   const navigate = useNavigate()
@@ -67,14 +67,11 @@ function RegisterPage() {
 
         {googleClientId ? (
           <div className="google-auth-button">
-            <GoogleLogin
+            <GoogleAuthButton
+              label="Continue with Google"
+              disabled={loading}
               onSuccess={handleGoogleSuccess}
               onError={() => setError('Google sign up failed. Please try again.')}
-              theme="outline"
-              size="large"
-              shape="pill"
-              text="continue_with"
-              logo_alignment="left"
             />
           </div>
         ) : (

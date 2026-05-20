@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { GoogleLogin } from '@react-oauth/google'
 import AuthPasswordField from './AuthPasswordField.jsx'
 import AuthSuccessOverlay from './AuthSuccessOverlay.jsx'
+import GoogleAuthButton from './GoogleAuthButton.jsx'
 
 function RegisterFrom({ onSubmit, onGoogleSubmit, onSuccess, onBack }) {
 	const [name, setName] = useState('')
@@ -129,14 +129,11 @@ function RegisterFrom({ onSubmit, onGoogleSubmit, onSuccess, onBack }) {
 
 			{googleClientId ? (
 				<div className="google-auth-button">
-					<GoogleLogin
+					<GoogleAuthButton
+						label="Continue with Google"
+						disabled={loading}
 						onSuccess={handleGoogleSuccess}
 						onError={() => setError('Google sign up failed. Please try again.')}
-						theme="outline"
-						size="large"
-						shape="pill"
-						text="continue_with"
-						logo_alignment="left"
 					/>
 				</div>
 			) : (
