@@ -50,6 +50,22 @@ const parseCoordinate = (value) => {
     return Number.isFinite(coordinate) ? coordinate : null;
 };
 
+const isLocalOrPrivateIp = (ip) => {
+    if (!ip) return true;
+    const clean = String(ip).replace(/^::ffff:/, '').trim();
+    if (clean === '127.0.0.1' || clean === '::1' || clean === 'localhost' || clean === '') return true;
+    
+    // Check for private / local IP ranges
+    if (clean.startsWith('10.')) return true;
+    if (clean.startsWith('192.168.')) return true;
+    if (clean.startsWith('172.')) {
+        const parts = clean.split('.');
+        const second = Number(parts[1]);
+        if (second >= 16 && second <= 31) return true;
+    }
+    return false;
+};
+
 const getLocation = async (req, ip) => {
     const country = req.headers['x-vercel-ip-country'] || req.headers['cf-ipcountry'] || '';
     const region = req.headers['x-vercel-ip-country-region'] || '';
@@ -67,17 +83,23 @@ const getLocation = async (req, ip) => {
         };
     }
 
-    const isLocalhost = ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1';
-    const lookupIp = isLocalhost ? '' : ip; // ip-api uses empty path for self-lookup
+    // If it's a localhost or private LAN IP, return high-quality fallback New Delhi coordinates for local testing
+    if (isLocalOrPrivateIp(ip)) {
+        return {
+            country: 'IN',
+            region: 'Delhi',
+            city: 'New Delhi',
+            latitude: 28.7041,
+            longitude: 77.1025,
+        };
+    }
 
-    // Try ip-api for both localhost (self-lookup) and real IPs
-    const apiUrl = isLocalhost
-        ? 'https://ip-api.com/json/?fields=status,country,regionName,city,lat,lon'
-        : `https://ip-api.com/json/${lookupIp}?fields=status,country,regionName,city,lat,lon`;
+    // Try ip-api for real public IPs
+    const apiUrl = `https://ip-api.com/json/${ip}?fields=status,country,regionName,city,lat,lon`;
 
     try {
         const response = await fetch(apiUrl, {
-            signal: AbortSignal.timeout(3000) // increased timeout
+            signal: AbortSignal.timeout(3000)
         });
 
         if (response.ok) {
@@ -97,7 +119,7 @@ const getLocation = async (req, ip) => {
     }
 
     // Fallback: geoip for non-localhost IPs
-    if (!isLocalhost && ip) {
+    if (ip) {
         const lookup = geoip.lookup(ip);
         const [lookupLatitude, lookupLongitude] = Array.isArray(lookup?.ll) ? lookup.ll : [null, null];
 
@@ -247,7 +269,7 @@ export const getShortUrlByOriginalUrl = async (originalUrl) => {
 export const getShortUrlsByUserId = async (userId) => {
     try {
         return await urlSchema
-            .find({ user: userId, isDraft: { $ne: true } })
+            .find({ user: userId, isDraft: { $ne: true }, archived: { $ne: true } })
             .sort({ createdAt: -1 });
     }
     catch (err) {
@@ -280,7 +302,7 @@ export const getTagsForUser = async (userId) => {
     try {
         // unwind tags and count occurrences
         const rows = await urlSchema.aggregate([
-            { $match: { user: userId } },
+            { $match: { user: userId, isDraft: { $ne: true }, archived: { $ne: true } } },
             { $unwind: { path: '$tags', preserveNullAndEmptyArrays: false } },
             { $group: { _id: '$tags', count: { $sum: 1 } } },
             { $sort: { count: -1, _id: 1 } }
@@ -294,7 +316,7 @@ export const getTagsForUser = async (userId) => {
 
 export const getUrlsByTagForUser = async (userId, tag) => {
     try {
-        return await urlSchema.find({ user: userId, tags: tag }).sort({ createdAt: -1 });
+        return await urlSchema.find({ user: userId, tags: tag, isDraft: { $ne: true }, archived: { $ne: true } }).sort({ createdAt: -1 });
     } catch (err) {
         throw new AppError(err.message || 'Failed to fetch URLs for tag.', 500);
     }

@@ -151,7 +151,6 @@ export default function DashboardPage() {
 
   const [layoutMode, setLayoutMode] = useState('cards') // 'cards' | 'rows'
   const [orderBy, setOrderBy] = useState('createdAt') // 'createdAt' | 'clicks'
-  const [showArchived, setShowArchived] = useState(false)
   const [displayProperties, setDisplayProperties] = useState({
     shortLink: true,
     destinationUrl: true,
@@ -229,11 +228,10 @@ export default function DashboardPage() {
         item.originalUrl.toLowerCase().includes(term) ||
         (item.title && item.title.toLowerCase().includes(term))
 
-      const matchesArchive = showArchived ? true : !item.archived
       const matchesTag = filterTag ? (item.tags && item.tags.toLowerCase().includes(filterTag.toLowerCase())) : true
       const matchesFolder = filterFolder ? (item.folder && item.folder.toLowerCase() === filterFolder.toLowerCase()) : true
 
-      return matchesSearch && matchesArchive && matchesTag && matchesFolder
+      return matchesSearch && matchesTag && matchesFolder
     })
     .sort((a, b) => {
       if (orderBy === 'clicks') {
@@ -483,27 +481,6 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Show archived links toggle */}
-                  <div className="flex items-center justify-between border-t border-slate-100 py-3.5 text-sm font-medium text-slate-700">
-                    <span className="flex items-center gap-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-4.5 w-4.5 text-slate-400">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
-                      </svg>
-                      Show archived links
-                    </span>
-                    <button
-                      onClick={() => { setShowArchived(!showArchived); setCurrentPage(1); }}
-                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                        showArchived ? 'bg-blue-600' : 'bg-slate-200'
-                      }`}
-                    >
-                      <span
-                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                          showArchived ? 'translate-x-5' : 'translate-x-0'
-                        }`}
-                      />
-                    </button>
-                  </div>
-
                   {/* DISPLAY PROPERTIES */}
                   <div className="border-t border-slate-100 pt-4 mb-4">
                     <div className="text-[10px] font-extrabold tracking-wider text-slate-400 uppercase mb-3">Display Properties</div>
@@ -554,7 +531,6 @@ export default function DashboardPage() {
                         })
                         setLayoutMode('cards')
                         setOrderBy('createdAt')
-                        setShowArchived(false)
                         setCurrentPage(1)
                       }}
                       className="text-slate-500 hover:text-slate-800 font-bold transition"
@@ -668,7 +644,7 @@ export default function DashboardPage() {
           </span>
         </div>
 
-        <div className="space-y-4">
+        <div className={`space-y-4 ${filteredUrls.length ? 'pb-72' : ''}`}>
           {filteredUrls.length ? (
             paginatedUrls.map((item) => {
               if (layoutMode === 'rows') {
@@ -767,34 +743,37 @@ export default function DashboardPage() {
                         </button>
 
                         {openMenuId === item.id ? (
-                          <div className="absolute right-0 top-10 z-40 w-48 rounded-2xl border border-slate-200 bg-white shadow-xl py-2.5 animate-in fade-in slide-in-from-top-1 duration-150">
-                            <ul>
-                              <li>
-                                <button onClick={() => { setOpenMenuId(null); navigate('/create', { state: { prefill: item, edit: true } }) }} className="w-full text-left px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Edit</button>
-                              </li>
-                              <li>
-                                <button onClick={() => { setOpenMenuId(null); setNewLinkData({ url: item.shortUrl, qr: item.qrCodeUrl }); setShowNewLinkModal(true) }} className="w-full text-left px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">QR Code</button>
-                              </li>
-                              <li>
-                                <button onClick={() => { setOpenMenuId(null); copy(item.shortUrl) }} className="w-full text-left px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Copy Link ID</button>
-                              </li>
-                              <li>
-                                <button onClick={() => { setOpenMenuId(null); navigate('/create', { state: { prefill: { destination: item.originalUrl, title: item.title, description: item.description }, duplicate: true } }) }} className="w-full text-left px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Duplicate</button>
-                              </li>
-                              <li>
-                                <button onClick={() => { setOpenMenuId(null); setMoveTarget(item); setMoveFolderName(item.folder || ''); setShowMoveModal(true) }} className="w-full text-left px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Move</button>
-                              </li>
-                              <li>
-                                <button onClick={() => { setOpenMenuId(null); setArchiveTarget(item); setShowArchiveModal(true) }} className="w-full text-left px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Archive</button>
-                              </li>
-                              <li>
-                                <button onClick={() => { setOpenMenuId(null); setTransferTarget(item); setTransferEmail(''); setShowTransferModal(true) }} className="w-full text-left px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Transfer</button>
-                              </li>
-                              <li>
-                                <button onClick={() => { setOpenMenuId(null); setDeleteTarget(item); setDeleteVerifyText(''); setShowDeleteModal(true) }} className="w-full text-left px-4 py-2.5 text-sm font-semibold text-rose-600 hover:bg-slate-50 hover:text-rose-700 transition">Delete</button>
-                              </li>
-                            </ul>
-                          </div>
+                          <>
+                            <div className="fixed inset-0 z-30 bg-transparent" onClick={() => setOpenMenuId(null)} />
+                            <div className="absolute right-0 top-10 z-40 w-48 max-h-40 overflow-y-auto scrollbar-thin rounded-xl border border-slate-200 bg-white shadow-xl py-1.5 animate-in fade-in slide-in-from-top-1 duration-150">
+                              <ul>
+                                <li>
+                                  <button onClick={() => { setOpenMenuId(null); navigate('/create', { state: { prefill: item, edit: true } }) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Edit</button>
+                                </li>
+                                <li>
+                                  <button onClick={() => { setOpenMenuId(null); setNewLinkData({ url: item.shortUrl, qr: item.qrCodeUrl }); setShowNewLinkModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">QR Code</button>
+                                </li>
+                                <li>
+                                  <button onClick={() => { setOpenMenuId(null); copy(item.shortUrl) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Copy Link ID</button>
+                                </li>
+                                <li>
+                                  <button onClick={() => { setOpenMenuId(null); navigate('/create', { state: { prefill: { destination: item.originalUrl, title: item.title, description: item.description }, duplicate: true } }) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Duplicate</button>
+                                </li>
+                                <li>
+                                  <button onClick={() => { setOpenMenuId(null); setMoveTarget(item); setMoveFolderName(item.folder || ''); setShowMoveModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Move</button>
+                                </li>
+                                <li>
+                                  <button onClick={() => { setOpenMenuId(null); setArchiveTarget(item); setShowArchiveModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Archive</button>
+                                </li>
+                                <li>
+                                  <button onClick={() => { setOpenMenuId(null); setTransferTarget(item); setTransferEmail(''); setShowTransferModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Transfer</button>
+                                </li>
+                                <li>
+                                  <button onClick={() => { setOpenMenuId(null); setDeleteTarget(item); setDeleteVerifyText(''); setShowDeleteModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-rose-600 hover:bg-slate-50 hover:text-rose-700 transition">Delete</button>
+                                </li>
+                              </ul>
+                            </div>
+                          </>
                         ) : null}
                       </div>
                     </div>
@@ -889,34 +868,37 @@ export default function DashboardPage() {
                       </button>
 
                       {openMenuId === item.id ? (
-                        <div className="absolute right-0 top-11 z-40 w-48 rounded-2xl border border-slate-200 bg-white shadow-xl py-2.5 animate-in fade-in slide-in-from-top-1 duration-150">
-                          <ul>
-                            <li>
-                              <button onClick={() => { setOpenMenuId(null); navigate('/create', { state: { prefill: item, edit: true } }) }} className="w-full text-left px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Edit</button>
-                            </li>
-                            <li>
-                              <button onClick={() => { setOpenMenuId(null); setNewLinkData({ url: item.shortUrl, qr: item.qrCodeUrl }); setShowNewLinkModal(true) }} className="w-full text-left px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">QR Code</button>
-                            </li>
-                            <li>
-                              <button onClick={() => { setOpenMenuId(null); copy(item.shortUrl) }} className="w-full text-left px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Copy Link ID</button>
-                            </li>
-                            <li>
-                              <button onClick={() => { setOpenMenuId(null); navigate('/create', { state: { prefill: { destination: item.originalUrl, title: item.title, description: item.description }, duplicate: true } }) }} className="w-full text-left px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Duplicate</button>
-                            </li>
-                            <li>
-                              <button onClick={() => { setOpenMenuId(null); setMoveTarget(item); setMoveFolderName(item.folder || ''); setShowMoveModal(true) }} className="w-full text-left px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Move</button>
-                            </li>
-                            <li>
-                              <button onClick={() => { setOpenMenuId(null); setArchiveTarget(item); setShowArchiveModal(true) }} className="w-full text-left px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Archive</button>
-                            </li>
-                            <li>
-                              <button onClick={() => { setOpenMenuId(null); setTransferTarget(item); setTransferEmail(''); setShowTransferModal(true) }} className="w-full text-left px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Transfer</button>
-                            </li>
-                            <li>
-                              <button onClick={() => { setOpenMenuId(null); setDeleteTarget(item); setDeleteVerifyText(''); setShowDeleteModal(true) }} className="w-full text-left px-4 py-2.5 text-sm font-semibold text-rose-600 hover:bg-slate-50 hover:text-rose-700 transition">Delete</button>
-                            </li>
-                          </ul>
-                        </div>
+                        <>
+                          <div className="fixed inset-0 z-30 bg-transparent" onClick={() => setOpenMenuId(null)} />
+                           <div className="absolute left-0 lg:left-auto lg:right-0 top-11 z-40 w-48 max-h-40 overflow-y-auto scrollbar-thin rounded-xl border border-slate-200 bg-white shadow-xl py-1.5 animate-in fade-in slide-in-from-top-1 duration-150">
+                             <ul>
+                               <li>
+                                 <button onClick={() => { setOpenMenuId(null); navigate('/create', { state: { prefill: item, edit: true } }) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Edit</button>
+                               </li>
+                               <li>
+                                 <button onClick={() => { setOpenMenuId(null); setNewLinkData({ url: item.shortUrl, qr: item.qrCodeUrl }); setShowNewLinkModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">QR Code</button>
+                               </li>
+                               <li>
+                                 <button onClick={() => { setOpenMenuId(null); copy(item.shortUrl) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Copy Link ID</button>
+                               </li>
+                               <li>
+                                 <button onClick={() => { setOpenMenuId(null); navigate('/create', { state: { prefill: { destination: item.originalUrl, title: item.title, description: item.description }, duplicate: true } }) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Duplicate</button>
+                               </li>
+                               <li>
+                                 <button onClick={() => { setOpenMenuId(null); setMoveTarget(item); setMoveFolderName(item.folder || ''); setShowMoveModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Move</button>
+                               </li>
+                               <li>
+                                 <button onClick={() => { setOpenMenuId(null); setArchiveTarget(item); setShowArchiveModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Archive</button>
+                               </li>
+                               <li>
+                                 <button onClick={() => { setOpenMenuId(null); setTransferTarget(item); setTransferEmail(''); setShowTransferModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Transfer</button>
+                               </li>
+                               <li>
+                                 <button onClick={() => { setOpenMenuId(null); setDeleteTarget(item); setDeleteVerifyText(''); setShowDeleteModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-rose-600 hover:bg-slate-50 hover:text-rose-700 transition">Delete</button>
+                               </li>
+                             </ul>
+                           </div>
+                        </>
                       ) : null}
                     </div>
                   </div>
@@ -1046,6 +1028,8 @@ export default function DashboardPage() {
           <input value={deleteVerifyText} onChange={(e) => setDeleteVerifyText(e.target.value)} className="w-full rounded-lg border px-3 py-2" placeholder="Type the full short link to confirm" />
         </ConfirmModal>
       ) : null}
+
+
 
       <Snackbar message={snackbar.message} actionLabel={snackbar.actionLabel} onAction={snackbar.action} onClose={() => setSnackbar({ message: '', actionLabel: '', action: null })} />
     </AppShell>
