@@ -67,47 +67,55 @@ const getLocation = async (req, ip) => {
         };
     }
 
-    if (ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1') {
+    const isLocalhost = ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1';
+    const lookupIp = isLocalhost ? '' : ip; // ip-api uses empty path for self-lookup
+
+    // Try ip-api for both localhost (self-lookup) and real IPs
+    const apiUrl = isLocalhost
+        ? 'https://ip-api.com/json/?fields=status,country,regionName,city,lat,lon'
+        : `https://ip-api.com/json/${lookupIp}?fields=status,country,regionName,city,lat,lon`;
+
+    try {
+        const response = await fetch(apiUrl, {
+            signal: AbortSignal.timeout(3000) // increased timeout
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            if (data.status === 'success') {
+                return {
+                    country: data.country || 'Unknown',
+                    region: data.regionName || 'Unknown',
+                    city: data.city || 'Unknown',
+                    latitude: data.lat ?? null,
+                    longitude: data.lon ?? null,
+                };
+            }
+        }
+    } catch (error) {
+        console.error('ip-api lookup failed:', error);
+    }
+
+    // Fallback: geoip for non-localhost IPs
+    if (!isLocalhost && ip) {
+        const lookup = geoip.lookup(ip);
+        const [lookupLatitude, lookupLongitude] = Array.isArray(lookup?.ll) ? lookup.ll : [null, null];
+
         return {
-            country: 'IN',
-            region: 'Delhi',
-            city: 'New Delhi',
-            latitude: 28.7041,
-            longitude: 77.1025,
+            country: lookup?.country || 'Unknown',
+            region: lookup?.region || 'Unknown',
+            city: lookup?.city || 'Unknown',
+            latitude: typeof lookupLatitude === 'number' ? lookupLatitude : null,
+            longitude: typeof lookupLongitude === 'number' ? lookupLongitude : null,
         };
     }
 
-    if (ip) {
-        try {
-            const response = await fetch(`http://ip-api.com/json/${ip}`, {
-                signal: AbortSignal.timeout(1500)
-            });
-            if (response.ok) {
-                const data = await response.json();
-                if (data.status === 'success') {
-                    return {
-                        country: data.country || 'Unknown',
-                        region: data.regionName || 'Unknown',
-                        city: data.city || 'Unknown',
-                        latitude: data.lat ?? null,
-                        longitude: data.lon ?? null,
-                    };
-                }
-            }
-        } catch (error) {
-            console.error('IP-API lookup failed:', error);
-        }
-    }
-
-    const lookup = ip ? geoip.lookup(ip) : null;
-    const [lookupLatitude, lookupLongitude] = Array.isArray(lookup?.ll) ? lookup.ll : [null, null];
-
     return {
-        country: lookup?.country || 'Unknown',
-        region: lookup?.region || 'Unknown',
-        city: lookup?.city || 'Unknown',
-        latitude: typeof latitude === 'number' ? latitude : (typeof lookupLatitude === 'number' ? lookupLatitude : null),
-        longitude: typeof longitude === 'number' ? longitude : (typeof lookupLongitude === 'number' ? lookupLongitude : null),
+        country: 'Unknown',
+        region: 'Unknown',
+        city: 'Unknown',
+        latitude: null,
+        longitude: null,
     };
 };
 
