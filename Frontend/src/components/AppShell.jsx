@@ -92,11 +92,12 @@ function SidebarIcon({ name, active = false }) {
   return null
 }
 
-function SidebarNavItem({ item }) {
+function SidebarNavItem({ item, onNavigate }) {
   return (
     <NavLink
       to={item.to}
       end={item.to === '/dashboard'}
+      onClick={onNavigate}
       className={({ isActive }) =>
         `group relative w-full text-left flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-200 ${
           isActive
@@ -154,46 +155,55 @@ export default function AppShell({ title, subtitle, children, profile, onLogout,
 
   const resolvedProfile = profile || internalProfile
 
-  const sidebar = (
-    <div className="rounded-3xl bg-white p-4 shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-slate-200/80 flex flex-col h-full z-10">
-      <div className="flex items-center gap-3 px-2 py-1">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-[#111] flex items-center justify-center gap-0.5 flex-wrap p-1.5 shrink-0">
-            {[0, 1, 2, 3].map((i) => (
-              <div key={i} className={`w-2.5 h-2.5 rounded-sm ${i === 0 || i === 1 ? 'bg-[#2563EB]' : 'bg-white'}`} style={{ opacity: i < 2 ? 1 : 0.9 }} />
-            ))}
-          </div>
-          <span className="font-extrabold text-lg tracking-tight text-slate-900">HoopIt</span>
-        </div>
+  const brand = (
+    <div className="flex items-center gap-2">
+      <div className="w-8 h-8 rounded-lg bg-[#111] flex items-center justify-center gap-[3px] flex-wrap p-1.5 shrink-0">
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className={`w-2 h-2 rounded-[2px] ${i === 0 || i === 1 ? 'bg-[#2563EB]' : 'bg-white'}`} style={{ opacity: i < 2 ? 1 : 0.9 }} />
+        ))}
       </div>
+      <span className="text-lg font-bold tracking-[-0.3px] text-slate-900">HoopIt</span>
+    </div>
+  )
 
-      <div className="mt-6 flex-1 shrink-0">
-        <div className="text-xs font-bold uppercase tracking-[0.15em] text-slate-400 px-3">Short Links</div>
-        <nav className="mt-3 space-y-1.5">
-          {shortLinksNav.map((item) => (
-            <SidebarNavItem key={item.label} item={item} />
-          ))}
-        </nav>
+  const sidebarContent = (
+    <>
+      <div className="flex-1 shrink-0">
+        <div className="rounded-2xl bg-slate-50/60 p-3 ring-1 ring-slate-100">
+          <div className="text-xs font-bold uppercase tracking-[0.15em] text-slate-400 px-3">Short Links</div>
+          <nav className="mt-3 space-y-1.5">
+            {shortLinksNav.map((item) => (
+              <SidebarNavItem key={item.label} item={item} onNavigate={() => setMobileOpen(false)} />
+            ))}
+          </nav>
+        </div>
 
-        <div className="mt-6 text-xs font-bold uppercase tracking-[0.15em] text-slate-400 px-3">Insights</div>
-        <nav className="mt-3 space-y-1.5">
-          {insightsNav.map((item) => (
-            <SidebarNavItem key={item.label} item={item} />
-          ))}
-        </nav>
+        <div className="mt-5 rounded-2xl bg-slate-50/60 p-3 ring-1 ring-slate-100">
+          <div className="text-xs font-bold uppercase tracking-[0.15em] text-slate-400 px-3">Insights</div>
+          <nav className="mt-3 space-y-1.5">
+            {insightsNav.map((item) => (
+              <SidebarNavItem key={item.label} item={item} onNavigate={() => setMobileOpen(false)} />
+            ))}
+          </nav>
+        </div>
 
-        <div className="mt-6 text-xs font-bold uppercase tracking-[0.15em] text-slate-400 px-3">Account</div>
-        <nav className="mt-3 space-y-1.5">
-          {accountNav.map((item) => (
-            <SidebarNavItem key={item.label} item={item} />
-          ))}
-        </nav>
+        <div className="mt-5 rounded-2xl bg-slate-50/60 p-3 ring-1 ring-slate-100">
+          <div className="text-xs font-bold uppercase tracking-[0.15em] text-slate-400 px-3">Account</div>
+          <nav className="mt-3 space-y-1.5">
+            {accountNav.map((item) => (
+              <SidebarNavItem key={item.label} item={item} onNavigate={() => setMobileOpen(false)} />
+            ))}
+          </nav>
+        </div>
       </div>
 
       <div className="mt-auto pt-4 border-t border-slate-100 space-y-3">
         {/* Profile card */}
         <button
-          onClick={() => navigate('/profile')}
+          onClick={() => {
+            setMobileOpen(false)
+            navigate('/profile')
+          }}
           className="w-full flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50/70 hover:bg-slate-100/80 px-3 py-2.5 text-left transition group active:scale-[0.98]"
         >
           <img
@@ -220,7 +230,18 @@ export default function AppShell({ title, subtitle, children, profile, onLogout,
           className="w-full rounded-xl bg-slate-900 hover:bg-black px-4 py-3 text-sm font-bold text-white shadow-sm hover:shadow transition-all duration-200"
         >
           Logout
-        </button>
+          </button>
+        </div>
+    </>
+  )
+
+  const desktopSidebar = (
+    <div className="rounded-3xl bg-white p-4 shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-slate-200/80 flex flex-col h-full z-10">
+      <div className="flex items-center gap-3 px-2 py-1">
+        {brand}
+      </div>
+      <div className="mt-6 flex min-h-0 flex-1 flex-col">
+        {sidebarContent}
       </div>
     </div>
   )
@@ -231,7 +252,7 @@ export default function AppShell({ title, subtitle, children, profile, onLogout,
       <div className="fixed inset-0 pointer-events-none radial-dots-bg z-0 opacity-100" />
       <div className="relative z-10 mx-auto flex min-h-screen w-full gap-6 px-4 py-4 sm:px-6 lg:px-8 lg:py-8">
         <aside className="sticky top-8 hidden h-[calc(100vh-4rem)] w-72 shrink-0 overflow-auto lg:block">
-          {sidebar}
+          {desktopSidebar}
         </aside>
 
         <div className="min-w-0 flex-1 min-h-0 flex flex-col">
@@ -257,22 +278,52 @@ export default function AppShell({ title, subtitle, children, profile, onLogout,
             </button>
           </header>
 
-          {mobileOpen ? (
-            <div className="fixed inset-0 z-50 bg-slate-950/40 p-3 lg:hidden">
-              <div className="h-full max-w-xs">
-                <div className="mb-2 flex justify-end">
-                  <button
-                    type="button"
-                    onClick={() => setMobileOpen(false)}
-                    className="rounded-full bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm"
-                  >
-                    Close
-                  </button>
+          <div
+            className={`fixed inset-0 z-50 lg:hidden transition-opacity duration-300 ease-out ${
+              mobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+            }`}
+            aria-hidden={!mobileOpen}
+          >
+            <button
+              type="button"
+              className="absolute inset-0 bg-slate-950/40"
+              aria-label="Close menu"
+              onClick={() => setMobileOpen(false)}
+              tabIndex={mobileOpen ? 0 : -1}
+            />
+
+            <div
+              className={`absolute left-0 top-0 h-full w-[min(20rem,calc(100vw-1.25rem))] p-2 transition-transform duration-300 ease-out ${
+                mobileOpen ? 'translate-x-0' : '-translate-x-full'
+              }`}
+            >
+              <div className="h-full overflow-hidden rounded-[1.75rem] bg-white shadow-[0_20px_60px_rgba(15,23,42,0.22)] ring-1 ring-slate-200/80">
+                <div className="flex h-full flex-col">
+                  <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+                    {brand}
+                    <button
+                      type="button"
+                      onClick={() => setMobileOpen(false)}
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:bg-slate-50 hover:text-slate-900 active:scale-95"
+                      aria-label="Close menu"
+                      title="Close menu"
+                      tabIndex={mobileOpen ? 0 : -1}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.25} aria-hidden="true">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <div className="min-h-0 flex-1 overflow-auto p-3">
+                    <div className="flex min-h-full flex-col rounded-2xl bg-white p-1">
+                      {sidebarContent}
+                    </div>
+                  </div>
                 </div>
-                <div className="h-[calc(100%-3rem)] overflow-auto rounded-3xl">{sidebar}</div>
               </div>
             </div>
-          ) : null}
+          </div>
 
           {(title || subtitle || rightSlot) ? (
             <div className="mb-6 rounded-2xl border border-slate-200/80 bg-white p-6 sm:p-7 shadow-[0_4px_24px_rgba(0,0,0,0.05)]">
