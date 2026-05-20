@@ -1,6 +1,8 @@
 import axios from "axios";
 
-const FALLBACK_BASE_URL = "http://localhost:3000";
+const FALLBACK_BASE_URL = import.meta.env.PROD
+    ? "https://hoopit.onrender.com"
+    : "http://localhost:3000";
 const baseURL = import.meta.env.VITE_API_BASE_URL || FALLBACK_BASE_URL;
 
 const axiosInstance = axios.create({
