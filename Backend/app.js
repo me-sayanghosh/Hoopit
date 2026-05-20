@@ -76,6 +76,14 @@ app.get('/', (req, res) => {
         message: 'Hoopit backend is running',
     });
 });
+
+app.get('/health', (req, res) => {
+    res.status(200).json({
+        status: 'success',
+        message: 'Hoopit backend health check is running',
+    });
+});
+
 app.get('/:id', redirectfromShortUrl);
 app.use(notFoundHandler);
 app.use(errorHandler);
