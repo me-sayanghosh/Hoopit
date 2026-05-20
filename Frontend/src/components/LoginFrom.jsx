@@ -41,23 +41,25 @@ function LoginFrom({ onSubmit, onGoogleSubmit, onSuccess }) {
 		}
 	}
 
+	// Show overlay as soon as Google returns the credential (after account selection)
+	// — before the backend API call, so the form is never visible during the wait
 	const handleGoogleSuccess = async ({ credential }) => {
-		setLoading(true)
 		setError('')
-		setMessage('')
+		setShowSuccess(true)   // overlay on immediately
 
 		try {
 			await onGoogleSubmit(credential)
-			setMessage('You are signed in.')
-			setShowSuccess(true)
-			setLoading(false)
 			if (onSuccess) {
 				setTimeout(onSuccess, 1200)
 			}
 		} catch (err) {
+			setShowSuccess(false)  // hide overlay, surface the error
 			setError(err?.message || 'Unable to sign in with Google right now.')
-			setLoading(false)
 		}
+	}
+
+	const handleGoogleError = () => {
+		setError('Google sign in failed. Please try again.')
 	}
 
 	return (
@@ -110,11 +112,10 @@ function LoginFrom({ onSubmit, onGoogleSubmit, onSuccess }) {
 			{googleClientId ? (
 				<div className="google-auth-button">
 					<GoogleAuthButton
-						clientId={googleClientId}
 						label="Continue with Google"
 						disabled={loading}
 						onSuccess={handleGoogleSuccess}
-						onError={() => setError('Google sign in failed. Please try again.')}
+						onError={handleGoogleError}
 					/>
 				</div>
 			) : (

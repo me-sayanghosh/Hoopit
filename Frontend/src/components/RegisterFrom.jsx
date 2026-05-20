@@ -52,22 +52,22 @@ function RegisterFrom({ onSubmit, onGoogleSubmit, onSuccess, onBack }) {
 	}
 
 	const handleGoogleSuccess = async ({ credential }) => {
-		setLoading(true)
 		setError('')
-		setMessage('')
+		setShowSuccess(true)   // overlay on immediately after account selection
 
 		try {
 			await onGoogleSubmit(credential)
-			setMessage('Account created successfully.')
-			setShowSuccess(true)
-			setLoading(false)
 			if (onSuccess) {
 				setTimeout(onSuccess, 1200)
 			}
 		} catch (err) {
+			setShowSuccess(false)
 			setError(err?.message || 'Unable to continue with Google right now.')
-			setLoading(false)
 		}
+	}
+
+	const handleGoogleError = () => {
+		setError('Google sign up failed. Please try again.')
 	}
 
 	return (
@@ -130,11 +130,10 @@ function RegisterFrom({ onSubmit, onGoogleSubmit, onSuccess, onBack }) {
 			{googleClientId ? (
 				<div className="google-auth-button">
 					<GoogleAuthButton
-						clientId={googleClientId}
 						label="Continue with Google"
 						disabled={loading}
 						onSuccess={handleGoogleSuccess}
-						onError={() => setError('Google sign up failed. Please try again.')}
+						onError={handleGoogleError}
 					/>
 				</div>
 			) : (

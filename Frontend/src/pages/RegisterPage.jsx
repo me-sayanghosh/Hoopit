@@ -15,18 +15,21 @@ function RegisterPage() {
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
 
   const handleGoogleSuccess = async ({ credential }) => {
-    setLoading(true)
     setError('')
+    setShowSuccess(true)   // overlay on immediately after account selection
 
     try {
       await googleLoginUser(credential)
-      setShowSuccess(true)
-      setLoading(false)
       setTimeout(() => navigate('/dashboard'), 1200)
     } catch (err) {
+      setShowSuccess(false)
       setError(err?.message || 'Unable to continue with Google right now.')
       setLoading(false)
     }
+  }
+
+  const handleGoogleError = () => {
+    setError('Google sign up failed. Please try again.')
   }
 
   if (showCredentials) {
@@ -68,11 +71,10 @@ function RegisterPage() {
         {googleClientId ? (
           <div className="google-auth-button">
             <GoogleAuthButton
-              clientId={googleClientId}
               label="Continue with Google"
               disabled={loading}
               onSuccess={handleGoogleSuccess}
-              onError={() => setError('Google sign up failed. Please try again.')}
+              onError={handleGoogleError}
             />
           </div>
         ) : (
