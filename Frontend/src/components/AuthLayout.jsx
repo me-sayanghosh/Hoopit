@@ -33,7 +33,7 @@ function AuthLayout({ title, description, children, compact = false }) {
           </div>
         </div>
 
-        <div className={`auth-card-wrap w-full ${compact ? 'max-w-[24rem]' : 'max-w-[26rem] sm:max-w-md'}`} style={{ zIndex: 10 }}>
+        <div className={`auth-card-wrap ${compact ? 'is-compact' : 'is-default'}`} style={{ zIndex: 10 }}>
           <div className="text-center mb-5 sm:mb-8">
             <h1 className="text-3xl font-bold tracking-tight text-gray-900 mb-2">{title}</h1>
             {description && (
@@ -41,7 +41,7 @@ function AuthLayout({ title, description, children, compact = false }) {
             )}
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-8">
+          <div className="auth-card-body bg-white rounded-2xl shadow-sm border border-gray-100">
             {children}
           </div>
         </div>

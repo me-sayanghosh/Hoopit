@@ -131,7 +131,6 @@ function RegisterFrom({ onSubmit, onGoogleSubmit, onSuccess, onBack }) {
 						shape="pill"
 						text="continue_with"
 						logo_alignment="left"
-						width="360"
 					/>
 				</div>
 			) : (
