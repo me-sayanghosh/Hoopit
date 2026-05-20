@@ -4,12 +4,14 @@ import RegisterFrom from '../components/RegisterFrom.jsx'
 import { googleLoginUser, registerUser } from '../api/user.api.js'
 import { Link, useNavigate } from 'react-router-dom'
 import { GoogleLogin } from '@react-oauth/google'
+import AuthSuccessOverlay from '../components/AuthSuccessOverlay.jsx'
 
 function RegisterPage() {
   const navigate = useNavigate()
   const [showCredentials, setShowCredentials] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showSuccess, setShowSuccess] = useState(false)
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
 
   const handleGoogleSuccess = async ({ credential }) => {
@@ -18,10 +20,11 @@ function RegisterPage() {
 
     try {
       await googleLoginUser(credential)
-      navigate('/dashboard')
+      setShowSuccess(true)
+      setLoading(false)
+      setTimeout(() => navigate('/dashboard'), 1200)
     } catch (err) {
       setError(err?.message || 'Unable to continue with Google right now.')
-    } finally {
       setLoading(false)
     }
   }
@@ -40,8 +43,10 @@ function RegisterPage() {
   }
 
   return (
-    <AuthLayout compact>
-      <div className="auth-choice">
+    <>
+      <AuthSuccessOverlay visible={showSuccess} label="Setting up your account…" />
+      <AuthLayout compact>
+        <div className="auth-choice">
         <div className="auth-heading">
           <h2>Create your account</h2>
           <p>Choose how you want to start.</p>
@@ -86,6 +91,7 @@ function RegisterPage() {
         </p>
       </div>
     </AuthLayout>
+    </>
   )
 }
 

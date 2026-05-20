@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { GoogleLogin } from '@react-oauth/google'
 import AuthPasswordField from './AuthPasswordField.jsx'
+import AuthSuccessOverlay from './AuthSuccessOverlay.jsx'
 
 function LoginFrom({ onSubmit, onGoogleSubmit, onSuccess }) {
 	const [email, setEmail] = useState('')
@@ -9,6 +10,7 @@ function LoginFrom({ onSubmit, onGoogleSubmit, onSuccess }) {
 	const [loading, setLoading] = useState(false)
 	const [message, setMessage] = useState('')
 	const [error, setError] = useState('')
+	const [showSuccess, setShowSuccess] = useState(false)
 	const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
 
 	const handleSubmit = async (event) => {
@@ -28,12 +30,13 @@ function LoginFrom({ onSubmit, onGoogleSubmit, onSuccess }) {
 			await onSubmit(email, password)
 			setPassword('')
 			setMessage('You are signed in.')
+			setShowSuccess(true)
+			setLoading(false)
 			if (onSuccess) {
-				onSuccess()
+				setTimeout(onSuccess, 1200)
 			}
 		} catch (err) {
 			setError(err?.message || 'Unable to sign in right now.')
-		} finally {
 			setLoading(false)
 		}
 	}
@@ -46,17 +49,20 @@ function LoginFrom({ onSubmit, onGoogleSubmit, onSuccess }) {
 		try {
 			await onGoogleSubmit(credential)
 			setMessage('You are signed in.')
+			setShowSuccess(true)
+			setLoading(false)
 			if (onSuccess) {
-				onSuccess()
+				setTimeout(onSuccess, 1200)
 			}
 		} catch (err) {
 			setError(err?.message || 'Unable to sign in with Google right now.')
-		} finally {
 			setLoading(false)
 		}
 	}
 
 	return (
+		<>
+		<AuthSuccessOverlay visible={showSuccess} label="Signing you in…" />
 		<form className="auth-form" onSubmit={handleSubmit}>
 			<div className="auth-heading">
 				<h2>Welcome back</h2>
@@ -127,6 +133,7 @@ function LoginFrom({ onSubmit, onGoogleSubmit, onSuccess }) {
 				</Link>
 			</p>
 		</form>
+		</>
 	)
 }
 
