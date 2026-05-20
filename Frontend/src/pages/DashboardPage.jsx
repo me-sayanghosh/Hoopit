@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import AppShell from '../components/AppShell.jsx'
-import { getMyShortUrls, updateShortUrl, deleteShortUrl, transferShortUrl } from '../api/shortUrlapi.js'
+import { getMyShortUrls, updateShortUrl, deleteShortUrl } from '../api/shortUrlapi.js'
 import { getCurrentUser } from '../api/user.api.js'
 
 function CopyToast({ value }) {
@@ -98,6 +98,14 @@ function ConfirmModal({ title, children, onCancel, onConfirm, confirmLabel = 'Co
   )
 }
 
+function ShareIcon({ children }) {
+  return (
+    <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50">
+      {children}
+    </span>
+  )
+}
+
 function Snackbar({ message, actionLabel, onAction, onClose }) {
   useEffect(() => {
     if (!message) return
@@ -138,9 +146,8 @@ export default function DashboardPage() {
   const [showArchiveModal, setShowArchiveModal] = useState(false)
   const [archiveTarget, setArchiveTarget] = useState(null)
 
-  const [showTransferModal, setShowTransferModal] = useState(false)
-  const [transferTarget, setTransferTarget] = useState(null)
-  const [transferEmail, setTransferEmail] = useState('')
+  const [showShareModal, setShowShareModal] = useState(false)
+  const [shareTarget, setShareTarget] = useState(null)
 
   const [showMoveModal, setShowMoveModal] = useState(false)
   const [moveTarget, setMoveTarget] = useState(null)
@@ -214,11 +221,97 @@ export default function DashboardPage() {
     return () => { mounted = false }
   }, [location.key])
 
-  const copy = (val) => {
-    navigator.clipboard.writeText(val)
-    setCopiedValue(val)
-    setTimeout(() => setCopiedValue(''), 2000)
+  const copy = async (val) => {
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(val)
+      } else {
+        const textarea = document.createElement('textarea')
+        textarea.value = val
+        textarea.setAttribute('readonly', '')
+        textarea.style.position = 'absolute'
+        textarea.style.left = '-9999px'
+        document.body.appendChild(textarea)
+        textarea.select()
+        const copied = document.execCommand('copy')
+        document.body.removeChild(textarea)
+        if (!copied) throw new Error('Copy failed')
+      }
+
+      setCopiedValue(val)
+      setSnackbar({ message: 'Link copied', actionLabel: '', action: null })
+      setTimeout(() => setCopiedValue(''), 2000)
+      return true
+    } catch (err) {
+      alert(err?.message || 'Copy failed')
+      return false
+    }
   }
+
+  const canUseNativeShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function'
+
+  const handleNativeShare = async (url) => {
+    if (canUseNativeShare) {
+      await navigator.share({
+        title: 'Hoopit link',
+        text: 'Check out this link',
+        url,
+      })
+      setSnackbar({ message: 'Share sheet opened', actionLabel: '', action: null })
+      return
+    }
+
+    copy(url)
+    setSnackbar({ message: 'Copied link. Share it anywhere.', actionLabel: '', action: null })
+  }
+
+  const buildShareLinks = (url) => ([
+    {
+      label: 'WhatsApp',
+      href: `https://wa.me/?text=${encodeURIComponent(url)}`,
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
+          <path d="M12.04 2C6.58 2 2.14 6.39 2.14 11.79c0 1.9.55 3.74 1.58 5.33L2 22l5.12-1.66a9.83 9.83 0 0 0 4.92 1.31h.01c5.45 0 9.88-4.39 9.88-9.79C21.93 6.39 17.49 2 12.04 2zm5.78 13.83c-.24.68-1.4 1.27-1.9 1.35-.49.08-1.12.11-1.81-.11-.42-.13-.96-.31-1.65-.61-2.89-1.25-4.77-4.17-4.91-4.36-.14-.19-1.18-1.56-1.18-2.98 0-1.41.74-2.1 1-2.38.25-.28.55-.35.73-.35.18 0 .37.01.53.01.17 0 .39-.07.61.47.24.58.82 1.99.89 2.13.07.14.11.31.02.5-.09.19-.13.31-.26.48-.14.17-.27.38-.39.51-.13.14-.27.29-.11.58.16.29.72 1.17 1.55 1.9 1.07.95 1.97 1.25 2.26 1.39.29.14.46.12.63-.07.17-.19.72-.84.92-1.13.2-.3.4-.25.67-.15.28.1 1.74.82 2.04.97.3.14.5.21.58.33.08.12.08.7-.16 1.38z" />
+        </svg>
+      ),
+    },
+    {
+      label: 'X',
+      href: `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent('Check out this link')}`,
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
+          <path d="M18.901 1.153h3.68l-8.04 9.19 9.46 12.504h-7.41l-5.8-7.584-6.64 7.584H.47l8.6-9.83L0 1.153h7.59l5.24 6.95 6.07-6.95zm-1.29 19.61h2.04L6.48 3.243H4.29l13.32 17.52z" />
+        </svg>
+      ),
+    },
+    {
+      label: 'Facebook',
+      href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
+          <path d="M22 12.07C22 6.48 17.52 2 11.93 2S2 6.48 2 12.07C2 17.12 5.66 21.29 10.42 22v-7.03H7.9v-2.9h2.52V9.84c0-2.49 1.48-3.86 3.74-3.86 1.08 0 2.21.19 2.21.19v2.43h-1.24c-1.22 0-1.6.76-1.6 1.54v1.96h2.72l-.44 2.9h-2.28V22C18.34 21.29 22 17.12 22 12.07z" />
+        </svg>
+      ),
+    },
+    {
+      label: 'LinkedIn',
+      href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
+          <path d="M4.98 3.5C4.98 4.88 3.89 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1 4.98 2.12 4.98 3.5zM.2 8.33H4.8V24H.2V8.33zM8.67 8.33h4.41v2.14h.06c.61-1.16 2.11-2.38 4.35-2.38 4.65 0 5.51 3.06 5.51 7.04V24h-4.6v-7.67c0-1.83-.03-4.18-2.55-4.18-2.56 0-2.95 2-2.95 4.05V24h-4.6V8.33z" />
+        </svg>
+      ),
+    },
+    {
+      label: 'Email',
+      href: `mailto:?subject=${encodeURIComponent('Shared Hoopit link')}&body=${encodeURIComponent(url)}`,
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-5 w-5">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25H4.5a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5H4.5A2.25 2.25 0 0 0 2.25 6.75m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.92l-7.243 4.627a2.25 2.25 0 0 1-2.395 0L3.32 8.913a2.25 2.25 0 0 1-1.07-1.92V6.75" />
+        </svg>
+      ),
+    },
+  ])
 
   const filteredUrls = urls
     .filter((item) => {
@@ -766,7 +859,7 @@ export default function DashboardPage() {
                                   <button onClick={() => { setOpenMenuId(null); setArchiveTarget(item); setShowArchiveModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Archive</button>
                                 </li>
                                 <li>
-                                  <button onClick={() => { setOpenMenuId(null); setTransferTarget(item); setTransferEmail(''); setShowTransferModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Transfer</button>
+                                  <button onClick={() => { setOpenMenuId(null); setShareTarget(item); setShowShareModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Share</button>
                                 </li>
                                 <li>
                                   <button onClick={() => { setOpenMenuId(null); setDeleteTarget(item); setDeleteVerifyText(''); setShowDeleteModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-rose-600 hover:bg-slate-50 hover:text-rose-700 transition">Delete</button>
@@ -891,7 +984,7 @@ export default function DashboardPage() {
                                  <button onClick={() => { setOpenMenuId(null); setArchiveTarget(item); setShowArchiveModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Archive</button>
                                </li>
                                <li>
-                                 <button onClick={() => { setOpenMenuId(null); setTransferTarget(item); setTransferEmail(''); setShowTransferModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Transfer</button>
+                                 <button onClick={() => { setOpenMenuId(null); setShareTarget(item); setShowShareModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Share</button>
                                </li>
                                <li>
                                  <button onClick={() => { setOpenMenuId(null); setDeleteTarget(item); setDeleteVerifyText(''); setShowDeleteModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-rose-600 hover:bg-slate-50 hover:text-rose-700 transition">Delete</button>
@@ -989,21 +1082,73 @@ export default function DashboardPage() {
         </ConfirmModal>
       ) : null}
 
-      {showTransferModal && transferTarget ? (
-        <ConfirmModal title="Transfer link" onCancel={() => setShowTransferModal(false)} onConfirm={async () => {
-          try {
-            await transferShortUrl(transferTarget.id, transferEmail)
-            const refreshed = await getMyShortUrls()
-            setUrls(refreshed?.urls || [])
-            setShowTransferModal(false)
-            setSnackbar({ message: 'Transfer completed', actionLabel: '', action: null })
-          } catch (err) {
-            alert(err?.response?.data?.message || err?.message || 'Transfer failed')
-          }
-        }} confirmLabel="Transfer">
-          <div className="text-sm text-slate-700 mb-3">Transfer <strong className="text-slate-900">{transferTarget.shortUrl}</strong> to another user by email.</div>
-          <input value={transferEmail} onChange={(e) => setTransferEmail(e.target.value)} className="w-full rounded-lg border px-3 py-2" placeholder="Target user's email" />
-        </ConfirmModal>
+      {showShareModal && shareTarget ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm overflow-hidden rounded-3xl bg-white text-left shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+              <h3 className="text-lg font-bold text-slate-900">Share</h3>
+              <button onClick={() => setShowShareModal(false)} className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700" aria-label="Close share dialog">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-4.5 w-4.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="px-5 py-5">
+              <div className="mb-4 flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                <span className="max-w-45 truncate text-sm font-semibold text-slate-600">{shareTarget.shortUrl}</span>
+                <button
+                  onClick={async () => {
+                    const success = await copy(shareTarget.shortUrl)
+                    if (success) setShowShareModal(false)
+                  }}
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50"
+                  aria-label="Copy link"
+                  title="Copy link"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-4.5 w-4.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25v2.25a2.25 2.25 0 0 1-2.25 2.25H6.75a2.25 2.25 0 0 1-2.25-2.25V8.25a2.25 2.25 0 0 1 2.25-2.25H9m6.75 6v-6a2.25 2.25 0 0 0-2.25-2.25h-6a2.25 2.25 0 0 0-2.25 2.25v6a2.25 2.25 0 0 0 2.25 2.25h6a2.25 2.25 0 0 0 2.25-2.25z" />
+                  </svg>
+                  <span className="sr-only">Copy</span>
+                </button>
+              </div>
+              <div className="grid grid-cols-4 gap-3">
+                <button
+                  onClick={async () => {
+                    try {
+                      await handleNativeShare(shareTarget.shortUrl)
+                    } catch (err) {
+                      alert(err?.message || 'Sharing failed')
+                    }
+                  }}
+                  className="flex flex-col items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-4 text-xs font-semibold text-slate-600 transition hover:bg-slate-50"
+                  aria-label="Share on device"
+                  title="Share on device"
+                >
+                  <ShareIcon>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-5 w-5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 12.75 3.75 15 6 17.25M6 12.75V7.5A2.25 2.25 0 0 1 8.25 5.25h7.5A2.25 2.25 0 0 1 18 7.5v5.25M6 12.75h12M18 12.75 20.25 15 18 17.25" />
+                    </svg>
+                  </ShareIcon>
+                  <span className="sr-only">Share on device</span>
+                </button>
+                {buildShareLinks(shareTarget.shortUrl).map((platform) => (
+                  <a
+                    key={platform.label}
+                    href={platform.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex flex-col items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-4 text-xs font-semibold text-slate-600 transition hover:bg-slate-50"
+                    aria-label={platform.label}
+                    title={platform.label}
+                  >
+                    <ShareIcon>{platform.icon}</ShareIcon>
+                    <span className="sr-only">{platform.label}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
       ) : null}
 
       {showDeleteModal && deleteTarget ? (
