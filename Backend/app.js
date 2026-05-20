@@ -26,8 +26,10 @@ app.set('trust proxy', true);
 
 /// this is for dns configuration to support dns resolution for url redirection
 
+const normalizeOrigin = (value) => (value || '').trim().replace(/\/$/, '');
+
 const allowedOrigins = [
-    process.env.FRONTEND_URL || 'http://localhost:5173',
+    normalizeOrigin(process.env.FRONTEND_URL || 'http://localhost:5173'),
     'http://localhost:5174',
     'http://127.0.0.1:5174',
     'http://127.0.0.1:5173',
@@ -37,7 +39,7 @@ const allowedOrigins = [
 
 app.use(cors({
     origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin)) {
+        if (!origin || allowedOrigins.includes(normalizeOrigin(origin))) {
             return callback(null, true);
         }
 
