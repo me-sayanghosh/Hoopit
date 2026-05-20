@@ -3,6 +3,7 @@ import { cookieOptions } from "../config/cofig.js";
 import {
     registerUser as registerUserService,
     loginUser as loginUserService,
+    googleLoginUser as googleLoginUserService,
     requestPasswordReset as requestPasswordResetService,
     verifyPasswordResetCode as verifyPasswordResetCodeService,
     resetPassword as resetPasswordService,
@@ -24,6 +25,15 @@ export const loginUser = wrapasync(async (req, res) => {
     res.cookie('token', token, cookieOptions);
 
     res.status(200).json({ message: 'User logged in successfully' });
+});
+
+export const googleLoginUser = wrapasync(async (req, res) => {
+    const { credential } = req.body;
+    const token = await googleLoginUserService(credential);
+
+    res.cookie('token', token, cookieOptions);
+
+    res.status(200).json({ message: 'Google login successful' });
 });
 
 export const logoutUser = wrapasync(async (req, res) => {

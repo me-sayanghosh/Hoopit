@@ -1,6 +1,8 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import dns from 'node:dns/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import connectDB from './src/config/mongo.config.js';
 import authRoute from './src/routes/auth.route.js';
 import shortUrlRoute from './src/routes/shortUrl.route.js';
@@ -14,7 +16,9 @@ import cookieParser from 'cookie-parser';
 
 ///this is for dotenv configuration
 
-dotenv.config({ path: './.env' });
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.join(__dirname, '.env') });
 const app  = express();
 app.set('trust proxy', true);
 

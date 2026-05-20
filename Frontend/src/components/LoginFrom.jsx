@@ -1,13 +1,15 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { GoogleLogin } from '@react-oauth/google'
 import AuthPasswordField from './AuthPasswordField.jsx'
 
-function LoginFrom({ onSubmit, onSuccess }) {
+function LoginFrom({ onSubmit, onGoogleSubmit, onSuccess }) {
 	const [email, setEmail] = useState('')
 	const [password, setPassword] = useState('')
 	const [loading, setLoading] = useState(false)
 	const [message, setMessage] = useState('')
 	const [error, setError] = useState('')
+	const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
 
 	const handleSubmit = async (event) => {
 		event.preventDefault()
@@ -31,6 +33,24 @@ function LoginFrom({ onSubmit, onSuccess }) {
 			}
 		} catch (err) {
 			setError(err?.message || 'Unable to sign in right now.')
+		} finally {
+			setLoading(false)
+		}
+	}
+
+	const handleGoogleSuccess = async ({ credential }) => {
+		setLoading(true)
+		setError('')
+		setMessage('')
+
+		try {
+			await onGoogleSubmit(credential)
+			setMessage('You are signed in.')
+			if (onSuccess) {
+				onSuccess()
+			}
+		} catch (err) {
+			setError(err?.message || 'Unable to sign in with Google right now.')
 		} finally {
 			setLoading(false)
 		}
@@ -76,6 +96,27 @@ function LoginFrom({ onSubmit, onSuccess }) {
 			<button type="submit" className="auth-button" disabled={loading}>
 				{loading ? 'Signing in...' : 'Login'}
 			</button>
+
+			<div className="auth-divider">
+				<span>or</span>
+			</div>
+
+			{googleClientId ? (
+				<div className="google-auth-button">
+					<GoogleLogin
+						onSuccess={handleGoogleSuccess}
+						onError={() => setError('Google sign in failed. Please try again.')}
+						theme="outline"
+						size="large"
+						shape="pill"
+						text="continue_with"
+						logo_alignment="left"
+						width="360"
+					/>
+				</div>
+			) : (
+				<p className="auth-message is-error">Google sign in is not configured yet.</p>
+			)}
 
 			{message ? <p className="auth-message is-success">{message}</p> : null}
 			{error ? <p className="auth-message is-error">{error}</p> : null}

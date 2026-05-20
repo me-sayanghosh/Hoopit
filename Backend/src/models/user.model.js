@@ -16,9 +16,22 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: true,
+        required: function() {
+            return this.authProvider === 'local';
+        },
         minlength: 8,
         match: [/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/, 'Password must be at least 8 characters and include uppercase, lowercase, number and special character'],
+    },
+    googleId: {
+        type: String,
+        required: false,
+        unique: true,
+        sparse: true,
+    },
+    authProvider: {
+        type: String,
+        enum: ['local', 'google'],
+        default: 'local',
     },
     avater: {
         type: String,
