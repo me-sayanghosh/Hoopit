@@ -1,6 +1,12 @@
 import wrapasync from "../utils/errorHandeler.js";
 import { cookieOptions } from "../config/cofig.js";
-import { registerUser as registerUserService, loginUser as loginUserService } from '../services/auth.service.js';
+import {
+    registerUser as registerUserService,
+    loginUser as loginUserService,
+    requestPasswordReset as requestPasswordResetService,
+    verifyPasswordResetCode as verifyPasswordResetCodeService,
+    resetPassword as resetPasswordService,
+} from '../services/auth.service.js';
 
 export const registerUser = wrapasync(async (req, res) => {
     const { name, email, password } = req.body;
@@ -24,6 +30,34 @@ export const logoutUser = wrapasync(async (req, res) => {
     res.clearCookie('token', cookieOptions);
 
     res.status(200).json({ message: 'User logged out successfully' });
+});
+
+export const requestPasswordReset = wrapasync(async (req, res) => {
+    const { email } = req.body;
+    const result = await requestPasswordResetService(email);
+
+    if (process.env.NODE_ENV !== 'production' && result?.sent === false) {
+        return res.status(200).json({
+            message: 'Email service is not configured. Use the development reset code shown here or in the backend console.',
+            code: result.devCode,
+        });
+    }
+
+    res.status(200).json({ message: 'If an account exists for this email, a reset code has been sent.' });
+});
+
+export const verifyPasswordResetCode = wrapasync(async (req, res) => {
+    const { email, code } = req.body;
+    await verifyPasswordResetCodeService(email, code);
+
+    res.status(200).json({ message: 'Verification code confirmed.' });
+});
+
+export const resetPassword = wrapasync(async (req, res) => {
+    const { email, code, password } = req.body;
+    await resetPasswordService(email, code, password);
+
+    res.status(200).json({ message: 'Password reset successfully.' });
 });
 
 export const getCurrentUser = wrapasync(async (req, res) => {

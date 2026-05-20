@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import AuthPasswordField from './AuthPasswordField.jsx'
 
-function RegisterFrom({ onSubmit }) {
+function RegisterFrom({ onSubmit, onSuccess }) {
 	const [name, setName] = useState('')
 	const [email, setEmail] = useState('')
 	const [password, setPassword] = useState('')
@@ -35,6 +36,9 @@ function RegisterFrom({ onSubmit }) {
 			setName('')
 			setEmail('')
 			setPassword('')
+			if (onSuccess) {
+				onSuccess()
+			}
 		} catch (err) {
 			setError(err?.message || 'Unable to create your account right now.')
 		} finally {
@@ -73,17 +77,13 @@ function RegisterFrom({ onSubmit }) {
 				/>
 			</label>
 
-			<label className="field">
-				<span>Password</span>
-				<input
-					type="password"
-					value={password}
-					onChange={(event) => setPassword(event.target.value)}
-					placeholder="Create a password"
-					autoComplete="new-password"
-					required
-				/>
-			</label>
+			<AuthPasswordField
+				label="Password"
+				value={password}
+				onChange={(event) => setPassword(event.target.value)}
+				placeholder="Create a password"
+				autoComplete="new-password"
+			/>
 
 			<p className="auth-note">Use at least one clear, memorable password you can keep secure.</p>
 

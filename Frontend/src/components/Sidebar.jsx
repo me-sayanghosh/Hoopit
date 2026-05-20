@@ -109,7 +109,14 @@ export default function Sidebar({ profile }) {
     <aside className="hidden lg:flex w-64 flex-col px-2 py-6 sticky top-6 self-start h-[calc(100vh-48px)] overflow-auto">
       <div className="rounded-3xl bg-white shadow-[0_4px_24px_rgba(0,0,0,0.04)] border border-slate-200/80 p-4 flex flex-col h-full">
         <div className="flex items-center gap-3 px-2 mb-2">
-          <div className="text-2xl font-extrabold tracking-tight text-blue-600">hoopit</div>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-[#111] flex items-center justify-center gap-[3px] flex-wrap p-1.5 shrink-0">
+              {[0, 1, 2, 3].map((i) => (
+                <div key={i} className={`w-2 h-2 rounded-[2px] ${i === 0 || i === 1 ? 'bg-[#2563EB]' : 'bg-white'}`} style={{ opacity: i < 2 ? 1 : 0.9 }} />
+              ))}
+            </div>
+            <span className="text-lg font-bold tracking-[-0.3px] text-slate-900">HoopIt</span>
+          </div>
           <div className="ml-auto">
             <button
               onClick={() => navigate('/profile')}

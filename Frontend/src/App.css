@@ -50,6 +50,52 @@
 		box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.15);
 	}
 
+	.password-field {
+		position: relative;
+	}
+
+	.password-field input {
+		padding-right: 46px;
+	}
+
+	.password-toggle {
+		position: absolute;
+		top: 50%;
+		right: 8px;
+		width: 34px;
+		height: 34px;
+		border: 0;
+		border-radius: 8px;
+		background: transparent;
+		color: #6b7280;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		transform: translateY(-50%);
+		transition: background-color 150ms ease, color 150ms ease;
+	}
+
+	.password-toggle:hover {
+		background: #f3f4f6;
+		color: #111827;
+	}
+
+	.password-toggle:focus-visible {
+		outline: 2px solid var(--primary-blue);
+		outline-offset: 2px;
+	}
+
+	.password-toggle svg {
+		width: 20px;
+		height: 20px;
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 2;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
 	.auth-row {
 		display: flex;
 		flex-wrap: wrap;
@@ -130,6 +176,36 @@
 		border: 1px solid #fecaca;
 		background: #fef2f2;
 		color: #991b1b;
+	}
+
+	.auth-steps {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 8px;
+	}
+
+	.auth-steps span {
+		border: 1px solid var(--border-light);
+		border-radius: 8px;
+		padding: 8px 10px;
+		background: #f9fafb;
+		color: #6b7280;
+		font-size: 0.8rem;
+		font-weight: 600;
+		text-align: center;
+	}
+
+	.auth-steps span.is-active {
+		border-color: var(--primary-blue);
+		background: rgba(37, 99, 235, 0.08);
+		color: var(--primary-blue);
+	}
+
+	.field input.auth-code-input {
+		font-size: 1.25rem;
+		font-weight: 700;
+		letter-spacing: 0.28em;
+		text-align: center;
 	}
 
 	.auth-switch {

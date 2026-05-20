@@ -27,6 +27,18 @@ const userSchema = new mongoose.Schema({
             return getGravatarUrl(this.email);
         }
     },
+    passwordResetCodeHash: {
+        type: String,
+        required: false,
+    },
+    passwordResetCodeExpires: {
+        type: Date,
+        required: false,
+    },
+    passwordResetVerified: {
+        type: Boolean,
+        default: false,
+    },
 
 });
 
