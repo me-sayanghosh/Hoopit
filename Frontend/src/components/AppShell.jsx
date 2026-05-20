@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
-import { logOutUser, getCurrentUser } from '../api/user.api.js'
+import { logOutUser, getCurrentUser, getCachedCurrentUser } from '../api/user.api.js'
 
 const shortLinksNav = [
   { label: 'Links', icon: 'link', to: '/dashboard' },
@@ -121,7 +121,7 @@ export default function AppShell({ title, subtitle, children, profile, onLogout,
   const [mobileOpen, setMobileOpen] = useState(false)
 
   // Single source-of-truth profile used in sidebar/header to avoid inconsistencies
-  const [internalProfile, setInternalProfile] = useState(profile || null)
+  const [internalProfile, setInternalProfile] = useState(() => profile || getCachedCurrentUser())
 
   useEffect(() => {
     let mounted = true
@@ -131,7 +131,7 @@ export default function AppShell({ title, subtitle, children, profile, onLogout,
         if (!mounted) return
         setInternalProfile(res?.user || null)
       } catch {
-        // ignore failures and keep provided profile if any
+        // Keep the cached/provided profile during transient refresh failures.
       }
     }
 
