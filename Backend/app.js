@@ -70,6 +70,12 @@ app.use((req, res, next) => {
 app.use('/api/auth', authRoute);
 app.use('/api/create', shortUrlRoute);
 app.use('/api/folders', folderRoute);
+app.get('/', (req, res) => {
+    res.status(200).json({
+        status: 'success',
+        message: 'Hoopit backend is running',
+    });
+});
 app.get('/:id', redirectfromShortUrl);
 app.use(notFoundHandler);
 app.use(errorHandler);
