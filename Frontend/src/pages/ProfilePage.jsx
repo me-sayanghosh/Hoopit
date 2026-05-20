@@ -78,8 +78,11 @@ export default function ProfilePage() {
     )
   }
 
+  const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.name || 'User')}&background=2563EB&color=fff`
+  const avatarUrl = profile?.avatar || fallbackAvatar
+
   return (
-    <AppShell title="Profile Settings" subtitle="Manage your personal details and account preferences.">
+    <AppShell title="Profile Settings" subtitle="Manage your personal details and account preferences." profile={profile}>
       <div className="max-w-2xl space-y-6">
         <div>
           <button
@@ -96,6 +99,22 @@ export default function ProfilePage() {
         {/* Profile Card */}
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_4px_24px_rgba(0,0,0,0.03)]">
           <h3 className="text-base font-extrabold text-slate-900 mb-4">Personal Details</h3>
+
+          <div className="mb-6 flex items-center gap-4 rounded-2xl border border-slate-100 bg-slate-50/70 p-4">
+            <img
+              src={avatarUrl}
+              alt="Profile"
+              referrerPolicy="no-referrer"
+              onError={(event) => {
+                event.currentTarget.src = fallbackAvatar
+              }}
+              className="h-16 w-16 rounded-full object-cover ring-4 ring-white shadow-sm"
+            />
+            <div className="min-w-0">
+              <p className="truncate text-sm font-extrabold text-slate-900">{profile?.name || 'User'}</p>
+              <p className="truncate text-xs font-semibold text-slate-500">{profile?.email || ''}</p>
+            </div>
+          </div>
           
           <form onSubmit={handleUpdate} className="space-y-4">
             <div>

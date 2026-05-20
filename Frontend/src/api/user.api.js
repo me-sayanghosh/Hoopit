@@ -38,6 +38,12 @@ export const registerUser = async (name, email, password) => {
     return { ...response.data, user: currentUser?.user };
 }
 
+export const googleLoginUser = async (credential) => {
+    const response = await axiosInstance.post(`${AUTH_BASE_PATH}/google`, { credential });
+    const currentUser = await getCurrentUser();
+    return { ...response.data, user: currentUser?.user };
+}
+
 export const logOutUser = async () => {
     try {
         await axiosInstance.post(`${AUTH_BASE_PATH}/logout`);

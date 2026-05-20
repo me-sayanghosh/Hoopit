@@ -1,6 +1,6 @@
 import AuthLayout from '../components/AuthLayout.jsx'
 import LoginFrom from '../components/LoginFrom.jsx'
-import { loginUser } from '../api/user.api.js'
+import { googleLoginUser, loginUser } from '../api/user.api.js'
 import { useNavigate } from 'react-router-dom'
 
 function LoginPage() {
@@ -8,7 +8,11 @@ function LoginPage() {
 
   return (
     <AuthLayout>
-      <LoginFrom onSubmit={loginUser} onSuccess={() => navigate('/dashboard')} />
+      <LoginFrom
+        onSubmit={loginUser}
+        onGoogleSubmit={googleLoginUser}
+        onSuccess={() => navigate('/dashboard')}
+      />
     </AuthLayout>
   )
 }

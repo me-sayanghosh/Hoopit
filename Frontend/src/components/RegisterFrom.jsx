@@ -1,14 +1,16 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { GoogleLogin } from '@react-oauth/google'
 import AuthPasswordField from './AuthPasswordField.jsx'
 
-function RegisterFrom({ onSubmit, onSuccess }) {
+function RegisterFrom({ onSubmit, onGoogleSubmit, onSuccess, onBack }) {
 	const [name, setName] = useState('')
 	const [email, setEmail] = useState('')
 	const [password, setPassword] = useState('')
 	const [loading, setLoading] = useState(false)
 	const [message, setMessage] = useState('')
 	const [error, setError] = useState('')
+	const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
 
 	const handleSubmit = async (event) => {
 		event.preventDefault()
@@ -46,8 +48,32 @@ function RegisterFrom({ onSubmit, onSuccess }) {
 		}
 	}
 
+	const handleGoogleSuccess = async ({ credential }) => {
+		setLoading(true)
+		setError('')
+		setMessage('')
+
+		try {
+			await onGoogleSubmit(credential)
+			setMessage('Account created successfully.')
+			if (onSuccess) {
+				onSuccess()
+			}
+		} catch (err) {
+			setError(err?.message || 'Unable to continue with Google right now.')
+		} finally {
+			setLoading(false)
+		}
+	}
+
 	return (
 		<form className="auth-form" onSubmit={handleSubmit}>
+			{onBack ? (
+				<button type="button" className="auth-back-link" onClick={onBack}>
+					Back to sign up options
+				</button>
+			) : null}
+
 			<div className="auth-heading">
 				<h2>Create your account</h2>
 				<p>Set up access in a few quick steps.</p>
@@ -90,6 +116,27 @@ function RegisterFrom({ onSubmit, onSuccess }) {
 			<button type="submit" className="auth-button" disabled={loading}>
 				{loading ? 'Creating account...' : 'Register'}
 			</button>
+
+			<div className="auth-divider">
+				<span>or</span>
+			</div>
+
+			{googleClientId ? (
+				<div className="google-auth-button">
+					<GoogleLogin
+						onSuccess={handleGoogleSuccess}
+						onError={() => setError('Google sign up failed. Please try again.')}
+						theme="outline"
+						size="large"
+						shape="pill"
+						text="continue_with"
+						logo_alignment="left"
+						width="360"
+					/>
+				</div>
+			) : (
+				<p className="auth-message is-error">Google sign up is not configured yet.</p>
+			)}
 
 			{message ? <p className="auth-message is-success">{message}</p> : null}
 			{error ? <p className="auth-message is-error">{error}</p> : null}

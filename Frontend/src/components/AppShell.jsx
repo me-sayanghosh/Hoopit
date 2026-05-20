@@ -154,6 +154,8 @@ export default function AppShell({ title, subtitle, children, profile, onLogout,
   }
 
   const resolvedProfile = profile || internalProfile
+  const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(resolvedProfile?.name || 'User')}&background=2563EB&color=fff`
+  const avatarUrl = resolvedProfile?.avatar || fallbackAvatar
 
   const brand = (
     <div className="flex items-center gap-2">
@@ -207,8 +209,12 @@ export default function AppShell({ title, subtitle, children, profile, onLogout,
           className="w-full flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50/70 hover:bg-slate-100/80 px-3 py-2.5 text-left transition group active:scale-[0.98]"
         >
           <img
-            src={resolvedProfile?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(resolvedProfile?.name || 'User')}&background=2563EB&color=fff`}
+            src={avatarUrl}
             alt="avatar"
+            referrerPolicy="no-referrer"
+            onError={(event) => {
+              event.currentTarget.src = fallbackAvatar
+            }}
             className="h-9 w-9 rounded-full object-cover ring-2 ring-white shadow-sm shrink-0"
           />
           <div className="min-w-0 flex-1">
@@ -271,8 +277,12 @@ export default function AppShell({ title, subtitle, children, profile, onLogout,
               className="h-9 w-9 overflow-hidden rounded-full border border-slate-200 bg-slate-100 hover:scale-105 active:scale-95 transition-transform duration-200 focus:outline-none"
             >
               <img
-                src={resolvedProfile?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(resolvedProfile?.name || 'User')}`}
+                src={avatarUrl}
                 alt="avatar"
+                referrerPolicy="no-referrer"
+                onError={(event) => {
+                  event.currentTarget.src = fallbackAvatar
+                }}
                 className="h-full w-full object-cover"
               />
             </button>

@@ -6,6 +6,31 @@
 		gap: 20px;
 	}
 
+	.auth-choice {
+		display: grid;
+		gap: 18px;
+	}
+
+	.auth-choice-button {
+		width: 100%;
+		min-height: 48px;
+	}
+
+	.auth-back-link {
+		width: fit-content;
+		border: 0;
+		background: transparent;
+		color: var(--primary-blue);
+		padding: 0;
+		font-size: 0.875rem;
+		font-weight: 700;
+		cursor: pointer;
+	}
+
+	.auth-back-link:hover {
+		text-decoration: underline;
+	}
+
 	.auth-heading h2 {
 		margin: 0;
 		color: #111827;
@@ -156,6 +181,118 @@
 	.auth-button:disabled {
 		cursor: not-allowed;
 		opacity: 0.6;
+	}
+
+	.auth-divider {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		color: #94a3b8;
+		font-size: 0.8rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		margin: 2px 0;
+	}
+
+	.auth-divider::before,
+	.auth-divider::after {
+		content: "";
+		height: 1px;
+		flex: 1;
+		background: var(--border-light);
+	}
+
+	.google-auth-button {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		min-height: 54px;
+		width: 100%;
+		border-radius: 9999px;
+		background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+		border: 1px solid #e2e8f0;
+		padding: 5px;
+		box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+	}
+
+	.google-auth-button > div {
+		display: flex;
+		justify-content: center;
+		width: min(100%, 360px);
+	}
+
+	.google-auth-button iframe {
+		max-width: 100%;
+	}
+
+	.auth-sticky-notes {
+		display: flex;
+	}
+
+	@media (max-width: 480px) {
+		.auth-card-wrap {
+			margin-top: 96px;
+			max-width: min(100%, 22rem);
+		}
+
+		.auth-sticky-notes {
+			display: flex;
+			top: 8px !important;
+			left: 18px !important;
+			transform: scale(0.82);
+			transform-origin: left top;
+			pointer-events: none;
+		}
+
+		.auth-form {
+			gap: 16px;
+		}
+
+		.auth-choice {
+			gap: 16px;
+		}
+
+		.auth-heading h2 {
+			font-size: 1.6rem;
+			line-height: 1.15;
+		}
+
+		.auth-heading p {
+			font-size: 0.9rem;
+		}
+
+		.field {
+			gap: 7px;
+		}
+
+		.field input {
+			border-radius: 8px;
+			padding: 11px 12px;
+		}
+
+		.auth-note {
+			margin: -2px 0 0;
+			font-size: 0.88rem;
+			line-height: 1.45;
+		}
+
+		.auth-button {
+			min-height: 44px;
+		}
+
+		.auth-divider {
+			margin: -2px 0;
+		}
+
+		.google-auth-button {
+			min-height: 50px;
+			padding: 4px;
+		}
+
+		.auth-switch {
+			padding-top: 2px;
+			line-height: 1.4;
+		}
 	}
 
 	.auth-message {

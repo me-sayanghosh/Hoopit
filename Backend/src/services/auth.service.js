@@ -1,8 +1,17 @@
 import { createUser, findUserByEmail } from '../dao/user.dao.js';
 import { signToken } from '../utils/helper.js';
 import { AppError } from '../utils/httpError.js';
+import { OAuth2Client } from 'google-auth-library';
+import User from '../models/user.model.js';
 import crypto from 'crypto';
 import { isEmailConfigured, sendPasswordResetCode } from '../utils/email.js';
+import dotenv from 'dotenv';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
 const RESET_CODE_TTL_MINUTES = 10;
@@ -54,6 +63,60 @@ export const loginUser = async (email, password) => {
 
     const token = signToken({ id: user._id });
     return token;
+};
+
+export const googleLoginUser = async (credential) => {
+    const googleClientId = process.env.GOOGLE_CLIENT_ID;
+    if (!googleClientId) {
+        throw new AppError('GOOGLE_CLIENT_ID is not set in environment', 500);
+    }
+
+    if (!credential) {
+        throw new AppError('Google credential is required', 400);
+    }
+
+    const googleClient = new OAuth2Client(googleClientId);
+    const ticket = await googleClient.verifyIdToken({
+        idToken: credential,
+        audience: googleClientId,
+    });
+
+    const payload = ticket.getPayload();
+    if (!payload?.email || !payload?.sub) {
+        throw new AppError('Google account did not provide the required profile information', 400);
+    }
+
+    if (payload.email_verified === false) {
+        throw new AppError('Please verify your Google email before signing in', 401);
+    }
+
+    const email = payload.email.toLowerCase();
+    const googleProfile = {
+        googleId: payload.sub,
+        name: payload.name || email.split('@')[0],
+        email,
+        avater: payload.picture,
+        authProvider: 'google',
+    };
+
+    let user = await User.findOne({
+        $or: [
+            { googleId: googleProfile.googleId },
+            { email: googleProfile.email },
+        ],
+    });
+
+    if (!user) {
+        user = await User.create(googleProfile);
+    } else {
+        user.googleId = user.googleId || googleProfile.googleId;
+        user.authProvider = user.authProvider || 'google';
+        user.name = user.name || googleProfile.name;
+        if (googleProfile.avater) user.avater = googleProfile.avater;
+        await user.save();
+    }
+
+    return signToken({ id: user._id });
 };
 
 export const requestPasswordReset = async (email) => {
