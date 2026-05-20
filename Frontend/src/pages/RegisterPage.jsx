@@ -68,6 +68,7 @@ function RegisterPage() {
         {googleClientId ? (
           <div className="google-auth-button">
             <GoogleAuthButton
+              clientId={googleClientId}
               label="Continue with Google"
               disabled={loading}
               onSuccess={handleGoogleSuccess}

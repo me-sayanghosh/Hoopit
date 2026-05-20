@@ -110,6 +110,7 @@ function LoginFrom({ onSubmit, onGoogleSubmit, onSuccess }) {
 			{googleClientId ? (
 				<div className="google-auth-button">
 					<GoogleAuthButton
+						clientId={googleClientId}
 						label="Continue with Google"
 						disabled={loading}
 						onSuccess={handleGoogleSuccess}

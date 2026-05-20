@@ -130,6 +130,7 @@ function RegisterFrom({ onSubmit, onGoogleSubmit, onSuccess, onBack }) {
 			{googleClientId ? (
 				<div className="google-auth-button">
 					<GoogleAuthButton
+						clientId={googleClientId}
 						label="Continue with Google"
 						disabled={loading}
 						onSuccess={handleGoogleSuccess}
