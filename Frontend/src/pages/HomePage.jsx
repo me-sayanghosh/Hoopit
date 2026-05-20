@@ -126,7 +126,7 @@ export default function HomePage() {
         </div>
       </nav>
 
-      <section style={{
+      <section className="home-hero-section" style={{
         position: 'relative',
         minHeight: 'calc(100vh - 64px)',
         display: 'flex',
@@ -158,9 +158,11 @@ export default function HomePage() {
           <LocationTypeCard />
         </div>
 
-        <div style={{ textAlign: 'center', zIndex: 10, maxWidth: 700 }}>
+        <div className="home-hero-copy" style={{ textAlign: 'center', zIndex: 10, maxWidth: 700 }}>
           <h1 style={{ fontSize: 'clamp(48px, 7vw, 76px)', fontWeight: 800, lineHeight: 1.08, letterSpacing: '-2px', margin: '0 0 4px', color: '#111' }}>Paste, Short, and track</h1>
-          <h1 style={{ fontSize: 'clamp(48px, 7vw, 76px)', fontWeight: 800, lineHeight: 1.08, letterSpacing: '-2px', margin: '0 0 28px', color: '#c8c8c8' }}>all in one place</h1>
+          <h1 className="home-highlight-heading" style={{ fontSize: 'clamp(48px, 7vw, 76px)', fontWeight: 800, lineHeight: 1.08, letterSpacing: '-2px', margin: '0 0 28px', color: '#fff' }}>
+            <span className="paper-highlight-red">all in one place</span>
+          </h1>
           <p style={{ fontSize: 16, color: '#666', marginBottom: 36, lineHeight: 1.6 }}>Efficiently manage your tasks and boost productivity.</p>
           <Link to="/try-now" style={{ background: '#2563EB', color: 'white', border: 'none', borderRadius: 50, padding: '14px 36px', fontSize: 15, fontWeight: 600, textDecoration: 'none', boxShadow: '0 4px 20px rgba(37,99,235,0.35)' }}>Get free demo</Link>
         </div>
@@ -211,6 +213,67 @@ export default function HomePage() {
         /* Hide quick actions on small screens */
         @media (max-width: 640px) {
           .hide-on-mobile { display: none !important; }
+          .home-hero-section {
+            padding: 46px 16px 64px !important;
+          }
+          .home-hero-copy {
+            max-width: 100% !important;
+          }
+          .home-highlight-heading {
+            font-size: clamp(34px, 10.5vw, 44px) !important;
+            letter-spacing: -1px !important;
+            line-height: 1.05 !important;
+            margin-bottom: 24px !important;
+          }
+          .paper-highlight-red {
+            white-space: nowrap;
+            padding: 0.1em 0.18em 0.16em;
+          }
+          .paper-highlight-red::before {
+            inset: -0.03em -0.1em -0.04em -0.1em;
+          }
+          .paper-highlight-red::after {
+            inset: 0.06em -0.08em 0.04em -0.08em;
+          }
+        }
+        .paper-highlight-red {
+          position: relative;
+          display: inline-block;
+          padding: 0.08em 0.26em 0.18em;
+          color: #fff;
+          transform: rotate(-0.4deg);
+          text-shadow: 0 1px 0 rgba(0,0,0,0.08);
+          isolation: isolate;
+        }
+        .paper-highlight-red::before,
+        .paper-highlight-red::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          z-index: -1;
+        }
+        .paper-highlight-red::before {
+          inset: -0.02em -0.18em -0.04em -0.18em;
+          background:
+            radial-gradient(ellipse at 0% 40%, transparent 0 7%, #ef2f2f 8% 100%),
+            radial-gradient(ellipse at 100% 52%, transparent 0 6%, #c91f24 7% 100%),
+            repeating-linear-gradient(92deg, rgba(255,255,255,0.1) 0 7px, rgba(120,0,0,0.08) 8px 13px, transparent 14px 23px),
+            linear-gradient(2deg, #b91c1c 0%, #ef2f2f 18%, #ff3f35 52%, #d9232b 100%);
+          border-radius: 999px 32px 999px 36px;
+          clip-path: polygon(2% 18%, 9% 9%, 24% 12%, 32% 6%, 48% 10%, 63% 7%, 78% 13%, 96% 9%, 99% 22%, 96% 36%, 99% 49%, 95% 62%, 98% 77%, 86% 84%, 69% 82%, 55% 89%, 38% 84%, 23% 88%, 8% 79%, 4% 64%, 0% 55%, 5% 43%, 0% 31%);
+          box-shadow: 0 8px 18px rgba(201,31,36,0.18);
+        }
+        .paper-highlight-red::after {
+          inset: 0.06em -0.14em 0.04em -0.14em;
+          background:
+            linear-gradient(90deg, transparent 0 2%, rgba(255,255,255,0.18) 6%, transparent 18% 82%, rgba(145,18,22,0.18) 94%, transparent 100%),
+            repeating-linear-gradient(0deg, rgba(255,255,255,0.1) 0 2px, transparent 2px 7px);
+          border-radius: 999px;
+          filter: blur(0.4px);
+          opacity: 0.75;
+          transform: rotate(0.5deg);
+          mix-blend-mode: soft-light;
         }
       `}</style>
     </div>
