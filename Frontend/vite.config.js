@@ -9,6 +9,11 @@ export default defineConfig({
     tailwindcss()
 
   ],
+  build: {
+    // Increase the chunk size warning limit to reduce noisy warnings during build.
+    // Value is in kilobytes (kB).
+    chunkSizeWarningLimit: 2000
+  },
   server: {
     proxy: {
       '/api': {
