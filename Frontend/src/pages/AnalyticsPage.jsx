@@ -266,7 +266,13 @@ function AnalyticsPage() {
                 <GrowthBarChart series={growthSeries.map((s) => ({ id: s.id, label: s.label, value: s.value }))} width={640} height={240} />
               </div>
               <div className="overflow-hidden rounded-2xl border border-slate-100 bg-slate-50/50 p-4">
-                <ChannelGauge data={analytics.trafficByCountry && analytics.trafficByCountry.length ? analytics.trafficByCountry.slice(0,4).map((d)=>({label:d.label,value:d.value})) : [{label:'Google',value:78},{label:'Facebook',value:12},{label:'YouTube',value:6},{label:'Others',value:4}]} />
+              {analytics.trafficByCountry && analytics.trafficByCountry.length ? (
+                <ChannelGauge data={analytics.trafficByCountry.slice(0,4).map((d)=>({label:d.label,value:d.value}))} />
+              ) : (
+                <div className="flex h-full items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 p-6">
+                  <p className="text-sm font-medium text-slate-500">No country traffic data yet. Data will appear after users click your short links.</p>
+                </div>
+              )}
               </div>
             </div>
           </div>

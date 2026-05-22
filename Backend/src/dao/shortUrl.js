@@ -83,14 +83,38 @@ const getLocation = async (req, ip) => {
         };
     }
 
-    // If it's a localhost or private LAN IP, return high-quality fallback New Delhi coordinates for local testing
+    // If it's a localhost or private LAN IP, look up the server's real external IP via ip-api
     if (isLocalOrPrivateIp(ip)) {
+        try {
+            // Calling ip-api.com without an IP param makes it resolve the caller's real public IP
+            const extResponse = await fetch('https://ip-api.com/json/?fields=status,country,regionName,city,lat,lon', {
+                signal: AbortSignal.timeout(4000)
+            });
+
+            if (extResponse.ok) {
+                const extData = await extResponse.json();
+                if (extData.status === 'success') {
+                    console.log(`[geo] Local IP detected → resolved via external IP: ${extData.city}, ${extData.regionName}, ${extData.country}`);
+                    return {
+                        country: extData.country || 'Unknown',
+                        region: extData.regionName || 'Unknown',
+                        city: extData.city || 'Unknown',
+                        latitude: extData.lat ?? null,
+                        longitude: extData.lon ?? null,
+                    };
+                }
+            }
+        } catch (extErr) {
+            console.error('[geo] External IP lookup failed for local IP:', extErr.message || extErr);
+        }
+
+        // If external lookup also fails, return Unknown instead of fake data
         return {
-            country: 'IN',
-            region: 'Delhi',
-            city: 'New Delhi',
-            latitude: 28.7041,
-            longitude: 77.1025,
+            country: 'Unknown',
+            region: 'Unknown',
+            city: 'Unknown',
+            latitude: null,
+            longitude: null,
         };
     }
 
