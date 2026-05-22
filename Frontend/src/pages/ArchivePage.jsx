@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import AppShell from '../components/AppShell.jsx'
+import SileoToast from '../components/SileoToast.jsx'
 import { getArchivedShortUrls, updateShortUrl, deleteShortUrl } from '../api/shortUrlapi.js'
 
 export default function ArchivePage() {
@@ -170,35 +171,14 @@ export default function ArchivePage() {
       )}
 
       {/* ── Undo Snackbar Toast ── */}
-      <div
-        className={`fixed bottom-6 left-1/2 z-50 -translate-x-1/2 transition-all duration-500 ${
-          undoVisible ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-4 pointer-events-none'
-        }`}
-      >
-        <div className="flex items-center gap-4 rounded-full border border-slate-200/80 bg-slate-900 px-5 py-3.5 shadow-[0_10px_40px_rgba(0,0,0,0.25)]">
-          {/* Checkmark icon */}
-          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-500">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="h-4 w-4 text-white">
-              <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
-            </svg>
-          </div>
-
-          <span className="text-sm font-semibold text-white whitespace-nowrap">
-            Link deleted successfully
-          </span>
-
-          {/* Divider */}
-          <div className="h-4 w-px bg-white/20 shrink-0" />
-
-          {/* Undo button */}
-          <button
-            onClick={handleUndo}
-            className="text-sm font-bold text-blue-400 hover:text-blue-300 transition whitespace-nowrap active:scale-95"
-          >
-            Undo
-          </button>
-        </div>
-      </div>
+      <SileoToast
+        message="Link deleted successfully"
+        type="success"
+        actionLabel="Undo"
+        onAction={handleUndo}
+        onClose={() => setUndoVisible(false)}
+        isVisible={undoVisible}
+      />
 
     </AppShell>
   )

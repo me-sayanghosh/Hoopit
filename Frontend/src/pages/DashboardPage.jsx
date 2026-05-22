@@ -1,30 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import AppShell from '../components/AppShell.jsx'
+import SileoToast from '../components/SileoToast.jsx'
 import { getMyShortUrls, updateShortUrl, deleteShortUrl } from '../api/shortUrlapi.js'
 import { getCurrentUser } from '../api/user.api.js'
-
-function CopyToast({ value }) {
-  if (!value) return null
-
-  const display = value.length > 54 ? `${value.slice(0, 51)}...` : value
-
-  return (
-    <div className="fixed right-4 top-20 z-50">
-      <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-[0_18px_50px_rgba(15,23,42,0.16)]">
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 00-1.414-1.414L8 11.172 4.707 7.879A1 1 0 003.293 9.293l4 4a1 1 0 001.414 0l8-8z" clipRule="evenodd" />
-          </svg>
-        </div>
-        <div className="min-w-0 text-sm">
-          <div className="font-semibold">Copied to clipboard</div>
-          <div className="max-w-xs truncate text-xs text-slate-500">{display}</div>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 const formatDate = (value) => {
   if (!value) return 'Just now'
@@ -81,7 +60,7 @@ function NewLinkModal({ urlData, onClose }) {
   )
 }
 
-function ConfirmModal({ title, children, onCancel, onConfirm, confirmLabel = 'Confirm', danger = false, disabled = false }) {
+function ConfirmModal({ title, children, onCancel, onConfirm, confirmLabel = 'Confirm', danger = false, disabled = false, loading = false }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm">
       <div className="w-full max-w-md overflow-hidden rounded-3xl bg-white text-left shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
@@ -90,8 +69,16 @@ function ConfirmModal({ title, children, onCancel, onConfirm, confirmLabel = 'Co
         </div>
         <div className="p-6 text-slate-600 font-medium text-sm leading-relaxed">{children}</div>
         <div className="flex items-center justify-end gap-3 bg-slate-50/50 border-t border-slate-100 px-6 py-4">
-          <button onClick={onCancel} className="rounded-full bg-white hover:bg-slate-50 border border-slate-200/80 px-5 py-2 text-sm font-bold text-slate-700 transition">Cancel</button>
-          <button disabled={disabled} onClick={onConfirm} className={`rounded-full px-5 py-2 text-sm font-bold text-white transition ${danger ? 'bg-rose-600 hover:bg-rose-700 shadow-[0_4px_12px_rgba(225,29,72,0.25)]' : 'bg-[#2563EB] hover:bg-[#1d4ed8] shadow-[0_4px_12px_rgba(37,99,235,0.25)]'} disabled:opacity-50`}>{confirmLabel}</button>
+          <button disabled={loading} onClick={onCancel} className="rounded-full bg-white hover:bg-slate-50 border border-slate-200/80 px-5 py-2 text-sm font-bold text-slate-700 transition disabled:opacity-50">Cancel</button>
+          <button disabled={disabled || loading} onClick={onConfirm} className={`flex items-center gap-2 rounded-full px-5 py-2 text-sm font-bold text-white transition ${danger ? 'bg-rose-600 hover:bg-rose-700 shadow-[0_4px_12px_rgba(225,29,72,0.25)]' : 'bg-[#2563EB] hover:bg-[#1d4ed8] shadow-[0_4px_12px_rgba(37,99,235,0.25)]'} disabled:opacity-50`}>
+            {loading && (
+              <svg className="animate-spin h-4 w-4 text-white shrink-0" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+            )}
+            {loading ? 'Processing...' : confirmLabel}
+          </button>
         </div>
       </div>
     </div>
@@ -106,26 +93,7 @@ function ShareIcon({ children }) {
   )
 }
 
-function Snackbar({ message, actionLabel, onAction, onClose }) {
-  useEffect(() => {
-    if (!message) return
-    const timer = setTimeout(() => {
-      onClose()
-    }, 3000)
-    return () => clearTimeout(timer)
-  }, [message, onClose])
 
-  if (!message) return null
-  return (
-    <div className="fixed right-4 bottom-6 z-50">
-      <div className="flex items-center gap-4 rounded-2xl bg-white px-4 py-3.5 shadow-[0_4px_24px_rgba(0,0,0,0.08)] border border-slate-200/80 animate-in fade-in slide-in-from-bottom-2 duration-200"> 
-        <div className="text-sm font-semibold text-slate-700">{message}</div>
-        {actionLabel ? <button onClick={onAction} className="rounded-full bg-[#2563EB] px-3.5 py-1.5 text-white text-xs font-bold shadow-sm hover:bg-blue-700 transition">{actionLabel}</button> : null}
-        <button onClick={onClose} className="text-sm text-slate-400 hover:text-slate-600 transition">✕</button>
-      </div>
-    </div>
-  )
-}
 
 export default function DashboardPage() {
   const navigate = useNavigate()
@@ -153,7 +121,17 @@ export default function DashboardPage() {
   const [moveTarget, setMoveTarget] = useState(null)
   const [moveFolderName, setMoveFolderName] = useState('')
 
-  const [snackbar, setSnackbar] = useState({ message: '', actionLabel: '', action: null })
+  const [isArchiving, setIsArchiving] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [isMoving, setIsMoving] = useState(false)
+
+  const [toast, setToast] = useState({ message: '', type: 'success', actionLabel: '', action: null, isVisible: false })
+  const showToast = (message, type = 'success', actionLabel = '', action = null) => {
+    setToast({ message, type, actionLabel, action, isVisible: true })
+  }
+  const closeToast = () => {
+    setToast(prev => ({ ...prev, isVisible: false }))
+  }
   const [drafts, setDrafts] = useState([])
 
   const [layoutMode, setLayoutMode] = useState('cards') // 'cards' | 'rows'
@@ -184,7 +162,7 @@ export default function DashboardPage() {
     }
     if (location.state?.draftSaved) {
       setTimeout(() => {
-        setSnackbar({ message: 'Draft saved successfully!', actionLabel: '', action: null })
+        showToast('Draft saved successfully!', 'success')
         navigate('/dashboard', { replace: true, state: {} })
       }, 0)
     }
@@ -239,7 +217,7 @@ export default function DashboardPage() {
       }
 
       setCopiedValue(val)
-      setSnackbar({ message: 'Link copied', actionLabel: '', action: null })
+      showToast('Link copied to clipboard!', 'success')
       setTimeout(() => setCopiedValue(''), 2000)
       return true
     } catch (err) {
@@ -257,12 +235,11 @@ export default function DashboardPage() {
         text: 'Check out this link',
         url,
       })
-      setSnackbar({ message: 'Share sheet opened', actionLabel: '', action: null })
+      showToast('Share sheet opened', 'info')
       return
     }
 
     copy(url)
-    setSnackbar({ message: 'Copied link. Share it anywhere.', actionLabel: '', action: null })
   }
 
   const buildShareLinks = (url) => ([
@@ -633,7 +610,7 @@ export default function DashboardPage() {
                     <button
                       onClick={() => {
                         setShowDisplayPopover(false)
-                        setSnackbar({ message: 'Display properties saved successfully!', actionLabel: '', action: null })
+                        showToast('Display properties saved successfully!', 'success')
                       }}
                       className="rounded-full bg-slate-900 hover:bg-black px-3.5 py-1.5 font-bold text-white shadow-sm transition"
                     >
@@ -704,9 +681,9 @@ export default function DashboardPage() {
                             const refreshed = await getMyShortUrls();
                             setUrls(refreshed?.urls || []);
                             setDrafts(refreshed?.drafts || []);
-                            setSnackbar({ message: 'Draft deleted', actionLabel: '', action: null });
+                            showToast('Draft deleted', 'info');
                           } catch {
-                            setSnackbar({ message: 'Failed to delete draft', actionLabel: '', action: null });
+                            showToast('Failed to delete draft', 'error');
                           }
                         }}
                         className="rounded-full hover:bg-rose-50 p-1.5 text-rose-500 hover:text-rose-600 transition"
@@ -1046,7 +1023,6 @@ export default function DashboardPage() {
         )}
       </div>
       {showNewLinkModal ? <NewLinkModal urlData={newLinkData} onClose={() => setShowNewLinkModal(false)} /> : null}
-      {copiedValue ? <CopyToast value={copiedValue} /> : null}
       {showMoveModal && moveTarget ? (
         <ConfirmModal title="Move link" onCancel={() => setShowMoveModal(false)} onConfirm={async () => {
           try {
@@ -1054,7 +1030,7 @@ export default function DashboardPage() {
             const refreshed = await getMyShortUrls()
             setUrls(refreshed?.urls || [])
             setShowMoveModal(false)
-            setSnackbar({ message: 'Link moved', actionLabel: '', action: null })
+            showToast('Link moved successfully!', 'success')
           } catch (err) {
             alert(err?.response?.data?.message || err?.message || 'Move failed')
           }
@@ -1071,9 +1047,14 @@ export default function DashboardPage() {
             const refreshed = await getMyShortUrls()
             setUrls(refreshed?.urls || [])
             setShowArchiveModal(false)
-            setSnackbar({ message: 'Successfully archived link!', actionLabel: 'Undo', action: async () => {
-              try { await updateShortUrl(archiveTarget.id, { archived: false }); const refreshed2 = await getMyShortUrls(); setUrls(refreshed2?.urls || []); setSnackbar({ message: '', actionLabel: '', action: null }) } catch { /* ignore */ }
-            } })
+            showToast('Successfully archived link!', 'success', 'Undo', async () => {
+              try {
+                await updateShortUrl(archiveTarget.id, { archived: false })
+                const refreshed2 = await getMyShortUrls()
+                setUrls(refreshed2?.urls || [])
+                closeToast()
+              } catch { /* ignore */ }
+            })
           } catch (err) {
             alert(err?.response?.data?.message || err?.message || 'Archive failed')
           }
@@ -1162,7 +1143,7 @@ export default function DashboardPage() {
             const refreshed = await getMyShortUrls()
             setUrls(refreshed?.urls || [])
             setShowDeleteModal(false)
-            setSnackbar({ message: 'Link deleted', actionLabel: '', action: null })
+            showToast('Link deleted', 'info')
           } catch (err) {
             alert(err?.response?.data?.message || err?.message || 'Delete failed')
           }
@@ -1176,7 +1157,14 @@ export default function DashboardPage() {
 
 
 
-      <Snackbar message={snackbar.message} actionLabel={snackbar.actionLabel} onAction={snackbar.action} onClose={() => setSnackbar({ message: '', actionLabel: '', action: null })} />
+      <SileoToast 
+        message={toast.message} 
+        type={toast.type} 
+        actionLabel={toast.actionLabel} 
+        onAction={toast.action} 
+        onClose={closeToast} 
+        isVisible={toast.isVisible} 
+      />
     </AppShell>
   )
 }
