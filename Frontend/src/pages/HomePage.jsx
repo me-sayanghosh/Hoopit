@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import StickyNote from '../components/HeroStickyNote.jsx'
 import { ClockIcon, QRCard } from '../components/HeroExtras.jsx'
+import gsap from 'gsap'
 
 const CheckIcon = () => (
   <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
@@ -82,6 +83,7 @@ const LocationTypeCard = ({ title = 'Find where ?' }) => (
 
 export default function HomePage() {
   const [scrolled, setScrolled] = useState(false)
+  const homeRef = useRef(null)
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10)
@@ -89,14 +91,88 @@ export default function HomePage() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({ defaults: { ease: 'power3.out', duration: 0.8 } })
+
+      // Animate Nav
+      tl.from('.home-nav', {
+        y: -40,
+        opacity: 0,
+        duration: 0.8
+      })
+
+      // Animate Hero text and CTA
+      tl.from('.hero-heading-1', {
+        y: 60,
+        opacity: 0,
+        duration: 0.8
+      }, '-=0.5')
+      .from('.hero-heading-2', {
+        scale: 0.8,
+        opacity: 0,
+        ease: 'back.out(1.7)',
+        duration: 0.8
+      }, '-=0.4')
+      .from('.hero-sub', {
+        y: 30,
+        opacity: 0,
+        duration: 0.6
+      }, '-=0.4')
+      .from('.hero-cta', {
+        scale: 0.8,
+        opacity: 0,
+        ease: 'back.out(2)',
+        duration: 0.6
+      }, '-=0.4')
+
+      // Animate floating items
+      tl.from('.float-item-left-top', {
+        x: -80,
+        opacity: 0,
+        ease: 'back.out(1.5)',
+        duration: 1
+      }, '-=0.8')
+      .from('.float-item-right-top', {
+        x: 80,
+        opacity: 0,
+        ease: 'back.out(1.5)',
+        duration: 1
+      }, '-=0.8')
+      .from('.float-item-left-bottom', {
+        y: 80,
+        opacity: 0,
+        ease: 'back.out(1.5)',
+        duration: 1
+      }, '-=0.8')
+      .from('.float-item-right-bottom', {
+        y: 80,
+        opacity: 0,
+        ease: 'back.out(1.5)',
+        duration: 1
+      }, '-=0.8')
+
+      // Animate feature cards below the fold
+      tl.from('.feature-card', {
+        y: 40,
+        opacity: 0,
+        stagger: 0.15,
+        duration: 0.6
+      }, '-=0.6')
+
+    }, homeRef)
+
+    return () => ctx.revert()
+  }, [])
+
   return (
-    <div style={{ fontFamily: "'DM Sans', 'Helvetica Neue', Arial, sans-serif", background: '#f5f5f5', minHeight: '100vh', color: '#111' }}>
+    <div ref={homeRef} style={{ fontFamily: "'DM Sans', 'Helvetica Neue', Arial, sans-serif", background: '#f5f5f5', minHeight: '100vh', color: '#111' }}>
       <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Caveat:wght@500&display=swap" rel="stylesheet" />
       {/* Full-page dotted overlay (behind content) */}
       <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', backgroundImage: 'radial-gradient(circle, rgba(160,160,160,0.28) 1px, transparent 1px)', backgroundSize: '28px 28px', zIndex: 0, opacity: 1 }} />
       <div style={{ position: 'relative', zIndex: 10 }}>
 
-      <nav style={{
+      <nav className="home-nav" style={{
         position: 'sticky',
         top: 0,
         zIndex: 100,
@@ -136,7 +212,7 @@ export default function HomePage() {
         padding: '60px 48px 80px',
         overflow: 'hidden',
       }}>
-        <div style={{ position: 'absolute', top: '10%', left: '6%', animation: 'floatA 6s ease-in-out infinite' }}>
+        <div className="float-item-left-top" style={{ position: 'absolute', top: '10%', left: '6%', animation: 'floatA 6s ease-in-out infinite' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <StickyNote>Take notes to keep track of crucial details, and accomplish more tasks with ease.</StickyNote>
             <div style={{ marginTop: 8 }}><CheckIcon /></div>
@@ -145,26 +221,26 @@ export default function HomePage() {
 
         {/* Floating four-square icon removed per request */}
 
-        <div style={{ position: 'absolute', top: '8%', right: '5%', display: 'flex', alignItems: 'flex-start', gap: 12, animation: 'floatA 5s ease-in-out infinite 1s', zIndex: 20 }}>
+        <div className="float-item-right-top" style={{ position: 'absolute', top: '8%', right: '5%', display: 'flex', alignItems: 'flex-start', gap: 12, animation: 'floatA 5s ease-in-out infinite 1s', zIndex: 20 }}>
           <ClockIcon />
           <QRCard />
         </div>
 
-        <div className="hide-on-mobile" style={{ position: 'absolute', bottom: '8%', left: '5%', animation: 'floatB 6s ease-in-out infinite 0.5s' }}>
+        <div className="hide-on-mobile float-item-left-bottom" style={{ position: 'absolute', bottom: '8%', left: '5%', animation: 'floatB 6s ease-in-out infinite 0.5s' }}>
           <TodayTasksCard />
         </div>
 
-        <div style={{ position: 'absolute', bottom: '8%', right: '5%', animation: 'floatA 7s ease-in-out infinite 1.5s' }}>
+        <div className="float-item-right-bottom" style={{ position: 'absolute', bottom: '8%', right: '5%', animation: 'floatA 7s ease-in-out infinite 1.5s' }}>
           <LocationTypeCard />
         </div>
 
         <div className="home-hero-copy" style={{ textAlign: 'center', zIndex: 10, maxWidth: 700 }}>
-          <h1 style={{ fontSize: 'clamp(48px, 7vw, 76px)', fontWeight: 800, lineHeight: 1.08, letterSpacing: '-2px', margin: '0 0 4px', color: '#111' }}>Paste, Short, and track</h1>
-          <h1 className="home-highlight-heading" style={{ fontSize: 'clamp(48px, 7vw, 76px)', fontWeight: 800, lineHeight: 1.08, letterSpacing: '-2px', margin: '0 0 28px', color: '#fff' }}>
+          <h1 className="hero-heading-1" style={{ fontSize: 'clamp(48px, 7vw, 76px)', fontWeight: 800, lineHeight: 1.08, letterSpacing: '-2px', margin: '0 0 4px', color: '#111' }}>Paste, Short, and track</h1>
+          <h1 className="home-highlight-heading hero-heading-2" style={{ fontSize: 'clamp(48px, 7vw, 76px)', fontWeight: 800, lineHeight: 1.08, letterSpacing: '-2px', margin: '0 0 28px', color: '#fff' }}>
             <span className="paper-highlight-red">all in one place</span>
           </h1>
-          <p style={{ fontSize: 16, color: '#666', marginBottom: 36, lineHeight: 1.6 }}>Efficiently manage your tasks and boost productivity.</p>
-          <Link to="/try-now" style={{ background: '#2563EB', color: 'white', border: 'none', borderRadius: 50, padding: '14px 36px', fontSize: 15, fontWeight: 600, textDecoration: 'none', boxShadow: '0 4px 20px rgba(37,99,235,0.35)' }}>Get free demo</Link>
+          <p className="hero-sub" style={{ fontSize: 16, color: '#666', marginBottom: 36, lineHeight: 1.6 }}>Efficiently manage your tasks and boost productivity.</p>
+          <Link to="/try-now" className="hero-cta" style={{ background: '#2563EB', color: 'white', border: 'none', borderRadius: 50, padding: '14px 36px', fontSize: 15, fontWeight: 600, textDecoration: 'none', boxShadow: '0 4px 20px rgba(37,99,235,0.35)' }}>Get free demo</Link>
         </div>
       </section>
 
@@ -181,7 +257,7 @@ export default function HomePage() {
             { title: 'Real-time analytics', desc: 'Track clicks, growth, top links, and location insights.' },
             { title: 'Team-ready controls', desc: 'Share ownership and manage links without confusion.' },
           ].map((item) => (
-            <div key={item.title} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 16, padding: 18, boxShadow: '0 4px 18px rgba(0,0,0,0.06)' }}>
+            <div key={item.title} className="feature-card" style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 16, padding: 18, boxShadow: '0 4px 18px rgba(0,0,0,0.06)' }}>
               <div style={{ fontWeight: 700, fontSize: 17, color: '#111827', marginBottom: 8 }}>{item.title}</div>
               <div style={{ color: '#6b7280', fontSize: 14, lineHeight: 1.5 }}>{item.desc}</div>
             </div>

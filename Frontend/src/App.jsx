@@ -16,10 +16,12 @@ import DraftsPage from './pages/DraftsPage.jsx'
 import ProfilePage from './pages/ProfilePage.jsx'
 
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import ScrollToTop from './components/ScrollToTop.jsx'
 
 const App = () => {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/try-now" element={<TryNowPage />} />

@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
+import { useEffect, useState, useRef } from 'react'
+import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { logOutUser, getCurrentUser, getCachedCurrentUser } from '../api/user.api.js'
 
 const shortLinksNav = [
@@ -118,10 +118,22 @@ function SidebarNavItem({ item, onNavigate }) {
 
 export default function AppShell({ title, subtitle, children, profile, onLogout, rightSlot }) {
   const navigate = useNavigate()
+  const { pathname } = useLocation()
+  const containerRef = useRef(null)
   const [mobileOpen, setMobileOpen] = useState(false)
 
   // Single source-of-truth profile used in sidebar/header to avoid inconsistencies
   const [internalProfile, setInternalProfile] = useState(() => profile || getCachedCurrentUser())
+
+  useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: 'instant'
+      })
+    }
+  }, [pathname])
 
   useEffect(() => {
     let mounted = true
@@ -347,7 +359,7 @@ export default function AppShell({ title, subtitle, children, profile, onLogout,
             </div>
           ) : null}
 
-          <div className="min-h-0 flex-1 overflow-y-auto pr-1 pb-2">
+          <div ref={containerRef} className="min-h-0 flex-1 overflow-y-auto pr-1 pb-2">
             {children}
           </div>
         </div>
