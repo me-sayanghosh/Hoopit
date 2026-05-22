@@ -370,7 +370,6 @@ export default function HomePage() {
       <SileoToast 
         message={toast.message} 
         type={toast.type} 
-        position="bottom-right"
         isVisible={toast.isVisible} 
         onClose={() => setToast(prev => ({ ...prev, isVisible: false }))} 
       />

@@ -181,6 +181,22 @@ export default function DashboardPage() {
   const [filterFolder, setFilterFolder] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
 
+  const [reloading, setReloading] = useState(false)
+
+  const reloadData = async () => {
+    setReloading(true)
+    try {
+      const urlsRes = await getMyShortUrls()
+      setUrls(urlsRes?.urls || [])
+      setDrafts(urlsRes?.drafts || [])
+      showToast('Links reloaded successfully!', 'success')
+    } catch {
+      showToast('Failed to reload links.', 'error')
+    } finally {
+      setReloading(false)
+    }
+  }
+
   useEffect(() => {
     if (location.state?.newLink) {
       setTimeout(() => {
@@ -743,11 +759,33 @@ export default function DashboardPage() {
           </div>
         )}
 
-        <div className="flex items-center text-sm font-bold text-slate-500 px-1">
+        <div className="flex items-center justify-between text-sm font-bold text-slate-500 px-1">
           <span>
             Showing {filteredUrls.length ? (currentPage - 1) * 10 + 1 : 0} -{' '}
             {Math.min(currentPage * 10, filteredUrls.length)} of {filteredUrls.length} links
           </span>
+          <button
+            onClick={reloadData}
+            disabled={reloading}
+            className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 active:scale-95 transition-all shadow-sm cursor-pointer disabled:opacity-50"
+            title="Reload links"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2.5}
+              stroke="currentColor"
+              className={`h-3.5 w-3.5 text-slate-500 ${reloading ? 'animate-spin' : ''}`}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
+              />
+            </svg>
+            <span>Reload</span>
+          </button>
         </div>
 
         <div className={`space-y-4 ${filteredUrls.length ? 'pb-72' : ''}`}>
