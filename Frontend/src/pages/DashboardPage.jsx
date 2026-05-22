@@ -26,17 +26,46 @@ const getDomainFavicon = (url) => {
 
 function NewLinkModal({ urlData, onClose }) {
   if (!urlData) return null;
+  const isNew = urlData.isNew !== false;
+  const themeBg = isNew ? 'bg-emerald-50/80' : 'bg-blue-50/80';
+  const themeIconContainer = isNew ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600';
+  const themeSubtitleText = isNew ? 'text-emerald-700' : 'text-blue-700';
+  const themeBackButton = isNew 
+    ? 'bg-emerald-100/70 text-emerald-800 hover:bg-emerald-200/90' 
+    : 'bg-blue-100/70 text-blue-800 hover:bg-blue-200/90';
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-sm overflow-hidden rounded-3xl bg-white text-center shadow-2xl animate-in fade-in zoom-in-95 duration-200 border border-slate-100">
-        <div className="bg-emerald-50 px-6 py-6">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="h-6 w-6">
-              <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
-            </svg>
+      <div className="relative w-full max-w-sm overflow-hidden rounded-3xl bg-white text-center shadow-2xl animate-in fade-in zoom-in-95 duration-200 border border-slate-100">
+        
+        {/* Absolute Back Button */}
+        <button 
+          onClick={onClose} 
+          className={`absolute top-4 left-4 flex h-8 w-8 items-center justify-center rounded-full transition-all hover:scale-105 active:scale-95 shadow-sm z-10 cursor-pointer ${themeBackButton}`}
+          title="Go back"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="h-4 w-4">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+          </svg>
+        </button>
+
+        <div className={`px-6 py-6 transition-colors duration-200 ${themeBg}`}>
+          <div className={`mx-auto flex h-12 w-12 items-center justify-center rounded-full mb-4 transition-colors duration-200 ${themeIconContainer}`}>
+            {isNew ? (
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="h-6 w-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-6 w-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 15.75a.75.75 0 0 1 .75-.75h2.25a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-.75.75h-2.25a.75.75 0 0 1-.75-.75v-2.25Zm0-10.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12h.008v.008H15V12Zm3 0h.008v.008H18V12Zm-3 3h.008v.008H15V15Zm6-3h.008v.008H21V12Zm-3 3h.008v.008H18V15Zm3 3h.008v.008H21V18Zm-3 3h.008v.008H18V21Zm-3-3h.008v.008H15V18ZM12 12h.008v.008H12V12Z" />
+              </svg>
+            )}
           </div>
-          <h2 className="text-xl font-bold text-slate-900">Link created!</h2>
-          <p className="mt-2 text-sm font-medium text-emerald-700">Short URL successfully copied to clipboard</p>
+          <h2 className="text-xl font-bold text-slate-900">{isNew ? 'Link created!' : 'QR Code'}</h2>
+          <p className={`mt-2 text-sm font-medium transition-colors duration-200 ${themeSubtitleText}`}>
+            {isNew ? 'Short URL successfully copied to clipboard' : 'Scan to instantly access your link'}
+          </p>
         </div>
         
         <div className="p-6">
@@ -155,7 +184,7 @@ export default function DashboardPage() {
   useEffect(() => {
     if (location.state?.newLink) {
       setTimeout(() => {
-        setNewLinkData({ url: location.state.newLink, qr: location.state.newQr })
+        setNewLinkData({ url: location.state.newLink, qr: location.state.newQr, isNew: true })
         setShowNewLinkModal(true)
         showToast('Short link created successfully!', 'success')
         navigate('/dashboard', { replace: true, state: {} })
@@ -828,7 +857,7 @@ export default function DashboardPage() {
                                   <button onClick={() => { setOpenMenuId(null); navigate('/create', { state: { prefill: item, edit: true } }) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Edit</button>
                                 </li>
                                 <li>
-                                  <button onClick={() => { setOpenMenuId(null); setNewLinkData({ url: item.shortUrl, qr: item.qrCodeUrl }); setShowNewLinkModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">QR Code</button>
+                                  <button onClick={() => { setOpenMenuId(null); setNewLinkData({ url: item.shortUrl, qr: item.qrCodeUrl, isNew: false }); setShowNewLinkModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">QR Code</button>
                                 </li>
                                 <li>
                                   <button onClick={() => { setOpenMenuId(null); copy(item.shortUrl) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Copy Link ID</button>
@@ -953,7 +982,7 @@ export default function DashboardPage() {
                                  <button onClick={() => { setOpenMenuId(null); navigate('/create', { state: { prefill: item, edit: true } }) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Edit</button>
                                </li>
                                <li>
-                                 <button onClick={() => { setOpenMenuId(null); setNewLinkData({ url: item.shortUrl, qr: item.qrCodeUrl }); setShowNewLinkModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">QR Code</button>
+                                 <button onClick={() => { setOpenMenuId(null); setNewLinkData({ url: item.shortUrl, qr: item.qrCodeUrl, isNew: false }); setShowNewLinkModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">QR Code</button>
                                </li>
                                <li>
                                  <button onClick={() => { setOpenMenuId(null); copy(item.shortUrl) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Copy Link ID</button>

@@ -337,7 +337,7 @@ export const updateShortUrlById = async (id, userId, updates = {}) => {
             throw new AppError('No valid fields to update', 400);
         }
 
-        const updated = await urlSchema.findOneAndUpdate(query, { $set: set }, { new: true });
+        const updated = await urlSchema.findOneAndUpdate(query, { $set: set }, { returnDocument: 'after' });
         if (!updated) throw new AppError('URL not found or not owned by user', 404);
         return updated;
     } catch (err) {
@@ -363,7 +363,7 @@ export const deleteShortUrlById = async (id, userId) => {
 export const transferShortUrlToUserId = async (id, userId, targetUserId) => {
     try {
         const query = { _id: id, user: userId };
-        const updated = await urlSchema.findOneAndUpdate(query, { $set: { user: targetUserId } }, { new: true });
+        const updated = await urlSchema.findOneAndUpdate(query, { $set: { user: targetUserId } }, { returnDocument: 'after' });
         if (!updated) throw new AppError('URL not found or not owned by user', 404);
         return updated;
     } catch (err) {
