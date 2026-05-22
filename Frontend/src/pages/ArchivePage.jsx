@@ -8,9 +8,17 @@ export default function ArchivePage() {
   const [loading, setLoading] = useState(true)
   const [deleteTarget, setDeleteTarget] = useState(null)
 
-  // Undo snackbar state
+  // Toast state and helpers
+  const [toast, setToast] = useState({ message: '', type: 'success', actionLabel: '', action: null, isVisible: false })
+  const showToast = (message, type = 'success', actionLabel = '', action = null) => {
+    setToast({ message, type, actionLabel, action, isVisible: true })
+  }
+  const closeToast = () => {
+    setToast(prev => ({ ...prev, isVisible: false }))
+  }
+
   const [undoItem, setUndoItem] = useState(null)       // item being "soft-deleted"
-  const [undoVisible, setUndoVisible] = useState(false) // controls toast visibility
+  const [restoringId, setRestoringId] = useState(null)   // id of the item currently being restored
   const undoTimerRef = useRef(null)                     // timer ref so we can cancel it
 
   useEffect(() => {
@@ -33,9 +41,16 @@ export default function ArchivePage() {
 
   const restore = async (id) => {
     try {
+      setRestoringId(id)
       await updateShortUrl(id, { archived: false })
       setUrls((s) => s.filter(u => u.id !== id))
-    } catch (err) { console.error(err) }
+      showToast('Link successfully restored!', 'archive')
+    } catch (err) {
+      console.error(err)
+      showToast(err?.message || 'Restore failed', 'error')
+    } finally {
+      setRestoringId(null)
+    }
   }
 
   const remove = (item) => setDeleteTarget(item)
@@ -49,20 +64,21 @@ export default function ArchivePage() {
     // Remove from visible list immediately
     setUrls((s) => s.filter(u => u.id !== target.id))
 
-    // Show undo snackbar
+    // Show undo snackbar with semantic delete type
     setUndoItem(target)
-    setUndoVisible(true)
+    showToast('Link permanently deleted', 'delete', 'Undo', handleUndo)
 
     // After 4 s, actually hit the API
     clearTimeout(undoTimerRef.current)
     undoTimerRef.current = setTimeout(async () => {
-      setUndoVisible(false)
+      closeToast()
       try {
         await deleteShortUrl(target.id)
       } catch (err) {
         console.error(err)
         // If API fails, put the item back
         setUrls((s) => [target, ...s])
+        showToast(err?.message || 'Delete failed', 'error')
       }
       setUndoItem(null)
     }, 4000)
@@ -71,7 +87,7 @@ export default function ArchivePage() {
   // Undo: cancel the pending delete, re-insert item
   const handleUndo = () => {
     clearTimeout(undoTimerRef.current)
-    setUndoVisible(false)
+    closeToast()
     if (undoItem) {
       setUrls((s) => [undoItem, ...s])
       setUndoItem(null)
@@ -106,14 +122,26 @@ export default function ArchivePage() {
                   </div>
                   <div className="flex items-center gap-2.5 shrink-0">
                     <button
+                      disabled={restoringId !== null}
                       onClick={() => restore(item.id)}
-                      className="rounded-full bg-emerald-50 border border-emerald-100 hover:bg-emerald-100/70 px-5 py-2 text-xs font-bold text-emerald-700 transition shadow-sm active:scale-95"
+                      className="rounded-full bg-emerald-50 border border-emerald-100 hover:bg-emerald-100/70 px-5 py-2 text-xs font-bold text-emerald-700 transition shadow-sm active:scale-95 disabled:opacity-50 disabled:pointer-events-none flex items-center gap-1.5 min-w-[90px] justify-center"
                     >
-                      Restore
+                      {restoringId === item.id ? (
+                        <>
+                          <svg className="animate-spin h-3.5 w-3.5 text-emerald-700 shrink-0" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                          </svg>
+                          <span>Restoring...</span>
+                        </>
+                      ) : (
+                        'Restore'
+                      )}
                     </button>
                     <button
+                      disabled={restoringId !== null}
                       onClick={() => remove(item)}
-                      className="rounded-full bg-rose-50 border border-rose-100 hover:bg-rose-100/70 px-5 py-2 text-xs font-bold text-rose-600 transition shadow-sm active:scale-95"
+                      className="rounded-full bg-rose-50 border border-rose-100 hover:bg-rose-100/70 px-5 py-2 text-xs font-bold text-rose-600 transition shadow-sm active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
                     >
                       Delete Permanently
                     </button>
@@ -170,14 +198,14 @@ export default function ArchivePage() {
         </div>
       )}
 
-      {/* ── Undo Snackbar Toast ── */}
+      {/* ── Sileo Toast Alert ── */}
       <SileoToast
-        message="Link deleted successfully"
-        type="success"
-        actionLabel="Undo"
-        onAction={handleUndo}
-        onClose={() => setUndoVisible(false)}
-        isVisible={undoVisible}
+        message={toast.message}
+        type={toast.type}
+        actionLabel={toast.actionLabel}
+        onAction={toast.action}
+        onClose={closeToast}
+        isVisible={toast.isVisible}
       />
 
     </AppShell>

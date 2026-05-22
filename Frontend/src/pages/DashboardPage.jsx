@@ -157,12 +157,19 @@ export default function DashboardPage() {
       setTimeout(() => {
         setNewLinkData({ url: location.state.newLink, qr: location.state.newQr })
         setShowNewLinkModal(true)
+        showToast('Short link created successfully!', 'success')
         navigate('/dashboard', { replace: true, state: {} })
       }, 0)
     }
     if (location.state?.draftSaved) {
       setTimeout(() => {
         showToast('Draft saved successfully!', 'success')
+        navigate('/dashboard', { replace: true, state: {} })
+      }, 0)
+    }
+    if (location.state?.updated) {
+      setTimeout(() => {
+        showToast('Link updated successfully!', 'success')
         navigate('/dashboard', { replace: true, state: {} })
       }, 0)
     }
@@ -217,11 +224,11 @@ export default function DashboardPage() {
       }
 
       setCopiedValue(val)
-      showToast('Link copied to clipboard!', 'success')
+      showToast('Link copied to clipboard!', 'copy')
       setTimeout(() => setCopiedValue(''), 2000)
       return true
     } catch (err) {
-      alert(err?.message || 'Copy failed')
+      showToast(err?.message || 'Copy failed', 'error')
       return false
     }
   }
@@ -235,7 +242,7 @@ export default function DashboardPage() {
         text: 'Check out this link',
         url,
       })
-      showToast('Share sheet opened', 'info')
+      showToast('Share sheet opened', 'share')
       return
     }
 
@@ -1024,15 +1031,18 @@ export default function DashboardPage() {
       </div>
       {showNewLinkModal ? <NewLinkModal urlData={newLinkData} onClose={() => setShowNewLinkModal(false)} /> : null}
       {showMoveModal && moveTarget ? (
-        <ConfirmModal title="Move link" onCancel={() => setShowMoveModal(false)} onConfirm={async () => {
+        <ConfirmModal title="Move link" loading={isMoving} onCancel={() => setShowMoveModal(false)} onConfirm={async () => {
           try {
+            setIsMoving(true)
             await updateShortUrl(moveTarget.id, { folder: moveFolderName })
             const refreshed = await getMyShortUrls()
             setUrls(refreshed?.urls || [])
             setShowMoveModal(false)
-            showToast('Link moved successfully!', 'success')
+            showToast('Link moved successfully!', 'folder')
           } catch (err) {
-            alert(err?.response?.data?.message || err?.message || 'Move failed')
+            showToast(err?.response?.data?.message || err?.message || 'Move failed', 'error')
+          } finally {
+            setIsMoving(false)
           }
         }} confirmLabel="Move">
           <div className="text-sm text-slate-700 mb-3">Move <strong className="text-slate-900">{moveTarget.shortUrl}</strong> to a folder.</div>
@@ -1041,13 +1051,14 @@ export default function DashboardPage() {
       ) : null}
 
       {showArchiveModal && archiveTarget ? (
-        <ConfirmModal title="Archive link" onCancel={() => setShowArchiveModal(false)} onConfirm={async () => {
+        <ConfirmModal title="Archive link" loading={isArchiving} onCancel={() => setShowArchiveModal(false)} onConfirm={async () => {
           try {
+            setIsArchiving(true)
             await updateShortUrl(archiveTarget.id, { archived: true })
             const refreshed = await getMyShortUrls()
             setUrls(refreshed?.urls || [])
             setShowArchiveModal(false)
-            showToast('Successfully archived link!', 'success', 'Undo', async () => {
+            showToast('Successfully archived link!', 'archive', 'Undo', async () => {
               try {
                 await updateShortUrl(archiveTarget.id, { archived: false })
                 const refreshed2 = await getMyShortUrls()
@@ -1056,7 +1067,9 @@ export default function DashboardPage() {
               } catch { /* ignore */ }
             })
           } catch (err) {
-            alert(err?.response?.data?.message || err?.message || 'Archive failed')
+            showToast(err?.response?.data?.message || err?.message || 'Archive failed', 'error')
+          } finally {
+            setIsArchiving(false)
           }
         }} confirmLabel="Archive" danger={false}>
           <div className="text-sm text-slate-700 mb-3">Are you sure you want to archive <strong className="text-slate-900">{archiveTarget.shortUrl}</strong>?</div>
@@ -1098,7 +1111,7 @@ export default function DashboardPage() {
                     try {
                       await handleNativeShare(shareTarget.shortUrl)
                     } catch (err) {
-                      alert(err?.message || 'Sharing failed')
+                      showToast(err?.message || 'Sharing failed', 'error')
                     }
                   }}
                   className="flex flex-col items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-4 text-xs font-semibold text-slate-600 transition hover:bg-slate-50"
@@ -1133,19 +1146,22 @@ export default function DashboardPage() {
       ) : null}
 
       {showDeleteModal && deleteTarget ? (
-        <ConfirmModal title="Delete link" onCancel={() => setShowDeleteModal(false)} onConfirm={async () => {
+        <ConfirmModal title="Delete link" loading={isDeleting} onCancel={() => setShowDeleteModal(false)} onConfirm={async () => {
           try {
             if ((deleteVerifyText || '').trim() !== (deleteTarget.shortUrl || '').trim()) {
-              alert('Please type the exact short link to confirm deletion.')
+              showToast('Please type the exact short link to confirm deletion.', 'error')
               return
             }
+            setIsDeleting(true)
             await deleteShortUrl(deleteTarget.id)
             const refreshed = await getMyShortUrls()
             setUrls(refreshed?.urls || [])
             setShowDeleteModal(false)
-            showToast('Link deleted', 'info')
+            showToast('Link deleted successfully', 'delete')
           } catch (err) {
-            alert(err?.response?.data?.message || err?.message || 'Delete failed')
+            showToast(err?.response?.data?.message || err?.message || 'Delete failed', 'error')
+          } finally {
+            setIsDeleting(false)
           }
         }} confirmLabel="Delete" danger={true} disabled={!deleteVerifyText || deleteVerifyText.trim() !== (deleteTarget.shortUrl || '').trim()}>
           <div className="text-sm text-slate-700 mb-3">Deleting this link will remove all analytics. This action cannot be undone.</div>

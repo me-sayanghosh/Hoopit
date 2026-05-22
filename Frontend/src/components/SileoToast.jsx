@@ -69,7 +69,7 @@ export default function SileoToast({
   if (!shouldRender || !message) return null
 
   // Determine icon and color mapping
-  let iconBg = 'bg-emerald-500'
+  let iconBg = 'bg-emerald-500 shadow-[0_2px_10px_rgba(16,185,129,0.35)]'
   let iconSvg = (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="h-4.5 w-4.5 text-white">
       <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
@@ -77,17 +77,52 @@ export default function SileoToast({
   )
 
   if (type === 'error') {
-    iconBg = 'bg-rose-500'
+    iconBg = 'bg-rose-500 shadow-[0_2px_10px_rgba(244,63,94,0.35)]'
     iconSvg = (
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="h-4.5 w-4.5 text-white">
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
       </svg>
     )
   } else if (type === 'info') {
-    iconBg = 'bg-blue-500'
+    iconBg = 'bg-blue-500 shadow-[0_2px_10px_rgba(59,130,246,0.35)]'
     iconSvg = (
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="h-4.5 w-4.5 text-white">
         <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 111.063.852l-.708 2.836a.75.75 0 001.063.852l.041-.028M12 7.5h.008v.008H12V7.5z" />
+      </svg>
+    )
+  } else if (type === 'copy') {
+    iconBg = 'bg-indigo-500 shadow-[0_2px_10px_rgba(99,102,241,0.35)]'
+    iconSvg = (
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="h-4.5 w-4.5 text-white">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+    )
+  } else if (type === 'archive') {
+    iconBg = 'bg-amber-500 shadow-[0_2px_10px_rgba(245,158,11,0.35)]'
+    iconSvg = (
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="h-4.5 w-4.5 text-white">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+      </svg>
+    )
+  } else if (type === 'delete') {
+    iconBg = 'bg-rose-500 shadow-[0_2px_10px_rgba(244,63,94,0.35)]'
+    iconSvg = (
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="h-4.5 w-4.5 text-white">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.34 6.6m-4.78 0L9 9m4.77-3.07l1.91.55c.51.15.86.61.86 1.15v.377m-15.318 0l1.353 13.622a2.25 2.25 0 002.25 2.25h9.081a2.25 2.25 0 002.25-2.25L18.735 7.697m-15.318 0l.524-5.23A2.244 2.244 0 005.25 2.75h13.5m-15 0h16.5" />
+      </svg>
+    )
+  } else if (type === 'folder') {
+    iconBg = 'bg-sky-500 shadow-[0_2px_10px_rgba(14,165,233,0.35)]'
+    iconSvg = (
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="h-4.5 w-4.5 text-white">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
+      </svg>
+    )
+  } else if (type === 'share') {
+    iconBg = 'bg-fuchsia-500 shadow-[0_2px_10px_rgba(217,70,239,0.35)]'
+    iconSvg = (
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="h-4.5 w-4.5 text-white">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
       </svg>
     )
   }
@@ -97,21 +132,21 @@ export default function SileoToast({
       ref={toastRef}
       style={{
         position: 'fixed',
-        bottom: '32px',
+        bottom: '24px',
         left: '50%',
         transform: 'translateX(-50%)',
         zIndex: 9999,
         pointerEvents: isVisible ? 'auto' : 'none',
       }}
-      className="flex items-center gap-4.5 rounded-full border border-slate-200/80 bg-white/95 px-5.5 py-4 shadow-[0_16px_48px_rgba(15,23,42,0.18)] backdrop-blur-md"
+      className="w-[calc(100%-2rem)] sm:w-auto max-w-[420px] sm:max-w-xl flex items-center gap-3 sm:gap-4.5 rounded-full border border-slate-200/80 bg-white/95 px-4 py-3 sm:px-5.5 sm:py-4 shadow-[0_16px_48px_rgba(15,23,42,0.18)] backdrop-blur-md"
     >
       {/* Icon Badge */}
-      <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${iconBg} shadow-sm animate-[pulse_3s_infinite]`}>
+      <div className={`flex h-7.5 w-7.5 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-full ${iconBg} shadow-sm animate-[pulse_3s_infinite]`}>
         {iconSvg}
       </div>
 
       {/* Message */}
-      <span className="text-sm font-bold text-slate-800 tracking-tight whitespace-nowrap">
+      <span className="text-xs sm:text-sm font-bold text-slate-800 tracking-tight min-w-0 flex-1 truncate">
         {message}
       </span>
 
@@ -124,7 +159,7 @@ export default function SileoToast({
               onAction()
               if (onClose) onClose()
             }}
-            className="text-sm font-extrabold text-blue-600 hover:text-blue-700 transition whitespace-nowrap active:scale-95 shrink-0"
+            className="text-xs sm:text-sm font-extrabold text-blue-600 hover:text-blue-700 transition whitespace-nowrap active:scale-95 shrink-0"
           >
             {actionLabel}
           </button>
@@ -137,7 +172,7 @@ export default function SileoToast({
           <div className="h-4 w-px bg-slate-100 shrink-0" />
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 text-xs font-bold transition whitespace-nowrap active:scale-90 pr-0.5"
+            className="text-slate-400 hover:text-slate-600 text-xs font-bold transition whitespace-nowrap active:scale-90 pr-0.5 shrink-0"
             aria-label="Dismiss toast"
             title="Dismiss toast"
           >
