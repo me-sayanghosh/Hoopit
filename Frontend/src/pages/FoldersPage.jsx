@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { getCurrentUser } from '../api/user.api.js'
 import { createFolder, getFolders, getMyShortUrls, updateFolder, deleteFolder } from '../api/shortUrlapi.js'
 import AppShell from '../components/AppShell.jsx'
+import SileoToast from '../components/SileoToast.jsx'
 
 const formatDate = (value) => {
   if (!value) return 'recently'
@@ -16,6 +17,7 @@ const formatDate = (value) => {
 
 export default function FoldersPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -26,8 +28,11 @@ export default function FoldersPage() {
   const [selectedIds, setSelectedIds] = useState([])
   const [editingId, setEditingId] = useState('')
   const [error, setError] = useState('')
-  const [notice, setNotice] = useState('')
   const [deletingId, setDeletingId] = useState('')
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [toast, setToast] = useState({ message: '', type: 'success', isVisible: false })
+  const showToast = (message, type = 'success') => setToast({ message, type, isVisible: true })
+  const closeToast = () => setToast(prev => ({ ...prev, isVisible: false }))
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [deleteVerifyText, setDeleteVerifyText] = useState('')
@@ -78,28 +83,34 @@ export default function FoldersPage() {
     setError('')
   }
 
-  function ConfirmModal({ title, children, onCancel, onConfirm, confirmLabel = 'Confirm', danger = false, disabled = false }) {
+  function ConfirmModal({ title, children, onCancel, onConfirm, confirmLabel = 'Confirm', danger = false, disabled = false, loading = false }) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
-        <div className="w-full max-w-md overflow-hidden rounded-[24px] border border-slate-100 bg-white p-6 text-left shadow-[0_20px_50px_rgba(0,0,0,0.15)]">
+        <div className="w-full max-w-md overflow-hidden rounded-[24px] border border-slate-100 bg-white p-6 text-left shadow-[0_20px_50px_rgba(0,0,0,0.15)] animate-in fade-in zoom-in-95 duration-200">
           <div className="mb-4">
             <h3 className="text-xl font-bold tracking-tight text-slate-900">{title}</h3>
           </div>
           <div className="mb-6">{children}</div>
-          <div className="flex items-center justify-end gap-3">
-            <button onClick={onCancel} className="rounded-full border border-slate-200 bg-white hover:bg-slate-50 px-5 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition">
+          <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-4">
+            <button disabled={loading} onClick={onCancel} className="rounded-full border border-slate-200 bg-white hover:bg-slate-50 px-5 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition disabled:opacity-50">
               Cancel
             </button>
             <button
-              disabled={disabled}
+              disabled={disabled || loading}
               onClick={onConfirm}
-              className={`rounded-full px-5 py-2.5 text-sm font-bold text-white transition ${
+              className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold text-white transition ${
                 danger
                   ? 'bg-red-600 hover:bg-red-700 shadow-[0_4px_20px_rgba(220,38,38,0.25)]'
                   : 'bg-blue-600 hover:bg-blue-700 shadow-[0_4px_20px_rgba(37,99,235,0.25)]'
-              } disabled:opacity-50 disabled:pointer-events-none`}
+              } disabled:opacity-50`}
             >
-              {confirmLabel}
+              {loading && (
+                <svg className="animate-spin h-4 w-4 text-white shrink-0" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+              )}
+              {loading ? 'Processing...' : confirmLabel}
             </button>
           </div>
         </div>
@@ -147,10 +158,10 @@ export default function FoldersPage() {
 
       if (editingId) {
         await updateFolder(editingId, payload)
-        setNotice('Folder updated successfully.')
+        showToast('Folder updated successfully.', 'folder')
       } else {
         await createFolder(payload)
-        setNotice('Folder created successfully.')
+        showToast('Folder created successfully.', 'folder')
       }
 
       await refresh()
@@ -162,12 +173,20 @@ export default function FoldersPage() {
     }
   }
 
-  // auto-hide notices after a short delay
+  // Handle folder created / updated redirect state
   useEffect(() => {
-    if (!notice) return
-    const id = setTimeout(() => setNotice(''), 3000)
-    return () => clearTimeout(id)
-  }, [notice])
+    if (location.state?.folderCreated) {
+      setTimeout(() => {
+        showToast('Folder created successfully.', 'folder')
+        navigate('/folders', { replace: true, state: {} })
+      }, 0)
+    } else if (location.state?.folderUpdated) {
+      setTimeout(() => {
+        showToast('Folder updated successfully.', 'folder')
+        navigate('/folders', { replace: true, state: {} })
+      }, 0)
+    }
+  }, [location, navigate])
 
   if (loading) {
     return (
@@ -302,7 +321,7 @@ export default function FoldersPage() {
                         onClick={(e) => {
                           e.stopPropagation();
                           navigator.clipboard.writeText(item.shortUrl);
-                          setNotice('Link copied!');
+                          showToast('Link copied to clipboard!', 'copy');
                         }}
                         className="rounded-full hover:bg-slate-100 p-1.5 text-slate-400 hover:text-slate-700 transition"
                         title="Copy short url"
@@ -331,22 +350,23 @@ export default function FoldersPage() {
           <ConfirmModal
             title="Delete folder"
             onCancel={() => setShowDeleteModal(false)}
+            loading={isDeleting}
             onConfirm={async () => {
               try {
                 if ((deleteVerifyText || '').trim() !== (deleteTarget.name || '').trim()) {
-                  alert('Please type the exact folder name to confirm deletion.')
+                  showToast('Please type the exact folder name to confirm deletion.', 'error')
                   return
                 }
 
-                setShowDeleteModal(false)
-                setDeletingId(deleteTarget.id)
+                setIsDeleting(true)
                 await deleteFolder(deleteTarget.id)
                 await refresh()
-                setNotice('Folder deleted.')
+                setShowDeleteModal(false)
+                showToast('Folder deleted successfully.', 'delete')
               } catch (err) {
-                setError(err?.message || 'Failed to delete folder.')
+                showToast(err?.message || 'Failed to delete folder.', 'error')
               } finally {
-                setDeletingId('')
+                setIsDeleting(false)
               }
             }}
             confirmLabel="Delete"
@@ -357,6 +377,7 @@ export default function FoldersPage() {
               Deleting <strong className="text-slate-900 font-bold">{deleteTarget.name}</strong> will unassign its {deleteTarget.shortUrls?.length || 0} links. This cannot be undone.
             </div>
             <input
+              disabled={isDeleting}
               value={deleteVerifyText}
               onChange={(e) => setDeleteVerifyText(e.target.value)}
               className="w-full rounded-full border border-slate-200 px-5 py-3 text-sm font-semibold outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
@@ -399,7 +420,7 @@ export default function FoldersPage() {
                     onClick={() => {
                       const allLinks = (viewFolder.shortUrls || []).map(u => u.shortUrl).join('\n')
                       navigator.clipboard.writeText(allLinks)
-                      setNotice('All short links copied to clipboard!')
+                      showToast('All short links copied to clipboard!', 'copy')
                     }}
                     className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition shadow-xs whitespace-nowrap"
                   >
@@ -427,7 +448,7 @@ export default function FoldersPage() {
                         <button
                           onClick={() => {
                             navigator.clipboard.writeText(item.shortUrl)
-                            setNotice('Link copied!')
+                            showToast('Link copied to clipboard!', 'copy')
                           }}
                           className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50 transition shadow-xs"
                         >
@@ -472,14 +493,12 @@ export default function FoldersPage() {
         )}
       </div>
 
-      {notice ? (
-        <div className="fixed right-6 bottom-6 z-50 animate-slide-in">
-          <div className="rounded-full border border-slate-200/80 bg-white px-5 py-3.5 shadow-[0_10px_30px_rgba(0,0,0,0.08)] flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-            <div className="text-sm font-bold text-slate-800">{notice}</div>
-          </div>
-        </div>
-      ) : null}
+      <SileoToast
+        message={toast.message}
+        type={toast.type}
+        onClose={closeToast}
+        isVisible={toast.isVisible}
+      />
     </AppShell>
   )
 }
