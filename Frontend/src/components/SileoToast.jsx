@@ -7,7 +7,8 @@ export default function SileoToast({
   actionLabel, 
   onAction, 
   onClose, 
-  isVisible 
+  isVisible,
+  position = 'bottom-center'
 }) {
   const toastRef = useRef(null)
   const [shouldRender, setShouldRender] = useState(isVisible)
@@ -21,6 +22,9 @@ export default function SileoToast({
   useEffect(() => {
     if (!toastRef.current) return
 
+    const isRight = position === 'bottom-right'
+    const xVal = isRight ? 0 : '-50%'
+
     if (isVisible) {
       // Sileo-style bouncy/springy entrance animation using GSAP
       gsap.killTweensOf(toastRef.current)
@@ -29,13 +33,13 @@ export default function SileoToast({
           y: 60, 
           scale: 0.85, 
           opacity: 0,
-          x: '-50%' // Keeps the absolute horizontal centering
+          x: xVal
         },
         { 
           y: 0, 
           scale: 1, 
           opacity: 1,
-          x: '-50%', // Explicitly maintain horizontal centering
+          x: xVal,
           duration: 0.6,
           ease: 'back.out(1.8)', // Bouncy spring effect
           overwrite: 'auto'
@@ -48,7 +52,7 @@ export default function SileoToast({
         y: 40,
         scale: 0.9,
         opacity: 0,
-        x: '-50%', // Explicitly maintain horizontal centering
+        x: xVal,
         duration: 0.35,
         ease: 'power2.in',
         overwrite: 'auto',
@@ -57,7 +61,7 @@ export default function SileoToast({
         }
       })
     }
-  }, [isVisible, shouldRender])
+  }, [isVisible, shouldRender, position])
 
   useEffect(() => {
     if (isVisible && !actionLabel) {
@@ -129,18 +133,25 @@ export default function SileoToast({
     )
   }
 
+  const isRight = position === 'bottom-right'
+  const positionStyle = {
+    position: 'fixed',
+    zIndex: 9999,
+    pointerEvents: isVisible ? 'auto' : 'none',
+    bottom: isRight ? undefined : '24px',
+    left: isRight ? undefined : '50%',
+    transform: isRight ? undefined : 'translateX(-50%)',
+  }
+
   return (
     <div
       ref={toastRef}
-      style={{
-        position: 'fixed',
-        bottom: '24px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        zIndex: 9999,
-        pointerEvents: isVisible ? 'auto' : 'none',
-      }}
-      className="w-[calc(100%-2rem)] sm:w-auto max-w-[420px] sm:max-w-xl flex items-center gap-3 sm:gap-4.5 rounded-full border border-slate-200/80 bg-white/95 px-4 py-3 sm:px-5.5 sm:py-4 shadow-[0_16px_48px_rgba(15,23,42,0.18)] backdrop-blur-md"
+      style={positionStyle}
+      className={`w-[calc(100%-2rem)] sm:w-auto max-w-[420px] sm:max-w-xl flex items-center gap-3 sm:gap-4.5 rounded-full border border-slate-200/80 bg-white/95 px-4 py-3 sm:px-5.5 sm:py-4 shadow-[0_16px_48px_rgba(15,23,42,0.18)] backdrop-blur-md ${
+        isRight 
+          ? 'bottom-4 right-4 sm:bottom-6 sm:right-6' 
+          : ''
+      }`}
     >
       {/* Icon Badge */}
       <div className={`flex h-7.5 w-7.5 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-full ${iconBg} shadow-sm animate-[pulse_3s_infinite]`}>

@@ -116,6 +116,31 @@ function SidebarNavItem({ item, onNavigate }) {
   )
 }
 
+function ConfirmModal({ title, children, onCancel, onConfirm, confirmLabel = 'Confirm', danger = false, disabled = false, loading = false }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-md overflow-hidden rounded-3xl bg-white text-left shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
+        <div className="px-6 py-5 border-b border-slate-100">
+          <h3 className="text-xl font-bold text-slate-900">{title}</h3>
+        </div>
+        <div className="p-6 text-slate-600 font-medium text-sm leading-relaxed">{children}</div>
+        <div className="flex items-center justify-end gap-3 bg-slate-50/50 border-t border-slate-100 px-6 py-4">
+          <button disabled={loading} onClick={onCancel} className="rounded-full bg-white hover:bg-slate-50 border border-slate-200/80 px-5 py-2 text-sm font-bold text-slate-700 transition disabled:opacity-50">Cancel</button>
+          <button disabled={disabled || loading} onClick={onConfirm} className={`flex items-center gap-2 rounded-full px-5 py-2 text-sm font-bold text-white transition ${danger ? 'bg-rose-600 hover:bg-rose-700 shadow-[0_4px_12px_rgba(225,29,72,0.25)]' : 'bg-[#2563EB] hover:bg-[#1d4ed8] shadow-[0_4px_12px_rgba(37,99,235,0.25)]'} disabled:opacity-50`}>
+            {loading && (
+              <svg className="animate-spin h-4 w-4 text-white shrink-0" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+            )}
+            {loading ? 'Processing...' : confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function AppShell({ title, subtitle, children, profile, onLogout, rightSlot }) {
   const navigate = useNavigate()
   const { pathname } = useLocation()
@@ -151,18 +176,16 @@ export default function AppShell({ title, subtitle, children, profile, onLogout,
     return () => { mounted = false }
   }, [])
 
+  const [showLogoutModal, setShowLogoutModal] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
+
   const handleLogout = async () => {
     if (onLogout) {
       onLogout()
       return
     }
-
-    try {
-      await logOutUser()
-      navigate('/')
-    } catch {
-      // ignore
-    }
+    setMobileOpen(false)
+    setShowLogoutModal(true)
   }
 
   const resolvedProfile = profile || internalProfile
@@ -364,6 +387,30 @@ export default function AppShell({ title, subtitle, children, profile, onLogout,
           </div>
         </div>
       </div>
+
+      {showLogoutModal ? (
+        <ConfirmModal
+          title="Confirm Logout"
+          onCancel={() => setShowLogoutModal(false)}
+          onConfirm={async () => {
+            setIsLoggingOut(true)
+            try {
+              await logOutUser()
+              setShowLogoutModal(false)
+              navigate('/', { state: { loggedOut: true } })
+            } catch {
+              // ignore
+            } finally {
+              setIsLoggingOut(false)
+            }
+          }}
+          confirmLabel="Logout"
+          danger
+          loading={isLoggingOut}
+        >
+          Are you sure you want to log out of your HoopIt account?
+        </ConfirmModal>
+      ) : null}
     </div>
   )
 }

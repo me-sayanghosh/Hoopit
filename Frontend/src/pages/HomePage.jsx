@@ -1,8 +1,9 @@
 import { useEffect, useState, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import StickyNote from '../components/HeroStickyNote.jsx'
 import { ClockIcon, QRCard } from '../components/HeroExtras.jsx'
 import gsap from 'gsap'
+import SileoToast from '../components/SileoToast.jsx'
 
 const CheckIcon = () => (
   <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
@@ -82,8 +83,22 @@ const LocationTypeCard = ({ title = 'Find where ?' }) => (
 // ClockIcon and QRCard are now shared in ../components/HeroExtras.jsx
 
 export default function HomePage() {
+  const navigate = useNavigate()
+  const location = useLocation()
   const [scrolled, setScrolled] = useState(false)
   const homeRef = useRef(null)
+  const [toast, setToast] = useState({ message: '', type: 'success', isVisible: false })
+
+  useEffect(() => {
+    if (location.state?.loggedOut) {
+      setToast({
+        message: 'Successfully logged out',
+        type: 'success',
+        isVisible: true
+      })
+      navigate('/', { replace: true, state: {} })
+    }
+  }, [location.state, navigate])
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10)
@@ -352,6 +367,13 @@ export default function HomePage() {
           mix-blend-mode: soft-light;
         }
       `}</style>
+      <SileoToast 
+        message={toast.message} 
+        type={toast.type} 
+        position="bottom-right"
+        isVisible={toast.isVisible} 
+        onClose={() => setToast(prev => ({ ...prev, isVisible: false }))} 
+      />
     </div>
   )
 }
