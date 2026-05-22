@@ -35,6 +35,7 @@ export default function SileoToast({
           y: 0, 
           scale: 1, 
           opacity: 1,
+          x: '-50%', // Explicitly maintain horizontal centering
           duration: 0.6,
           ease: 'back.out(1.8)', // Bouncy spring effect
           overwrite: 'auto'
@@ -47,6 +48,7 @@ export default function SileoToast({
         y: 40,
         scale: 0.9,
         opacity: 0,
+        x: '-50%', // Explicitly maintain horizontal centering
         duration: 0.35,
         ease: 'power2.in',
         overwrite: 'auto',
