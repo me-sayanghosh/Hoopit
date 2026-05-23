@@ -188,8 +188,10 @@ export default function HomePage() {
       <div style={{ position: 'relative', zIndex: 10 }}>
 
       <nav className="home-nav" style={{
-        position: 'sticky',
+        position: 'fixed',
         top: 0,
+        left: 0,
+        right: 0,
         zIndex: 100,
         background: scrolled ? 'rgba(245,245,245,0.95)' : '#f5f5f5',
         backdropFilter: 'blur(8px)',
@@ -216,6 +218,7 @@ export default function HomePage() {
           </div>
         </div>
       </nav>
+      <div style={{ height: 64 }} />
 
       <section className="home-hero-section" style={{
         position: 'relative',
