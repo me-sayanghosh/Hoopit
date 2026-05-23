@@ -258,7 +258,10 @@ export default function HomePage() {
             <span className="paper-highlight-red">all in one place</span>
           </h1>
           <p className="hero-sub" style={{ fontSize: 16, color: '#666', marginBottom: 36, lineHeight: 1.6 }}>Efficiently manage your tasks and boost productivity.</p>
-          <Link to="/try-now" className="hero-cta" style={{ background: '#2563EB', color: 'white', border: 'none', borderRadius: 50, padding: '14px 36px', fontSize: 15, fontWeight: 600, textDecoration: 'none', boxShadow: '0 4px 20px rgba(37,99,235,0.35)' }}>Try Now</Link>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, flexWrap: 'wrap' }}>
+            <Link to="/try-now" className="hero-cta primary-btn">Try Now</Link>
+            <Link to="/login" className="hero-cta secondary-btn">Log in</Link>
+          </div>
         </div>
       </section>
 
@@ -368,6 +371,50 @@ export default function HomePage() {
           opacity: 0.75;
           transform: rotate(0.5deg);
           mix-blend-mode: soft-light;
+        }
+        .primary-btn {
+          background: #2563EB;
+          color: white;
+          border: none;
+          border-radius: 50px;
+          padding: 14px 36px;
+          font-size: 15px;
+          font-weight: 600;
+          text-decoration: none;
+          box-shadow: 0 4px 20px rgba(37,99,235,0.35);
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+          display: inline-block;
+        }
+        .primary-btn:hover {
+          background: #1d4ed8;
+          transform: translateY(-2px);
+          box-shadow: 0 8px 24px rgba(37,99,235,0.45);
+        }
+        .primary-btn:active {
+          transform: translateY(0);
+        }
+
+        .secondary-btn {
+          background: white;
+          border: 1.5px solid #d0d0d0;
+          border-radius: 50px;
+          padding: 14px 36px;
+          font-size: 15px;
+          font-weight: 600;
+          color: #111;
+          text-decoration: none;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+          display: inline-block;
+        }
+        .secondary-btn:hover {
+          background: #f8fafc;
+          border-color: #94a3b8;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+        }
+        .secondary-btn:active {
+          transform: translateY(0);
         }
       `}</style>
       <SileoToast 
