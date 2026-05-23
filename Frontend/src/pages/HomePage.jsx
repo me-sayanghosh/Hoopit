@@ -258,7 +258,7 @@ export default function HomePage() {
             <span className="paper-highlight-red">all in one place</span>
           </h1>
           <p className="hero-sub" style={{ fontSize: 16, color: '#666', marginBottom: 36, lineHeight: 1.6 }}>Efficiently manage your tasks and boost productivity.</p>
-          <Link to="/try-now" className="hero-cta" style={{ background: '#2563EB', color: 'white', border: 'none', borderRadius: 50, padding: '14px 36px', fontSize: 15, fontWeight: 600, textDecoration: 'none', boxShadow: '0 4px 20px rgba(37,99,235,0.35)' }}>Get free demo</Link>
+          <Link to="/try-now" className="hero-cta" style={{ background: '#2563EB', color: 'white', border: 'none', borderRadius: 50, padding: '14px 36px', fontSize: 15, fontWeight: 600, textDecoration: 'none', boxShadow: '0 4px 20px rgba(37,99,235,0.35)' }}>Try Now</Link>
         </div>
       </section>
 
