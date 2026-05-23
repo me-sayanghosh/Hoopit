@@ -185,8 +185,6 @@ export default function HomePage() {
       <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Caveat:wght@500&display=swap" rel="stylesheet" />
       {/* Full-page dotted overlay (behind content) */}
       <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', backgroundImage: 'radial-gradient(circle, rgba(160,160,160,0.28) 1px, transparent 1px)', backgroundSize: '28px 28px', zIndex: 0, opacity: 1 }} />
-      <div style={{ position: 'relative', zIndex: 10 }}>
-
       <nav className="home-nav" style={{
         position: 'fixed',
         top: 0,
@@ -218,7 +216,9 @@ export default function HomePage() {
           </div>
         </div>
       </nav>
-      <div style={{ height: 64 }} />
+
+      <div style={{ position: 'relative', zIndex: 10 }}>
+        <div style={{ height: 64 }} />
 
       <section className="home-hero-section" style={{
         position: 'relative',
@@ -258,9 +258,9 @@ export default function HomePage() {
             <span className="paper-highlight-red">all in one place</span>
           </h1>
           <p className="hero-sub" style={{ fontSize: 16, color: '#666', marginBottom: 36, lineHeight: 1.6 }}>Efficiently manage your tasks and boost productivity.</p>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, flexWrap: 'wrap' }}>
-            <Link to="/try-now" className="hero-cta primary-btn">Try Now</Link>
-            <Link to="/login" className="hero-cta secondary-btn">Log in</Link>
+          <div className="hero-cta" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, flexWrap: 'wrap', position: 'relative', zIndex: 50 }}>
+            <Link to="/try-now" className="primary-btn">Try Now</Link>
+            <Link to="/login" className="secondary-btn">Log in</Link>
           </div>
         </div>
       </section>
@@ -395,23 +395,23 @@ export default function HomePage() {
         }
 
         .secondary-btn {
-          background: white;
-          border: 1.5px solid #d0d0d0;
+          background: transparent;
+          border: 1.5px solid #111827;
           border-radius: 50px;
           padding: 14px 36px;
           font-size: 15px;
           font-weight: 600;
-          color: #111;
+          color: #111827;
           text-decoration: none;
-          box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+          box-shadow: 0 2px 10px rgba(0,0,0,0.02);
           transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
           display: inline-block;
         }
         .secondary-btn:hover {
-          background: #f8fafc;
-          border-color: #94a3b8;
+          background: rgba(17, 24, 39, 0.05);
+          border-color: #111827;
           transform: translateY(-2px);
-          box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+          box-shadow: 0 6px 18px rgba(0,0,0,0.06);
         }
         .secondary-btn:active {
           transform: translateY(0);
