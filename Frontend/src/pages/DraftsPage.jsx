@@ -34,9 +34,30 @@ export default function DraftsPage() {
 
   if (loading) {
     return (
-      <AppShell title="Drafts" subtitle="Manage and publish your in-progress drafts.">
-        <div className="flex h-64 items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600" />
+      <AppShell
+        title="Drafts"
+        subtitle="Manage and publish your in-progress drafts."
+      >
+        <div className="space-y-6 animate-pulse">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_4px_24px_rgba(0,0,0,0.03)] flex flex-col justify-between h-[210px] space-y-4">
+                <div className="space-y-3">
+                  <div className="h-5 w-3/4 rounded bg-slate-200" />
+                  <div className="h-5.5 w-1/2 rounded-lg bg-blue-100/50" />
+                  <div className="h-3.5 w-5/6 rounded bg-slate-200" />
+                </div>
+                
+                <div className="flex items-center justify-between border-t border-slate-100 pt-3">
+                  <div className="h-4.5 w-16 rounded bg-slate-200" />
+                  <div className="flex items-center gap-2">
+                    <div className="h-8 w-8 rounded-full bg-slate-200" />
+                    <div className="h-8.5 w-20 rounded-full bg-slate-200" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </AppShell>
     )

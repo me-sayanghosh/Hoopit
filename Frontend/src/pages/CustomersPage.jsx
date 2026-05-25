@@ -26,9 +26,17 @@ export default function CustomersPage() {
 
   if (loading) {
     return (
-      <AppShell title="Customers" subtitle="Track and manage your customer profiles.">
-        <div className="flex h-64 items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600" />
+      <AppShell
+        title="Customers"
+        subtitle="Track and manage your customer profiles."
+      >
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-12 flex flex-col items-center justify-center text-center shadow-[0_4px_24px_rgba(0,0,0,0.04)] animate-pulse space-y-4">
+          <div className="h-12 w-12 rounded-full bg-slate-200" />
+          <div className="h-5 w-40 rounded bg-slate-200" />
+          <div className="space-y-2 max-w-sm mx-auto flex flex-col items-center">
+            <div className="h-3.5 w-64 rounded bg-slate-200" />
+            <div className="h-3.5 w-48 rounded bg-slate-200" />
+          </div>
         </div>
       </AppShell>
     )

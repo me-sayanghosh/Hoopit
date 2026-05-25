@@ -190,9 +190,58 @@ export default function FoldersPage() {
 
   if (loading) {
     return (
-      <AppShell title="Folders" subtitle="Organize your short links into folders.">
-        <div className="flex h-64 items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600" />
+      <AppShell
+        title="Folders"
+        subtitle="Organize your short links into folders."
+        rightSlot={(
+          <div className="flex flex-wrap items-center gap-2 animate-pulse">
+            <div className="h-9 w-32 rounded-full bg-slate-200" />
+            <div className="h-9 w-28 rounded-full bg-slate-200" />
+          </div>
+        )}
+      >
+        <div className="space-y-6 animate-pulse">
+          {/* Skeletons header title */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2 border-b border-slate-100">
+            <div className="space-y-2">
+              <div className="h-5 w-32 rounded bg-slate-200" />
+              <div className="h-4 w-72 rounded bg-slate-200" />
+            </div>
+            <div className="h-6 w-20 rounded-full bg-slate-200" />
+          </div>
+
+          {/* Folder grid items */}
+          <div className="grid gap-6 grid-cols-1 xl:grid-cols-2">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="rounded-2xl border border-slate-200/80 bg-white p-4 sm:p-6 shadow-[0_4px_24px_rgba(0,0,0,0.04)] space-y-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 space-y-2">
+                    <div className="h-5 w-36 rounded bg-slate-200" />
+                    <div className="h-4 w-5/6 rounded bg-slate-200" />
+                  </div>
+                  <div className="h-8 w-8 rounded-full bg-slate-200 shrink-0" />
+                </div>
+
+                <div className="flex gap-2">
+                  <div className="h-5.5 w-16 rounded-full bg-slate-200" />
+                  <div className="h-5.5 w-24 rounded-full bg-slate-200" />
+                </div>
+
+                {/* Inner list skeleton */}
+                <div className="space-y-2 bg-slate-50/50 rounded-xl p-3 border border-slate-100">
+                  {[1, 2, 3].map((j) => (
+                    <div key={j} className="rounded-xl border border-slate-100 bg-white p-3 flex items-center justify-between gap-3">
+                      <div className="flex-1 space-y-1.5 min-w-0">
+                        <div className="h-4.5 w-1/2 rounded bg-slate-200" />
+                        <div className="h-3.5 w-3/4 rounded bg-slate-200" />
+                      </div>
+                      <div className="h-7 w-7 rounded-full bg-slate-200 shrink-0" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </AppShell>
     )

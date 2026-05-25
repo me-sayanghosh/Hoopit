@@ -96,9 +96,27 @@ export default function ArchivePage() {
 
   if (loading) {
     return (
-      <AppShell title="Archived Links" subtitle="Manage and restore your archived short links.">
-        <div className="flex h-64 items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600" />
+      <AppShell
+        title="Archived Links"
+        subtitle="Manage and restore your archived short links."
+      >
+        <div className="space-y-4 animate-pulse">
+          <div className="grid gap-4">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_4px_24px_rgba(0,0,0,0.04)]">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="min-w-0 flex-1 space-y-2.5">
+                    <div className="h-5 w-1/3 rounded bg-slate-200" />
+                    <div className="h-4 w-2/3 rounded bg-slate-200" />
+                  </div>
+                  <div className="flex items-center gap-2.5 shrink-0">
+                    <div className="h-8 w-20 rounded-full bg-slate-200" />
+                    <div className="h-8 w-36 rounded-full bg-slate-200" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </AppShell>
     )

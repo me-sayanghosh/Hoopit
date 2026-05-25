@@ -368,9 +368,63 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <AppShell title="Links" subtitle="Loading your dashboard...">
-        <div className="flex h-64 items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600" />
+      <AppShell
+        title="Links"
+        subtitle="Manage short links, custom aliases, and analytics in one place."
+        rightSlot={(
+          <div className="flex flex-wrap items-center gap-3 animate-pulse">
+            <div className="h-9 w-20 rounded-full bg-slate-200" />
+            <div className="h-9 w-24 rounded-full bg-slate-200" />
+            <div className="h-9.5 w-60 rounded-full bg-slate-200 hidden sm:block" />
+            <div className="h-9.5 w-32 rounded-full bg-slate-200" />
+          </div>
+        )}
+      >
+        <div className="space-y-6 animate-pulse">
+          {/* Search bar helper for mobile */}
+          <div className="h-9.5 w-full rounded-full bg-slate-200 sm:hidden" />
+
+          {/* Stats summary bar */}
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div className="h-4 w-48 rounded bg-slate-200" />
+            <div className="h-7 w-20 rounded-full bg-slate-200" />
+          </div>
+
+          {/* Link items - grid of card skeletons */}
+          <div className="grid gap-5 grid-cols-1 md:grid-cols-2">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_4px_24px_rgba(0,0,0,0.03)] space-y-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className="h-10 w-10 rounded-full bg-slate-200 shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4.5 w-3/4 rounded bg-slate-200" />
+                      <div className="h-3.5 w-1/2 rounded bg-slate-200" />
+                    </div>
+                  </div>
+                  <div className="h-8 w-8 rounded-full bg-slate-200 shrink-0" />
+                </div>
+                
+                <div className="h-3.5 w-5/6 rounded bg-slate-200" />
+                
+                <div className="flex flex-wrap gap-2 pt-1.5">
+                  <div className="h-5 w-16 rounded-full bg-slate-200" />
+                  <div className="h-5 w-12 rounded-full bg-slate-200" />
+                </div>
+
+                <div className="flex items-center justify-between border-t border-slate-100 pt-3">
+                  <div className="flex items-center gap-3">
+                    <div className="h-4 w-12 rounded bg-slate-200" />
+                    <div className="h-4 w-16 rounded bg-slate-200" />
+                  </div>
+                  <div className="flex gap-2">
+                    <div className="h-7 w-12 rounded-full bg-slate-200" />
+                    <div className="h-7 w-12 rounded-full bg-slate-200" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </AppShell>
     )
