@@ -5,6 +5,28 @@ const FALLBACK_BASE_URL = import.meta.env.PROD
     : "http://localhost:3000";
 const baseURL = import.meta.env.VITE_API_BASE_URL || FALLBACK_BASE_URL;
 
+const TOKEN_STORAGE_KEY = "hoopit.authToken";
+
+/**
+ * Persist the JWT so it survives page reloads.
+ * Called after every successful login / register / google-auth response.
+ */
+export const saveToken = (token) => {
+    if (token) {
+        localStorage.setItem(TOKEN_STORAGE_KEY, token);
+    }
+};
+
+/** Remove the stored JWT (used on logout). */
+export const clearToken = () => {
+    localStorage.removeItem(TOKEN_STORAGE_KEY);
+};
+
+/** Read the stored JWT (may return null). */
+export const getToken = () => {
+    return localStorage.getItem(TOKEN_STORAGE_KEY);
+};
+
 const axiosInstance = axios.create({
     baseURL,
     timeout: 10000,
@@ -14,6 +36,19 @@ const axiosInstance = axios.create({
     },
 });
 
+// ── Request interceptor ──────────────────────────────────────────────
+// Attach the Authorization header from localStorage on every request.
+// This is the Safari ITP fallback: when cookies are blocked, this header
+// is the only way the backend can identify the user.
+axiosInstance.interceptors.request.use((config) => {
+    const token = getToken();
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+});
+
+// ── Response interceptor ─────────────────────────────────────────────
 axiosInstance.interceptors.response.use(
     (response) => response,
     (error) => {

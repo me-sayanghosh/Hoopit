@@ -1,4 +1,4 @@
-import axiosInstance from "../utils/axiosInstance";
+import axiosInstance, { saveToken, clearToken } from "../utils/axiosInstance";
 
 const AUTH_BASE_PATH = '/api/auth';
 const CURRENT_USER_CACHE_KEY = 'hoopit.currentUser';
@@ -28,18 +28,21 @@ export const getCachedCurrentUser = () => {
 
 export const loginUser = async (email, password) => {
     const response = await axiosInstance.post(`${AUTH_BASE_PATH}/login`, { email, password });
+    if (response.data?.token) saveToken(response.data.token);
     const currentUser = await getCurrentUser();
     return { ...response.data, user: currentUser?.user };
 }
 
 export const registerUser = async (name, email, password) => {
     const response = await axiosInstance.post(`${AUTH_BASE_PATH}/register`, { name, email, password });
+    if (response.data?.token) saveToken(response.data.token);
     const currentUser = await getCurrentUser();
     return { ...response.data, user: currentUser?.user };
 }
 
 export const googleLoginUser = async (credential) => {
     const response = await axiosInstance.post(`${AUTH_BASE_PATH}/google`, { credential });
+    if (response.data?.token) saveToken(response.data.token);
     const currentUser = await getCurrentUser();
     return { ...response.data, user: currentUser?.user };
 }
@@ -48,6 +51,7 @@ export const logOutUser = async () => {
     try {
         await axiosInstance.post(`${AUTH_BASE_PATH}/logout`);
     } finally {
+        clearToken();
         cacheCurrentUser(null);
     }
 }
@@ -81,6 +85,7 @@ export const updateUserProfile = async (name) => {
 
 export const deleteUserProfile = async () => {
     const { data } = await axiosInstance.delete(`${AUTH_BASE_PATH}/me`);
+    clearToken();
     cacheCurrentUser(null);
     return data;
 }
