@@ -82,8 +82,55 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <AppShell title="Profile Settings" subtitle="Manage your personal details and account preferences.">
-        <div className="flex h-64 items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600" />
+        <div className="max-w-2xl space-y-6 animate-pulse">
+          {/* Back button skeleton */}
+          <div className="h-9 w-40 rounded-full bg-slate-200" />
+
+          {/* Personal Details skeleton card */}
+          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_4px_24px_rgba(0,0,0,0.03)] space-y-6">
+            <div className="h-5 w-32 rounded-lg bg-slate-200" />
+
+            {/* Avatar section skeleton */}
+            <div className="flex items-center gap-4 rounded-2xl border border-slate-100 bg-slate-50/70 p-4">
+              <div className="h-16 w-16 rounded-full bg-slate-200 ring-4 ring-white shadow-sm" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 w-28 rounded bg-slate-200" />
+                <div className="h-3.5 w-44 rounded bg-slate-200" />
+              </div>
+            </div>
+
+            {/* Input blocks */}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <div className="h-3.5 w-24 rounded bg-slate-200" />
+                <div className="h-12 w-full rounded-2xl bg-slate-200" />
+              </div>
+              <div className="space-y-2">
+                <div className="h-3.5 w-20 rounded bg-slate-200" />
+                <div className="h-12 w-full rounded-2xl bg-slate-200" />
+              </div>
+            </div>
+          </div>
+
+          {/* Session Control skeleton card */}
+          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_4px_24px_rgba(0,0,0,0.03)] space-y-4">
+            <div className="h-5 w-32 rounded-lg bg-slate-200" />
+            <div className="space-y-2">
+              <div className="h-3.5 w-full rounded bg-slate-200" />
+              <div className="h-3.5 w-3/4 rounded bg-slate-200" />
+            </div>
+            <div className="h-10 w-28 rounded-full bg-slate-200" />
+          </div>
+
+          {/* Danger Zone skeleton card */}
+          <div className="rounded-3xl border border-rose-100 bg-rose-50/10 p-6 shadow-[0_4px_24px_rgba(244,63,94,0.01)] space-y-4">
+            <div className="h-5 w-28 rounded-lg bg-rose-100/50" />
+            <div className="space-y-2">
+              <div className="h-3.5 w-full rounded bg-rose-100/40" />
+              <div className="h-3.5 w-5/6 rounded bg-rose-100/40" />
+            </div>
+            <div className="h-10 w-36 rounded-full bg-rose-200/50" />
+          </div>
         </div>
       </AppShell>
     )
