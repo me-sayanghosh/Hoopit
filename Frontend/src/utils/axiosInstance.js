@@ -52,6 +52,32 @@ axiosInstance.interceptors.request.use((config) => {
 axiosInstance.interceptors.response.use(
     (response) => response,
     (error) => {
+        const status = error?.response?.status;
+
+        // If the backend says 401 (token expired / invalid) and we are NOT
+        // on a login/register endpoint (where 401 means wrong credentials),
+        // clear all stale auth data and bounce to the login page.
+        if (status === 401) {
+            const url = error?.config?.url || "";
+            const isAuthEndpoint =
+                url.includes("/auth/login") ||
+                url.includes("/auth/register") ||
+                url.includes("/auth/google");
+
+            if (!isAuthEndpoint) {
+                clearToken();
+                localStorage.removeItem("hoopit.currentUser");
+
+                // Only redirect if we're not already on the login page
+                if (
+                    typeof window !== "undefined" &&
+                    !window.location.pathname.startsWith("/login")
+                ) {
+                    window.location.replace("/login");
+                }
+            }
+        }
+
         const serverMessage =
             error?.response?.data?.message ||
             error?.response?.data?.error ||
