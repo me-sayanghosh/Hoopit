@@ -373,48 +373,57 @@ export default function HomePage() {
           mix-blend-mode: soft-light;
         }
         .primary-btn {
-          background: #2563EB;
+          background: linear-gradient(135deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%);
+          background-size: 200% auto;
           color: white;
-          border: none;
+          border: 1px solid rgba(255, 255, 255, 0.18);
           border-radius: 50px;
-          padding: 14px 36px;
+          padding: 14px 38px;
           font-size: 15px;
-          font-weight: 600;
+          font-weight: 700;
+          letter-spacing: -0.01em;
           text-decoration: none;
-          box-shadow: 0 4px 20px rgba(37,99,235,0.35);
-          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 0 4px 18px rgba(37, 99, 235, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+          transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
           display: inline-block;
+          cursor: pointer;
         }
         .primary-btn:hover {
-          background: #1d4ed8;
-          transform: translateY(-2px);
-          box-shadow: 0 8px 24px rgba(37,99,235,0.45);
+          background-position: right center;
+          transform: translateY(-2.5px) scale(1.02);
+          box-shadow: 0 8px 24px rgba(37, 99, 235, 0.45), 0 4px 8px rgba(37, 99, 235, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.3);
         }
         .primary-btn:active {
-          transform: translateY(0);
+          transform: translateY(0.5px) scale(0.97);
+          box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1);
         }
 
         .secondary-btn {
-          background: transparent;
-          border: 1.5px solid #111827;
+          background: rgba(255, 255, 255, 0.72);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(17, 24, 39, 0.08);
           border-radius: 50px;
-          padding: 14px 36px;
+          padding: 14px 38px;
           font-size: 15px;
-          font-weight: 600;
+          font-weight: 700;
+          letter-spacing: -0.01em;
           color: #111827;
           text-decoration: none;
-          box-shadow: 0 2px 10px rgba(0,0,0,0.02);
-          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+          transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
           display: inline-block;
+          cursor: pointer;
         }
         .secondary-btn:hover {
-          background: rgba(17, 24, 39, 0.05);
-          border-color: #111827;
-          transform: translateY(-2px);
-          box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+          background: rgba(255, 255, 255, 0.95);
+          border-color: rgba(17, 24, 39, 0.18);
+          transform: translateY(-2.5px) scale(1.02);
+          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.02);
         }
         .secondary-btn:active {
-          transform: translateY(0);
+          transform: translateY(0.5px) scale(0.97);
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
         }
       `}</style>
       <SileoToast 

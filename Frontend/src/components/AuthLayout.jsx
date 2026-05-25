@@ -25,23 +25,27 @@ function AuthLayout({ title, description, children, compact = false }) {
         
 
         <div className="auth-sticky-notes" style={{ position: 'absolute', top: 36, left: 24, flexDirection: 'column', gap: 8, zIndex: 20 }}>
-          <div style={{ transform: 'rotate(-6deg)', transformOrigin: 'left top', marginLeft: -8 }}>
-            <StickyNote style={{ width: 140, padding: '10px 10px 14px' }}>Quick location notes</StickyNote>
+          <div className="auth-animate-note-1" style={{ transformOrigin: 'left top' }}>
+            <div style={{ transform: 'rotate(-6deg)', marginLeft: -8 }}>
+              <StickyNote style={{ width: 140, padding: '10px 10px 14px' }}>Quick location notes</StickyNote>
+            </div>
           </div>
-          <div style={{ transform: 'rotate(4deg)', marginLeft: -4 }}>
-            <StickyNote style={{ width: 120, padding: '8px 10px 12px' }}>Find where ?</StickyNote>
+          <div className="auth-animate-note-2">
+            <div style={{ transform: 'rotate(4deg)', marginLeft: -4 }}>
+              <StickyNote style={{ width: 120, padding: '8px 10px 12px' }}>Find where ?</StickyNote>
+            </div>
           </div>
         </div>
 
-        <div className={`auth-card-wrap ${compact ? 'is-compact' : 'is-default'}`} style={{ zIndex: 10 }}>
-          <div className="text-center mb-5 sm:mb-8">
+        <div className={`auth-card-wrap ${compact ? 'is-compact' : 'is-default'} auth-animate-card`} style={{ zIndex: 10 }}>
+          <div className="text-center mb-5 sm:mb-8 auth-animate-header">
             <h1 className="text-3xl font-bold tracking-tight text-gray-900 mb-2">{title}</h1>
             {description && (
               <p className="text-gray-500 text-[0.95rem]">{description}</p>
             )}
           </div>
 
-          <div className="auth-card-body bg-white rounded-2xl shadow-sm border border-gray-100">
+          <div className="auth-card-body bg-white rounded-2xl shadow-sm border border-gray-100 auth-animate-body">
             {children}
           </div>
         </div>
