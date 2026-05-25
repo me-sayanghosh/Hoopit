@@ -29,7 +29,10 @@ export default function ProfilePage() {
   }
 
   useEffect(() => {
-    load()
+    const timer = setTimeout(() => {
+      load()
+    }, 0)
+    return () => clearTimeout(timer)
   }, [])
 
   const handleUpdate = async (e) => {

@@ -91,12 +91,15 @@ export default function HomePage() {
 
   useEffect(() => {
     if (location.state?.loggedOut) {
-      setToast({
-        message: 'Successfully logged out',
-        type: 'success',
-        isVisible: true
-      })
-      navigate('/', { replace: true, state: {} })
+      const timer = setTimeout(() => {
+        setToast({
+          message: 'Successfully logged out',
+          type: 'success',
+          isVisible: true
+        })
+        navigate('/', { replace: true, state: {} })
+      }, 0)
+      return () => clearTimeout(timer)
     }
   }, [location.state, navigate])
 

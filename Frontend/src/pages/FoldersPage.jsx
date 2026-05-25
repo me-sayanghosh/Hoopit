@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { getCurrentUser } from '../api/user.api.js'
-import { createFolder, getFolders, getMyShortUrls, updateFolder, deleteFolder } from '../api/shortUrlapi.js'
+import { getFolders, deleteFolder } from '../api/shortUrlapi.js'
 import AppShell from '../components/AppShell.jsx'
 import SileoToast from '../components/SileoToast.jsx'
 
@@ -14,21 +14,48 @@ const formatDate = (value) => {
   }).format(new Date(value))
 }
 
+function ConfirmModal({ title, children, onCancel, onConfirm, confirmLabel = 'Confirm', danger = false, disabled = false, loading = false }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
+      <div className="w-full max-w-md overflow-hidden rounded-[24px] border border-slate-100 bg-white p-6 text-left shadow-[0_20px_50px_rgba(0,0,0,0.15)] animate-in fade-in zoom-in-95 duration-200">
+        <div className="mb-4">
+          <h3 className="text-xl font-bold tracking-tight text-slate-900">{title}</h3>
+        </div>
+        <div className="mb-6">{children}</div>
+        <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-4">
+          <button disabled={loading} onClick={onCancel} className="rounded-full border border-slate-200 bg-white hover:bg-slate-50 px-5 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition disabled:opacity-50">
+            Cancel
+          </button>
+          <button
+            disabled={disabled || loading}
+            onClick={onConfirm}
+            className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold text-white transition ${
+              danger
+                ? 'bg-red-600 hover:bg-red-700 shadow-[0_4px_20px_rgba(220,38,38,0.25)]'
+                : 'bg-blue-600 hover:bg-blue-700 shadow-[0_4px_20px_rgba(37,99,235,0.25)]'
+            } disabled:opacity-50`}
+          >
+            {loading && (
+              <svg className="animate-spin h-4 w-4 text-white shrink-0" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+            )}
+            {loading ? 'Processing...' : confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export default function FoldersPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
   const [folders, setFolders] = useState([])
-  const [urls, setUrls] = useState([])
-  const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
-  const [selectedIds, setSelectedIds] = useState([])
-  const [editingId, setEditingId] = useState('')
   const [error, setError] = useState('')
-  const [deletingId, setDeletingId] = useState('')
   const [isDeleting, setIsDeleting] = useState(false)
   const [toast, setToast] = useState({ message: '', type: 'success', isVisible: false })
   const showToast = (message, type = 'success') => setToast({ message, type, isVisible: true })
@@ -43,14 +70,12 @@ export default function FoldersPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const [userRes, foldersRes, urlsRes] = await Promise.all([
+        const [userRes, foldersRes] = await Promise.all([
           getCurrentUser(),
           getFolders(),
-          getMyShortUrls(),
         ])
         setProfile(userRes?.user || null)
         setFolders(foldersRes || [])
-        setUrls(urlsRes?.urls || [])
       } catch (err) {
         if (err?.message?.toLowerCase().includes('unauthorized')) {
           navigate('/login')
@@ -67,110 +92,16 @@ export default function FoldersPage() {
 
   const refresh = async () => {
     try {
-      const [foldersRes, urlsRes] = await Promise.all([getFolders(), getMyShortUrls()])
+      const foldersRes = await getFolders()
       setFolders(foldersRes || [])
-      setUrls(urlsRes?.urls || [])
     } catch (err) {
       setError(err?.message || 'Failed to refresh data.')
     }
   }
 
-  const resetForm = () => {
-    setName('')
-    setDescription('')
-    setSelectedIds([])
-    setEditingId('')
-    setError('')
-  }
-
-  function ConfirmModal({ title, children, onCancel, onConfirm, confirmLabel = 'Confirm', danger = false, disabled = false, loading = false }) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
-        <div className="w-full max-w-md overflow-hidden rounded-[24px] border border-slate-100 bg-white p-6 text-left shadow-[0_20px_50px_rgba(0,0,0,0.15)] animate-in fade-in zoom-in-95 duration-200">
-          <div className="mb-4">
-            <h3 className="text-xl font-bold tracking-tight text-slate-900">{title}</h3>
-          </div>
-          <div className="mb-6">{children}</div>
-          <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-4">
-            <button disabled={loading} onClick={onCancel} className="rounded-full border border-slate-200 bg-white hover:bg-slate-50 px-5 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition disabled:opacity-50">
-              Cancel
-            </button>
-            <button
-              disabled={disabled || loading}
-              onClick={onConfirm}
-              className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold text-white transition ${
-                danger
-                  ? 'bg-red-600 hover:bg-red-700 shadow-[0_4px_20px_rgba(220,38,38,0.25)]'
-                  : 'bg-blue-600 hover:bg-blue-700 shadow-[0_4px_20px_rgba(37,99,235,0.25)]'
-              } disabled:opacity-50`}
-            >
-              {loading && (
-                <svg className="animate-spin h-4 w-4 text-white shrink-0" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                </svg>
-              )}
-              {loading ? 'Processing...' : confirmLabel}
-            </button>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
   const startEdit = (folder) => {
     // navigate to create/edit page with folder in state
     navigate('/folders/new', { state: { folder } })
-  }
-
-  const toggleSelection = (urlId) => {
-    setSelectedIds((current) => (
-      current.includes(urlId)
-        ? current.filter((item) => item !== urlId)
-        : [...current, urlId]
-    ))
-  }
-
-  const groupedUrls = useMemo(() => {
-    return urls.reduce((acc, item) => {
-      const groupName = item.folder || 'No folder'
-      if (!acc[groupName]) acc[groupName] = []
-      acc[groupName].push(item)
-      return acc
-    }, {})
-  }, [urls])
-
-  const handleSubmit = async (event) => {
-    event.preventDefault()
-    if (!name.trim()) {
-      setError('Folder name is required.')
-      return
-    }
-
-    setSaving(true)
-    setError('')
-    try {
-      const payload = {
-        name,
-        description,
-        shortUrlIds: selectedIds,
-      }
-
-      if (editingId) {
-        await updateFolder(editingId, payload)
-        showToast('Folder updated successfully.', 'folder')
-      } else {
-        await createFolder(payload)
-        showToast('Folder created successfully.', 'folder')
-      }
-
-      await refresh()
-      resetForm()
-    } catch (err) {
-      setError(err?.message || 'Failed to save folder.')
-    } finally {
-      setSaving(false)
-    }
   }
 
   // Handle folder created / updated redirect state
