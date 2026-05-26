@@ -251,6 +251,29 @@ export default function DashboardPage() {
     return () => { mounted = false }
   }, [location.key])
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Check if pressing 'c' or 'C' without modifier keys
+      if ((e.key === 'c' || e.key === 'C') && !e.ctrlKey && !e.altKey && !e.metaKey && !e.shiftKey) {
+        const activeEl = document.activeElement
+        const isTyping = activeEl && (
+          activeEl.tagName === 'INPUT' ||
+          activeEl.tagName === 'TEXTAREA' ||
+          activeEl.tagName === 'SELECT' ||
+          activeEl.isContentEditable
+        )
+
+        if (!isTyping) {
+          e.preventDefault()
+          navigate('/create')
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [navigate])
+
   const copy = async (val) => {
     try {
       if (navigator?.clipboard?.writeText) {
@@ -741,7 +764,7 @@ export default function DashboardPage() {
           </div>
           <button onClick={() => navigate('/create')} className="relative rounded-full bg-[#2563EB] hover:bg-[#1d4ed8] px-5 py-2.5 text-sm font-bold text-white shadow-[0_4px_18px_rgba(37,99,235,0.3)] hover:shadow-[0_6px_22px_rgba(37,99,235,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-150">
             Create link
-            <span className="ml-2 inline-block rounded-md bg-white/20 px-2 py-0.5 text-xs font-bold text-white">C</span>
+            <span className="ml-2 hidden sm:inline-block rounded-md bg-white/20 px-2 py-0.5 text-xs font-bold text-white">C</span>
           </button>
         </div>
       )}
