@@ -53,6 +53,16 @@ app.use(express.urlencoded({extended: true}));
 app.use(cookieParser());
 app.use(attachUser);
 
+// Silently drop socket.io polling/websocket requests.
+// Nothing in this project uses Socket.IO — these come from browser
+// extensions or dev-tool clients and just spam the logs.
+app.use((req, res, next) => {
+    if (req.path.startsWith('/socket.io')) {
+        return res.status(404).end();
+    }
+    next();
+});
+
 // Log every response's status code and request duration
 app.use((req, res, next) => {
     const start = Date.now();
