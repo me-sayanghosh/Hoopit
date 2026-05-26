@@ -13,6 +13,8 @@ export default function ProfilePage() {
   const [deleteConfirm, setDeleteConfirm] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [showLogoutModal, setShowLogoutModal] = useState(false)
+  const [loggingOut, setLoggingOut] = useState(false)
   const nameInputRef = useRef(null)
 
   const load = async () => {
@@ -72,13 +74,21 @@ export default function ProfilePage() {
     }
   }
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
+    setShowLogoutModal(true)
+  }
+
+  const confirmLogout = async () => {
     setError('')
+    setLoggingOut(true)
     try {
       await logOutUser()
+      setShowLogoutModal(false)
       navigate('/', { replace: true, state: { loggedOut: true } })
     } catch (err) {
       setError(err?.response?.data?.message || err?.message || 'Failed to logout.')
+    } finally {
+      setLoggingOut(false)
     }
   }
 
@@ -143,7 +153,12 @@ export default function ProfilePage() {
   const avatarUrl = profile?.avatar || fallbackAvatar
 
   return (
-    <AppShell title="Profile Settings" subtitle="Manage your personal details and account preferences." profile={profile}>
+    <AppShell
+      title="Profile Settings"
+      subtitle="Manage your personal details and account preferences."
+      profile={profile}
+      onLogout={() => setShowLogoutModal(true)}
+    >
       <div className="max-w-2xl space-y-6">
         <div>
           <button
@@ -317,6 +332,54 @@ export default function ProfilePage() {
                 className="rounded-full bg-rose-600 hover:bg-rose-700 px-5 py-2 text-sm font-bold text-white shadow-[0_4px_12px_rgba(225,29,72,0.25)] transition disabled:opacity-40"
               >
                 {updating ? 'Deleting...' : 'Permanently Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="relative w-full max-w-md rounded-3xl bg-white border border-slate-200 shadow-[0_24px_70px_rgba(15,23,42,0.18)] animate-in zoom-in-95 duration-200">
+            <div className="border-b border-slate-100 px-6 py-4 flex items-center justify-between">
+              <h3 className="text-base font-extrabold text-slate-900">Confirm Logout</h3>
+              <button
+                type="button"
+                onClick={() => setShowLogoutModal(false)}
+                className="text-slate-400 hover:text-slate-600 transition text-sm"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="p-6">
+              <p className="text-xs font-semibold text-slate-500 leading-relaxed">
+                Are you sure you want to log out of your HoopIt account?
+              </p>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 bg-slate-50 border-t border-slate-100 px-6 py-4 rounded-b-3xl">
+              <button
+                type="button"
+                onClick={() => setShowLogoutModal(false)}
+                className="rounded-full bg-white hover:bg-slate-50 border border-slate-200 px-5 py-2 text-sm font-bold text-slate-700 transition"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={loggingOut}
+                onClick={confirmLogout}
+                className="rounded-full bg-rose-600 hover:bg-rose-700 px-5 py-2 text-sm font-bold text-white shadow-[0_4px_12px_rgba(225,29,72,0.25)] transition flex items-center gap-2"
+              >
+                {loggingOut && (
+                  <svg className="animate-spin h-4 w-4 text-white shrink-0" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                )}
+                {loggingOut ? 'Logging out...' : 'Logout'}
               </button>
             </div>
           </div>

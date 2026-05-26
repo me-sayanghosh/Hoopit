@@ -9,6 +9,7 @@ import TryNowPage from './pages/TryNowPage.jsx'
 import CustomersPage from './pages/CustomersPage.jsx'
 import FoldersPage from './pages/FoldersPage.jsx'
 import CreateFolderPage from './pages/CreateFolderPage.jsx'
+import QuickCreateFolderPage from './pages/QuickCreateFolderPage.jsx'
 import CreateShortUrlPage from './pages/CreateShortUrlPage.jsx'
 import ArchivePage from './pages/ArchivePage.jsx'
 import TagsPage from './pages/TagsPage.jsx'
@@ -44,6 +45,7 @@ const App = () => {
         <Route path="/customers" element={<ProtectedRoute><CustomersPage /></ProtectedRoute>} />
         <Route path="/folders" element={<ProtectedRoute><FoldersPage /></ProtectedRoute>} />
         <Route path="/folders/new" element={<ProtectedRoute><CreateFolderPage /></ProtectedRoute>} />
+        <Route path="/folders/quick-new" element={<ProtectedRoute><QuickCreateFolderPage /></ProtectedRoute>} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
