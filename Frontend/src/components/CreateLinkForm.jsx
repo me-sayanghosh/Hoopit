@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
 import { shortenUrl, getFolders, generateAiSuggestion, updateShortUrl, createFolder } from '../api/shortUrlapi.js'
 import { getCurrentUser } from '../api/user.api.js'
@@ -58,6 +58,58 @@ export default function CreateLinkForm() {
   const location = useLocation()
   const isEdit = location?.state?.edit || false
   const prefill = location?.state?.prefill || null
+  const hasSubmitted = useRef(false)
+
+  const formStateRef = useRef({
+    destination,
+    alias,
+    tags,
+    comments,
+    conversion,
+    folder,
+    title,
+    description
+  })
+
+  useEffect(() => {
+    formStateRef.current = {
+      destination,
+      alias,
+      tags,
+      comments,
+      conversion,
+      folder,
+      title,
+      description
+    }
+  }, [destination, alias, tags, comments, conversion, folder, title, description])
+
+  useEffect(() => {
+    return () => {
+      // Auto-save draft on unmount if user has typed a destination URL, is creating (not editing), and hasn't intentionally submitted/created/navigated
+      if (!hasSubmitted.current && formStateRef.current.destination && !isEdit) {
+        const body = {
+          url: formStateRef.current.destination,
+          slug: formStateRef.current.alias || undefined,
+          tags: formStateRef.current.tags || undefined,
+          comments: formStateRef.current.comments,
+          title: formStateRef.current.title,
+          description: formStateRef.current.description,
+          folder: formStateRef.current.folder || undefined,
+          conversionTracking: formStateRef.current.conversion,
+          isDraft: true
+        }
+        
+        // Set local storage flag synchronously before navigation is fully processed by the browser
+        localStorage.setItem('autoDraftSaved', 'true')
+        
+        // Trigger background draft save
+        shortenUrl(body).catch((err) => {
+          console.error('Failed to auto-save draft on unmount:', err)
+        })
+      }
+    }
+  }, [isEdit])
 
   // Process AI generation queue sequentially to avoid rate-limit errors
   useEffect(() => {
@@ -136,7 +188,7 @@ export default function CreateLinkForm() {
       } else {
         await shortenUrl(body)
       }
-      
+      hasSubmitted.current = true
       navigate('/dashboard', { state: { draftSaved: true } })
     } catch (err) {
       setError(err?.response?.data?.message || err?.message || 'Failed to save draft.')
@@ -166,9 +218,11 @@ export default function CreateLinkForm() {
         const id = prefill.id || prefill._id
         if (!id) throw new Error('Missing id for update')
         await updateShortUrl(id, body)
+        hasSubmitted.current = true
         navigate('/dashboard', { state: { updated: true } })
       } else if (prefill && prefill.id) {
         await updateShortUrl(prefill.id, { ...body, isDraft: false })
+        hasSubmitted.current = true
         navigate('/dashboard', { state: { updated: true } })
       } else {
         const res = await shortenUrl(body)
@@ -179,6 +233,7 @@ export default function CreateLinkForm() {
         await navigator.clipboard.writeText(short)
         
         // Redirect to dashboard with state to show the popup
+        hasSubmitted.current = true
         navigate('/dashboard', { state: { newLink: short, newQr: res?.qrCodeUrl } })
       }
     } catch (err) {
@@ -206,8 +261,6 @@ export default function CreateLinkForm() {
           setFolder(newlyCreatedFolder)
         } else if (folderFromPrefill) {
           setFolder(folderFromPrefill)
-        } else if (list?.length) {
-          setFolder(list[0].name || '')
         }
       } catch {
         // ignore unauthenticated or empty folder states
@@ -306,7 +359,7 @@ export default function CreateLinkForm() {
               onClick={() => setShowDropdown(!showDropdown)}
               className="w-full flex items-center justify-between rounded-full border-2 border-blue-400 px-5 py-3.5 text-sm font-semibold outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition bg-white cursor-pointer shadow-[0_4px_14px_rgba(59,130,246,0.08)] hover:border-blue-500 active:scale-[0.99]"
             >
-              <span>{folder || 'Create folder'}</span>
+              <span>{folder || 'Select folder'}</span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 20 20"
@@ -335,6 +388,7 @@ export default function CreateLinkForm() {
                         title,
                         description
                       }
+                      hasSubmitted.current = true
                       navigate('/folders/quick-new', {
                         state: {
                           returnTo: '/create',

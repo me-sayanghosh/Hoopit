@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { logOutUser, getCurrentUser, getCachedCurrentUser } from '../api/user.api.js'
+import SileoToast from './SileoToast.jsx'
 
 const shortLinksNav = [
   { label: 'Links', icon: 'link', to: '/dashboard' },
@@ -178,6 +179,18 @@ export default function AppShell({ title, subtitle, children, profile, onLogout,
 
   const [showLogoutModal, setShowLogoutModal] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [toast, setToast] = useState({ message: '', type: 'success', isVisible: false })
+
+  useEffect(() => {
+    if (localStorage.getItem('autoDraftSaved') === 'true') {
+      setToast({
+        message: 'Link is saved to draft!',
+        type: 'success',
+        isVisible: true
+      })
+      localStorage.removeItem('autoDraftSaved')
+    }
+  }, [])
 
   const handleLogout = async () => {
     if (onLogout) {
@@ -205,7 +218,7 @@ export default function AppShell({ title, subtitle, children, profile, onLogout,
 
   const sidebarContent = (
     <>
-      <div className="flex-1 shrink-0">
+      <div className="flex-1 overflow-y-auto pr-1 scrollbar-thin">
         <div className="rounded-2xl bg-slate-50/60 p-3 ring-1 ring-slate-100">
           <div className="text-xs font-bold uppercase tracking-[0.15em] text-slate-400 px-3">Short Links</div>
           <nav className="mt-3 space-y-1.5">
@@ -234,7 +247,7 @@ export default function AppShell({ title, subtitle, children, profile, onLogout,
         </div>
       </div>
 
-      <div className="mt-auto pt-4 border-t border-slate-100 space-y-3">
+      <div className="mt-auto pt-4 border-t border-slate-100 space-y-3 shrink-0">
         {/* Profile card */}
         <button
           onClick={() => {
@@ -288,15 +301,15 @@ export default function AppShell({ title, subtitle, children, profile, onLogout,
   )
 
   return (
-    <div className="min-h-screen bg-[#f5f5f5] text-slate-900 relative font-sans">
+    <div className="min-h-screen lg:h-screen lg:overflow-hidden bg-[#f5f5f5] text-slate-900 relative font-sans">
       {/* Full-page dotted overlay (behind content) */}
       <div className="fixed inset-0 pointer-events-none radial-dots-bg z-0 opacity-100" />
-      <div className="relative z-10 mx-auto flex min-h-screen w-full gap-6 px-4 py-4 sm:px-6 lg:px-8 lg:py-8">
-        <aside className="sticky top-8 hidden h-[calc(100vh-4rem)] w-72 shrink-0 overflow-auto lg:block">
+      <div className="relative z-10 mx-auto flex min-h-screen lg:h-full lg:max-h-screen lg:box-border w-full gap-6 px-4 py-4 sm:px-6 lg:px-8 lg:py-8">
+        <aside className="hidden lg:block w-72 shrink-0 h-full overflow-hidden">
           {desktopSidebar}
         </aside>
 
-        <div className="min-w-0 flex-1 min-h-0 flex flex-col">
+        <div className="min-w-0 flex-1 min-h-0 flex flex-col lg:h-full">
           <header className="mb-4 flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm lg:hidden">
             <button
               type="button"
@@ -411,6 +424,13 @@ export default function AppShell({ title, subtitle, children, profile, onLogout,
           Are you sure you want to log out of your HoopIt account?
         </ConfirmModal>
       ) : null}
+
+      <SileoToast
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast(prev => ({ ...prev, isVisible: false }))}
+        isVisible={toast.isVisible}
+      />
     </div>
   )
 }
