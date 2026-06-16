@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Maskable: full bleed background, content in safe zone (inner 80% = 410x410 centered) -->
+  <rect width="512" height="512" fill="#1c1c2e"/>
+  <rect x="120" y="120" width="112" height="112" rx="28" ry="28" fill="#3b82f6"/>
+  <rect x="280" y="120" width="112" height="112" rx="28" ry="28" fill="#3b82f6"/>
+  <rect x="120" y="280" width="112" height="112" rx="28" ry="28" fill="#ffffff"/>
+  <rect x="280" y="280" width="112" height="112" rx="28" ry="28" fill="#ffffff"/>
+</svg>
