@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Rounded black background -->
+  <rect x="4" y="4" width="56" height="56" rx="14" ry="14" fill="#1a1a2e"/>
+  <!-- 2x2 grid of dots -->
+  <!-- Top-left: white -->
+  <rect x="16" y="16" width="12" height="12" rx="3" ry="3" fill="#ffffff"/>
+  <!-- Top-right: blue -->
+  <rect x="36" y="16" width="12" height="12" rx="3" ry="3" fill="#3b82f6"/>
+  <!-- Bottom-left: blue -->
+  <rect x="16" y="36" width="12" height="12" rx="3" ry="3" fill="#3b82f6"/>
+  <!-- Bottom-right: white -->
+  <rect x="36" y="36" width="12" height="12" rx="3" ry="3" fill="#ffffff"/>
+</svg>
