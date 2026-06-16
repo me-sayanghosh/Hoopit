@@ -43,7 +43,7 @@ const TodayTasksCard = () => {
               <div style={{ fontSize: 12, color: '#6b7280' }}>{it.desc}</div>
             </div>
           </div>
-          <Link to={it.to} style={{ background: 'transparent', border: '1px solid #e5e7eb', borderRadius: 10, padding: '8px 12px', fontSize: 13, textDecoration: 'none', color: '#111' }}>Open</Link>
+          <span style={{ background: 'transparent', border: '1px solid #e5e7eb', borderRadius: 10, padding: '8px 12px', fontSize: 13, color: '#9ca3af', cursor: 'default', userSelect: 'none' }}>Open</span>
         </div>
       ))}
     </div>
