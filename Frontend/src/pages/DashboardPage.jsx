@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Copy, QrCode } from 'lucide-react'
+import { Copy, MousePointerClick, QrCode } from 'lucide-react'
 import AppShell from '../components/AppShell.jsx'
 import SileoToast from '../components/SileoToast.jsx'
 import { getMyShortUrls, updateShortUrl, deleteShortUrl } from '../api/shortUrlapi.js'
@@ -770,7 +770,15 @@ export default function DashboardPage() {
             paginatedUrls.map((item) => {
               if (layoutMode === 'rows') {
                 return (
-                  <div key={item.id} className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 rounded-2xl border border-slate-200/60 bg-white px-5 py-4 shadow-sm hover:shadow-[0_4px_16px_rgba(0,0,0,0.02)] hover:border-slate-300 transition duration-150 w-full">
+                  <div key={item.id} className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-4 rounded-2xl border border-slate-200/60 bg-white px-5 py-4 shadow-sm hover:shadow-[0_4px_16px_rgba(0,0,0,0.02)] hover:border-slate-300 transition duration-150 w-full">
+                    <div className="absolute right-5 top-4 z-10 flex items-center gap-2">
+                      <button onClick={() => copy(item.shortUrl)} aria-label="Copy short link" className="shrink-0 rounded-full border border-slate-200 bg-white p-2 text-slate-500 shadow-sm hover:bg-slate-50 hover:text-slate-800 transition cursor-pointer">
+                        <Copy className="h-4 w-4" strokeWidth={1.9} />
+                      </button>
+                      <button onClick={() => { setNewLinkData({ url: item.shortUrl, qr: item.qrCodeUrl, isNew: false }); setShowNewLinkModal(true) }} aria-label="Show QR code" className="shrink-0 rounded-full border border-slate-200 bg-white p-2 text-slate-500 shadow-sm hover:bg-slate-50 hover:text-slate-800 transition cursor-pointer">
+                        <QrCode className="h-4 w-4" strokeWidth={1.9} />
+                      </button>
+                    </div>
                     <div className="flex min-w-0 flex-1 items-center gap-4">
                       {/* Favicon Icon badge */}
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-50 border border-slate-200 shadow-sm overflow-hidden p-1">
@@ -802,16 +810,10 @@ export default function DashboardPage() {
                             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-0.5 truncate">{item.title}</div>
                           )}
                           {displayProperties.shortLink ? (
-                            <div className="flex min-w-0 items-center gap-2">
+                            <div className="flex min-w-0 items-center gap-2 pr-24 md:pr-0">
                               <a href={item.shortUrl} target="_blank" rel="noreferrer" className="min-w-0 truncate text-sm font-bold text-slate-900 hover:text-blue-600 transition block">
                                 {item.shortUrl.replace(/^https?:\/\//, '')}
                               </a>
-                              <button onClick={() => copy(item.shortUrl)} aria-label="Copy short link" className="shrink-0 rounded-full border border-slate-200 bg-white p-1.5 text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition cursor-pointer">
-                                <Copy className="h-4 w-4" strokeWidth={1.9} />
-                              </button>
-                              <button onClick={() => { setNewLinkData({ url: item.shortUrl, qr: item.qrCodeUrl, isNew: false }); setShowNewLinkModal(true) }} aria-label="Show QR code" className="shrink-0 rounded-full border border-slate-200 bg-white p-1.5 text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition cursor-pointer">
-                                <QrCode className="h-4 w-4" strokeWidth={1.9} />
-                              </button>
                             </div>
                           ) : (
                             <span className="text-sm font-semibold text-slate-400 italic">Short Link hidden</span>
@@ -835,8 +837,9 @@ export default function DashboardPage() {
                     <div className="flex shrink-0 items-center justify-between md:justify-end gap-3 border-t md:border-t-0 border-slate-100 pt-2.5 md:pt-0">
                       {displayProperties.analytics && (
                         <div className="flex items-center gap-2">
-                          <span className="rounded-full bg-emerald-50 text-emerald-700 px-2.5 py-1 text-[11px] font-bold whitespace-nowrap border border-emerald-100/50">
-                            {item.clicks || 0} clicks
+                          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 text-emerald-700 px-2.5 py-1 text-[11px] font-bold whitespace-nowrap border border-emerald-100/50">
+                            <MousePointerClick className="h-3.5 w-3.5" strokeWidth={2} />
+                            {item.clicks || 0}
                           </span>
                           <button onClick={() => {
                             const shortCode = item.shortUrl.split('/').pop() || '';
@@ -894,6 +897,10 @@ export default function DashboardPage() {
               return (
                 <div key={item.id} className="relative flex flex-col justify-between rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:border-slate-300/80 transition-all duration-200 hover:-translate-y-0.5">
                   <div className="absolute right-5 top-5 z-10 flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2.5 py-2 text-slate-500 shadow-sm" title="Clicks">
+                      <MousePointerClick className="h-4 w-4" strokeWidth={1.9} />
+                      <span className="text-[11px] font-bold leading-none text-slate-700">{item.clicks || 0}</span>
+                    </span>
                     <button onClick={() => copy(item.shortUrl)} aria-label="Copy short link" className="shrink-0 rounded-full border border-slate-200 bg-white p-2 text-slate-500 shadow-sm hover:bg-slate-50 hover:text-slate-800 transition cursor-pointer">
                       <Copy className="h-4 w-4" strokeWidth={1.9} />
                     </button>
@@ -925,11 +932,6 @@ export default function DashboardPage() {
                         </div>
                       </div>
 
-                      {displayProperties.analytics && (
-                        <span className="rounded-full bg-emerald-50 text-emerald-700 px-2.5 py-1 text-[11px] font-bold border border-emerald-100/50 shadow-sm">
-                          {item.clicks || 0} clicks
-                        </span>
-                      )}
                     </div>
 
                     {/* Content Section */}
@@ -967,21 +969,23 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Footer Actions */}
-                  <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between w-full">
+                  <div className="mt-4 pt-4 border-t border-slate-100 flex items-start justify-between w-full gap-3">
                     {displayProperties.analytics ? (
-                      <button
-                        onClick={() => {
-                          const shortCode = item.shortUrl.split('/').pop() || '';
-                          navigate(`/analytics/${shortCode}`);
-                        }}
-                        className="text-xs font-bold text-[#2563EB] hover:text-blue-700 hover:underline flex items-center gap-1 cursor-pointer"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="h-3.5 w-3.5">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v18h18" />
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M7 14l3-3 3 2 4-5" />
-                        </svg>
-                        View Stats
-                      </button>
+                      <div className="flex flex-col items-start gap-2">
+                        <button
+                          onClick={() => {
+                            const shortCode = item.shortUrl.split('/').pop() || '';
+                            navigate(`/analytics/${shortCode}`);
+                          }}
+                          className="text-xs font-bold text-[#2563EB] hover:text-blue-700 hover:underline flex items-center gap-1 cursor-pointer"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="h-3.5 w-3.5">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v18h18" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M7 14l3-3 3 2 4-5" />
+                          </svg>
+                          View Stats
+                        </button>
+                      </div>
                     ) : <div />}
 
                     <div className="flex items-center gap-2">

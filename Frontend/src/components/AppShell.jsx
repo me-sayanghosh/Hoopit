@@ -179,18 +179,18 @@ export default function AppShell({ title, subtitle, children, profile, onLogout,
 
   const [showLogoutModal, setShowLogoutModal] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
-  const [toast, setToast] = useState({ message: '', type: 'success', isVisible: false })
-
-  useEffect(() => {
+  const [toast, setToast] = useState(() => {
     if (localStorage.getItem('autoDraftSaved') === 'true') {
-      setToast({
+      localStorage.removeItem('autoDraftSaved')
+      return {
         message: 'Link is saved to draft!',
         type: 'success',
-        isVisible: true
-      })
-      localStorage.removeItem('autoDraftSaved')
+        isVisible: true,
+      }
     }
-  }, [])
+
+    return { message: '', type: 'success', isVisible: false }
+  })
 
   const handleLogout = async () => {
     if (onLogout) {
