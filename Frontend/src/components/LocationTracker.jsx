@@ -17,11 +17,6 @@ export default function LocationTracker({ shortUrl = null }) {
         return
       }
 
-      if (!navigator.geolocation) {
-        console.log('Geolocation not available in browser')
-        return
-      }
-
       const banner = createLocationBanner(
         async () => {
           console.log('User allowed location tracking for', redirectedShortUrl)

@@ -15,7 +15,9 @@ export const registerUser = wrapasync(async (req, res) => {
 
     res.cookie('token', token, cookieOptions);
 
-    res.status(201).json({ message: 'User registered successfully' });
+    // Also return token in body — Safari ITP blocks cross-site cookies,
+    // so the frontend stores it in localStorage and sends via Authorization header.
+    res.status(201).json({ message: 'User registered successfully', token });
 });
 
 export const loginUser = wrapasync(async (req, res) => {
@@ -24,7 +26,7 @@ export const loginUser = wrapasync(async (req, res) => {
 
     res.cookie('token', token, cookieOptions);
 
-    res.status(200).json({ message: 'User logged in successfully' });
+    res.status(200).json({ message: 'User logged in successfully', token });
 });
 
 export const googleLoginUser = wrapasync(async (req, res) => {
@@ -33,7 +35,7 @@ export const googleLoginUser = wrapasync(async (req, res) => {
 
     res.cookie('token', token, cookieOptions);
 
-    res.status(200).json({ message: 'Google login successful' });
+    res.status(200).json({ message: 'Google login successful', token });
 });
 
 export const logoutUser = wrapasync(async (req, res) => {

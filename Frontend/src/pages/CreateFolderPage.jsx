@@ -76,11 +76,11 @@ export default function CreateFolderPage() {
       const payload = { name, description, shortUrlIds: selectedIds }
       if (editingFolder) {
         await updateFolder(editingFolder.id, payload)
+        navigate(returnTo, { state: { folderUpdated: true } })
       } else {
         await createFolder(payload)
+        navigate(returnTo, { state: { folderCreated: true } })
       }
-
-      navigate(returnTo)
     } catch (err) {
       setError(err?.message || 'Failed to save folder.')
     } finally {

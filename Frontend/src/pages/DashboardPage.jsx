@@ -1,30 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
+import { Copy, MousePointerClick, QrCode } from 'lucide-react'
 import AppShell from '../components/AppShell.jsx'
-import { getMyShortUrls, updateShortUrl, deleteShortUrl, transferShortUrl } from '../api/shortUrlapi.js'
+import SileoToast from '../components/SileoToast.jsx'
+import { getMyShortUrls, updateShortUrl, deleteShortUrl } from '../api/shortUrlapi.js'
 import { getCurrentUser } from '../api/user.api.js'
-
-function CopyToast({ value }) {
-  if (!value) return null
-
-  const display = value.length > 54 ? `${value.slice(0, 51)}...` : value
-
-  return (
-    <div className="fixed right-4 top-20 z-50">
-      <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-[0_18px_50px_rgba(15,23,42,0.16)]">
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 00-1.414-1.414L8 11.172 4.707 7.879A1 1 0 003.293 9.293l4 4a1 1 0 001.414 0l8-8z" clipRule="evenodd" />
-          </svg>
-        </div>
-        <div className="min-w-0 text-sm">
-          <div className="font-semibold">Copied to clipboard</div>
-          <div className="max-w-xs truncate text-xs text-slate-500">{display}</div>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 const formatDate = (value) => {
   if (!value) return 'Just now'
@@ -47,17 +27,46 @@ const getDomainFavicon = (url) => {
 
 function NewLinkModal({ urlData, onClose }) {
   if (!urlData) return null;
+  const isNew = urlData.isNew !== false;
+  const themeBg = isNew ? 'bg-emerald-50/80' : 'bg-blue-50/80';
+  const themeIconContainer = isNew ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600';
+  const themeSubtitleText = isNew ? 'text-emerald-700' : 'text-blue-700';
+  const themeBackButton = isNew 
+    ? 'bg-emerald-100/70 text-emerald-800 hover:bg-emerald-200/90' 
+    : 'bg-blue-100/70 text-blue-800 hover:bg-blue-200/90';
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-sm overflow-hidden rounded-3xl bg-white text-center shadow-2xl animate-in fade-in zoom-in-95 duration-200 border border-slate-100">
-        <div className="bg-emerald-50 px-6 py-6">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="h-6 w-6">
-              <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
-            </svg>
+      <div className="relative w-full max-w-sm overflow-hidden rounded-3xl bg-white text-center shadow-2xl animate-in fade-in zoom-in-95 duration-200 border border-slate-100">
+        
+        {/* Absolute Back Button */}
+        <button 
+          onClick={onClose} 
+          className={`absolute top-4 left-4 flex h-8 w-8 items-center justify-center rounded-full transition-all hover:scale-105 active:scale-95 shadow-sm z-10 cursor-pointer ${themeBackButton}`}
+          title="Go back"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="h-4 w-4">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+          </svg>
+        </button>
+
+        <div className={`px-6 py-6 transition-colors duration-200 ${themeBg}`}>
+          <div className={`mx-auto flex h-12 w-12 items-center justify-center rounded-full mb-4 transition-colors duration-200 ${themeIconContainer}`}>
+            {isNew ? (
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="h-6 w-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-6 w-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 15.75a.75.75 0 0 1 .75-.75h2.25a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-.75.75h-2.25a.75.75 0 0 1-.75-.75v-2.25Zm0-10.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12h.008v.008H15V12Zm3 0h.008v.008H18V12Zm-3 3h.008v.008H15V15Zm6-3h.008v.008H21V12Zm-3 3h.008v.008H18V15Zm3 3h.008v.008H21V18Zm-3 3h.008v.008H18V21Zm-3-3h.008v.008H15V18ZM12 12h.008v.008H12V12Z" />
+              </svg>
+            )}
           </div>
-          <h2 className="text-xl font-bold text-slate-900">Link created!</h2>
-          <p className="mt-2 text-sm font-medium text-emerald-700">Short URL successfully copied to clipboard</p>
+          <h2 className="text-xl font-bold text-slate-900">{isNew ? 'Link created!' : 'QR Code'}</h2>
+          <p className={`mt-2 text-sm font-medium transition-colors duration-200 ${themeSubtitleText}`}>
+            {isNew ? 'Short URL successfully copied to clipboard' : 'Scan to instantly access your link'}
+          </p>
         </div>
         
         <div className="p-6">
@@ -81,7 +90,7 @@ function NewLinkModal({ urlData, onClose }) {
   )
 }
 
-function ConfirmModal({ title, children, onCancel, onConfirm, confirmLabel = 'Confirm', danger = false, disabled = false }) {
+function ConfirmModal({ title, children, onCancel, onConfirm, confirmLabel = 'Confirm', danger = false, disabled = false, loading = false }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm">
       <div className="w-full max-w-md overflow-hidden rounded-3xl bg-white text-left shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
@@ -90,34 +99,31 @@ function ConfirmModal({ title, children, onCancel, onConfirm, confirmLabel = 'Co
         </div>
         <div className="p-6 text-slate-600 font-medium text-sm leading-relaxed">{children}</div>
         <div className="flex items-center justify-end gap-3 bg-slate-50/50 border-t border-slate-100 px-6 py-4">
-          <button onClick={onCancel} className="rounded-full bg-white hover:bg-slate-50 border border-slate-200/80 px-5 py-2 text-sm font-bold text-slate-700 transition">Cancel</button>
-          <button disabled={disabled} onClick={onConfirm} className={`rounded-full px-5 py-2 text-sm font-bold text-white transition ${danger ? 'bg-rose-600 hover:bg-rose-700 shadow-[0_4px_12px_rgba(225,29,72,0.25)]' : 'bg-[#2563EB] hover:bg-[#1d4ed8] shadow-[0_4px_12px_rgba(37,99,235,0.25)]'} disabled:opacity-50`}>{confirmLabel}</button>
+          <button disabled={loading} onClick={onCancel} className="rounded-full bg-white hover:bg-slate-50 border border-slate-200/80 px-5 py-2 text-sm font-bold text-slate-700 transition disabled:opacity-50">Cancel</button>
+          <button disabled={disabled || loading} onClick={onConfirm} className={`flex items-center gap-2 rounded-full px-5 py-2 text-sm font-bold text-white transition ${danger ? 'bg-rose-600 hover:bg-rose-700 shadow-[0_4px_12px_rgba(225,29,72,0.25)]' : 'bg-[#2563EB] hover:bg-[#1d4ed8] shadow-[0_4px_12px_rgba(37,99,235,0.25)]'} disabled:opacity-50`}>
+            {loading && (
+              <svg className="animate-spin h-4 w-4 text-white shrink-0" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+            )}
+            {loading ? 'Processing...' : confirmLabel}
+          </button>
         </div>
       </div>
     </div>
   )
 }
 
-function Snackbar({ message, actionLabel, onAction, onClose }) {
-  useEffect(() => {
-    if (!message) return
-    const timer = setTimeout(() => {
-      onClose()
-    }, 3000)
-    return () => clearTimeout(timer)
-  }, [message, onClose])
-
-  if (!message) return null
+function ShareIcon({ children }) {
   return (
-    <div className="fixed right-4 bottom-6 z-50">
-      <div className="flex items-center gap-4 rounded-2xl bg-white px-4 py-3.5 shadow-[0_4px_24px_rgba(0,0,0,0.08)] border border-slate-200/80 animate-in fade-in slide-in-from-bottom-2 duration-200"> 
-        <div className="text-sm font-semibold text-slate-700">{message}</div>
-        {actionLabel ? <button onClick={onAction} className="rounded-full bg-[#2563EB] px-3.5 py-1.5 text-white text-xs font-bold shadow-sm hover:bg-blue-700 transition">{actionLabel}</button> : null}
-        <button onClick={onClose} className="text-sm text-slate-400 hover:text-slate-600 transition">✕</button>
-      </div>
-    </div>
+    <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50">
+      {children}
+    </span>
   )
 }
+
+
 
 export default function DashboardPage() {
   const navigate = useNavigate()
@@ -138,20 +144,28 @@ export default function DashboardPage() {
   const [showArchiveModal, setShowArchiveModal] = useState(false)
   const [archiveTarget, setArchiveTarget] = useState(null)
 
-  const [showTransferModal, setShowTransferModal] = useState(false)
-  const [transferTarget, setTransferTarget] = useState(null)
-  const [transferEmail, setTransferEmail] = useState('')
+  const [showShareModal, setShowShareModal] = useState(false)
+  const [shareTarget, setShareTarget] = useState(null)
 
   const [showMoveModal, setShowMoveModal] = useState(false)
   const [moveTarget, setMoveTarget] = useState(null)
   const [moveFolderName, setMoveFolderName] = useState('')
 
-  const [snackbar, setSnackbar] = useState({ message: '', actionLabel: '', action: null })
+  const [isArchiving, setIsArchiving] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [isMoving, setIsMoving] = useState(false)
+
+  const [toast, setToast] = useState({ message: '', type: 'success', actionLabel: '', action: null, isVisible: false })
+  const showToast = (message, type = 'success', actionLabel = '', action = null) => {
+    setToast({ message, type, actionLabel, action, isVisible: true })
+  }
+  const closeToast = () => {
+    setToast(prev => ({ ...prev, isVisible: false }))
+  }
   const [drafts, setDrafts] = useState([])
 
   const [layoutMode, setLayoutMode] = useState('cards') // 'cards' | 'rows'
   const [orderBy, setOrderBy] = useState('createdAt') // 'createdAt' | 'clicks'
-  const [showArchived, setShowArchived] = useState(false)
   const [displayProperties, setDisplayProperties] = useState({
     shortLink: true,
     destinationUrl: true,
@@ -168,17 +182,40 @@ export default function DashboardPage() {
   const [filterFolder, setFilterFolder] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
 
+  const [reloading, setReloading] = useState(false)
+
+  const reloadData = async () => {
+    setReloading(true)
+    try {
+      const urlsRes = await getMyShortUrls()
+      setUrls(urlsRes?.urls || [])
+      setDrafts(urlsRes?.drafts || [])
+      showToast('Links reloaded successfully!', 'success')
+    } catch {
+      showToast('Failed to reload links.', 'error')
+    } finally {
+      setReloading(false)
+    }
+  }
+
   useEffect(() => {
     if (location.state?.newLink) {
       setTimeout(() => {
-        setNewLinkData({ url: location.state.newLink, qr: location.state.newQr })
+        setNewLinkData({ url: location.state.newLink, qr: location.state.newQr, isNew: true })
         setShowNewLinkModal(true)
+        showToast('Short link created successfully!', 'success')
         navigate('/dashboard', { replace: true, state: {} })
       }, 0)
     }
     if (location.state?.draftSaved) {
       setTimeout(() => {
-        setSnackbar({ message: 'Draft saved successfully!', actionLabel: '', action: null })
+        showToast('Draft saved successfully!', 'success')
+        navigate('/dashboard', { replace: true, state: {} })
+      }, 0)
+    }
+    if (location.state?.updated) {
+      setTimeout(() => {
+        showToast('Link updated successfully!', 'success')
         navigate('/dashboard', { replace: true, state: {} })
       }, 0)
     }
@@ -215,11 +252,119 @@ export default function DashboardPage() {
     return () => { mounted = false }
   }, [location.key])
 
-  const copy = (val) => {
-    navigator.clipboard.writeText(val)
-    setCopiedValue(val)
-    setTimeout(() => setCopiedValue(''), 2000)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Check if pressing 'c' or 'C' without modifier keys
+      if ((e.key === 'c' || e.key === 'C') && !e.ctrlKey && !e.altKey && !e.metaKey && !e.shiftKey) {
+        const activeEl = document.activeElement
+        const isTyping = activeEl && (
+          activeEl.tagName === 'INPUT' ||
+          activeEl.tagName === 'TEXTAREA' ||
+          activeEl.tagName === 'SELECT' ||
+          activeEl.isContentEditable
+        )
+
+        if (!isTyping) {
+          e.preventDefault()
+          navigate('/create')
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [navigate])
+
+  const copy = async (val) => {
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(val)
+      } else {
+        const textarea = document.createElement('textarea')
+        textarea.value = val
+        textarea.setAttribute('readonly', '')
+        textarea.style.position = 'absolute'
+        textarea.style.left = '-9999px'
+        document.body.appendChild(textarea)
+        textarea.select()
+        const copied = document.execCommand('copy')
+        document.body.removeChild(textarea)
+        if (!copied) throw new Error('Copy failed')
+      }
+
+      setCopiedValue(val)
+      showToast('Link copied to clipboard!', 'copy')
+      setTimeout(() => setCopiedValue(''), 2000)
+      return true
+    } catch (err) {
+      showToast(err?.message || 'Copy failed', 'error')
+      return false
+    }
   }
+
+  const canUseNativeShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function'
+
+  const handleNativeShare = async (url) => {
+    if (canUseNativeShare) {
+      await navigator.share({
+        title: 'Hoopit link',
+        text: 'Check out this link',
+        url,
+      })
+      showToast('Share sheet opened', 'share')
+      return
+    }
+
+    copy(url)
+  }
+
+  const buildShareLinks = (url) => ([
+    {
+      label: 'WhatsApp',
+      href: `https://wa.me/?text=${encodeURIComponent(url)}`,
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
+          <path d="M12.04 2C6.58 2 2.14 6.39 2.14 11.79c0 1.9.55 3.74 1.58 5.33L2 22l5.12-1.66a9.83 9.83 0 0 0 4.92 1.31h.01c5.45 0 9.88-4.39 9.88-9.79C21.93 6.39 17.49 2 12.04 2zm5.78 13.83c-.24.68-1.4 1.27-1.9 1.35-.49.08-1.12.11-1.81-.11-.42-.13-.96-.31-1.65-.61-2.89-1.25-4.77-4.17-4.91-4.36-.14-.19-1.18-1.56-1.18-2.98 0-1.41.74-2.1 1-2.38.25-.28.55-.35.73-.35.18 0 .37.01.53.01.17 0 .39-.07.61.47.24.58.82 1.99.89 2.13.07.14.11.31.02.5-.09.19-.13.31-.26.48-.14.17-.27.38-.39.51-.13.14-.27.29-.11.58.16.29.72 1.17 1.55 1.9 1.07.95 1.97 1.25 2.26 1.39.29.14.46.12.63-.07.17-.19.72-.84.92-1.13.2-.3.4-.25.67-.15.28.1 1.74.82 2.04.97.3.14.5.21.58.33.08.12.08.7-.16 1.38z" />
+        </svg>
+      ),
+    },
+    {
+      label: 'X',
+      href: `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent('Check out this link')}`,
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
+          <path d="M18.901 1.153h3.68l-8.04 9.19 9.46 12.504h-7.41l-5.8-7.584-6.64 7.584H.47l8.6-9.83L0 1.153h7.59l5.24 6.95 6.07-6.95zm-1.29 19.61h2.04L6.48 3.243H4.29l13.32 17.52z" />
+        </svg>
+      ),
+    },
+    {
+      label: 'Facebook',
+      href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
+          <path d="M22 12.07C22 6.48 17.52 2 11.93 2S2 6.48 2 12.07C2 17.12 5.66 21.29 10.42 22v-7.03H7.9v-2.9h2.52V9.84c0-2.49 1.48-3.86 3.74-3.86 1.08 0 2.21.19 2.21.19v2.43h-1.24c-1.22 0-1.6.76-1.6 1.54v1.96h2.72l-.44 2.9h-2.28V22C18.34 21.29 22 17.12 22 12.07z" />
+        </svg>
+      ),
+    },
+    {
+      label: 'LinkedIn',
+      href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
+          <path d="M4.98 3.5C4.98 4.88 3.89 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1 4.98 2.12 4.98 3.5zM.2 8.33H4.8V24H.2V8.33zM8.67 8.33h4.41v2.14h.06c.61-1.16 2.11-2.38 4.35-2.38 4.65 0 5.51 3.06 5.51 7.04V24h-4.6v-7.67c0-1.83-.03-4.18-2.55-4.18-2.56 0-2.95 2-2.95 4.05V24h-4.6V8.33z" />
+        </svg>
+      ),
+    },
+    {
+      label: 'Email',
+      href: `mailto:?subject=${encodeURIComponent('Shared Hoopit link')}&body=${encodeURIComponent(url)}`,
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-5 w-5">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25H4.5a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5H4.5A2.25 2.25 0 0 0 2.25 6.75m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.92l-7.243 4.627a2.25 2.25 0 0 1-2.395 0L3.32 8.913a2.25 2.25 0 0 1-1.07-1.92V6.75" />
+        </svg>
+      ),
+    },
+  ])
 
   const filteredUrls = urls
     .filter((item) => {
@@ -229,11 +374,10 @@ export default function DashboardPage() {
         item.originalUrl.toLowerCase().includes(term) ||
         (item.title && item.title.toLowerCase().includes(term))
 
-      const matchesArchive = showArchived ? true : !item.archived
       const matchesTag = filterTag ? (item.tags && item.tags.toLowerCase().includes(filterTag.toLowerCase())) : true
       const matchesFolder = filterFolder ? (item.folder && item.folder.toLowerCase() === filterFolder.toLowerCase()) : true
 
-      return matchesSearch && matchesArchive && matchesTag && matchesFolder
+      return matchesSearch && matchesTag && matchesFolder
     })
     .sort((a, b) => {
       if (orderBy === 'clicks') {
@@ -248,9 +392,63 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <AppShell title="Links" subtitle="Loading your dashboard...">
-        <div className="flex h-64 items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600" />
+      <AppShell
+        title="Links"
+        subtitle="Manage short links, custom aliases, and analytics in one place."
+        rightSlot={(
+          <div className="flex flex-wrap items-center gap-3 animate-pulse">
+            <div className="h-9 w-20 rounded-full bg-slate-200" />
+            <div className="h-9 w-24 rounded-full bg-slate-200" />
+            <div className="h-9.5 w-60 rounded-full bg-slate-200 hidden sm:block" />
+            <div className="h-9.5 w-32 rounded-full bg-slate-200" />
+          </div>
+        )}
+      >
+        <div className="space-y-6 animate-pulse">
+          {/* Search bar helper for mobile */}
+          <div className="h-9.5 w-full rounded-full bg-slate-200 sm:hidden" />
+
+          {/* Stats summary bar */}
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div className="h-4 w-48 rounded bg-slate-200" />
+            <div className="h-7 w-20 rounded-full bg-slate-200" />
+          </div>
+
+          {/* Link items - grid of card skeletons */}
+          <div className="grid gap-5 grid-cols-1 md:grid-cols-2">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_4px_24px_rgba(0,0,0,0.03)] space-y-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className="h-10 w-10 rounded-full bg-slate-200 shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4.5 w-3/4 rounded bg-slate-200" />
+                      <div className="h-3.5 w-1/2 rounded bg-slate-200" />
+                    </div>
+                  </div>
+                  <div className="h-8 w-8 rounded-full bg-slate-200 shrink-0" />
+                </div>
+                
+                <div className="h-3.5 w-5/6 rounded bg-slate-200" />
+                
+                <div className="flex flex-wrap gap-2 pt-1.5">
+                  <div className="h-5 w-16 rounded-full bg-slate-200" />
+                  <div className="h-5 w-12 rounded-full bg-slate-200" />
+                </div>
+
+                <div className="flex items-center justify-between border-t border-slate-100 pt-3">
+                  <div className="flex items-center gap-3">
+                    <div className="h-4 w-12 rounded bg-slate-200" />
+                    <div className="h-4 w-16 rounded bg-slate-200" />
+                  </div>
+                  <div className="flex gap-2">
+                    <div className="h-7 w-12 rounded-full bg-slate-200" />
+                    <div className="h-7 w-12 rounded-full bg-slate-200" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </AppShell>
     )
@@ -285,7 +483,7 @@ export default function DashboardPage() {
               {showFilterPopover && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowFilterPopover(false)} />
-                  <div className="absolute left-1/2 -translate-x-1/2 md:left-0 md:translate-x-0 top-12 z-50 w-72.5 xs:w-80 max-h-[70vh] overflow-y-auto rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_20px_50px_rgba(0,0,0,0.12)] animate-in fade-in slide-in-from-top-2 duration-200 text-left">
+                  <div className="absolute left-[-16px] sm:left-0 top-12 z-50 w-72.5 xs:w-80 max-h-[70vh] overflow-y-auto rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_20px_50px_rgba(0,0,0,0.12)] animate-in fade-in slide-in-from-top-2 duration-200 text-left">
                   <div className="space-y-4">
                     {/* Folders Section */}
                     <div>
@@ -297,7 +495,7 @@ export default function DashboardPage() {
                           </button>
                         )}
                       </div>
-                      <div className="space-y-1 max-h-80 overflow-y-auto pr-1 scrollbar-thin">
+                      <div className="space-y-1 max-h-36 overflow-y-auto pr-1 scrollbar-thin">
                         <button
                           onClick={() => { setFilterFolder(''); setCurrentPage(1); }}
                           className={`w-full flex items-center justify-between rounded-xl px-3 py-2.5 text-xs font-bold transition ${
@@ -340,67 +538,15 @@ export default function DashboardPage() {
                       </div>
                     </div>
 
-                    {/* Tags Section */}
-                    <div className="border-t border-slate-100 pt-3">
-                      <div className="flex items-center justify-between text-[11px] font-extrabold tracking-wider text-slate-400 uppercase mb-2">
-                        <span>Tag</span>
-                        {filterTag && (
-                          <button onClick={() => setFilterTag('')} className="text-blue-600 hover:text-blue-800 transition lowercase font-bold text-[10px]">
-                            Clear
-                          </button>
-                        )}
-                      </div>
-                      <div className="space-y-1 max-h-36 overflow-y-auto pr-1 scrollbar-thin">
-                        <button
-                          onClick={() => { setFilterTag(''); setCurrentPage(1); }}
-                          className={`w-full flex items-center justify-between rounded-xl px-3 py-2.5 text-xs font-bold transition ${
-                            !filterTag
-                              ? 'bg-blue-50/50 text-blue-600'
-                              : 'text-slate-700 hover:bg-slate-50'
-                          }`}
-                        >
-                          <span className="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-4 w-4 shrink-0 text-slate-400">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581a1.002 1.002 0 0 0 1.417 0l4.318-4.318a1.002 1.002 0 0 0 0-1.417L9.581 3.659A2.25 2.25 0 0 0 7.99 3H5.25Z" />
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6Z" />
-                            </svg>
-                            All Tags
-                          </span>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100/80 text-slate-500">{urls.length}</span>
-                        </button>
-                        {[...new Set(urls.flatMap(u => (u.tags || '').split(',').map(t => t.trim())).filter(Boolean))].map(tag => {
-                          const tagCount = urls.filter(u => (u.tags || '').split(',').map(t => t.trim().toLowerCase()).includes(tag.toLowerCase())).length;
-                          const isSelected = filterTag === tag;
-                          return (
-                            <button
-                              key={tag}
-                              onClick={() => { setFilterTag(isSelected ? '' : tag); setCurrentPage(1); }}
-                              className={`w-full flex items-center justify-between rounded-xl px-3 py-2.5 text-xs font-bold transition ${
-                                isSelected
-                                  ? 'bg-blue-50 text-blue-600'
-                                  : 'text-slate-700 hover:bg-slate-50'
-                              }`}
-                            >
-                              <span className="flex items-center gap-2 truncate pr-2">
-                                <span className={`text-sm shrink-0 ${isSelected ? 'text-blue-500 font-extrabold' : 'text-slate-400'}`}>#</span>
-                                <span className="truncate">{tag}</span>
-                              </span>
-                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${isSelected ? 'bg-blue-100 text-blue-700' : 'bg-slate-100/80 text-slate-500'}`}>{tagCount}</span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
                     {/* Popover Footer Summary */}
-                    {(filterFolder || filterTag) ? (
+                    {filterFolder ? (
                       <div className="border-t border-slate-100 pt-3 flex items-center justify-between">
                         <span className="text-[10px] font-bold text-slate-400">{filteredUrls.length} matches found</span>
                         <button
-                          onClick={() => { setFilterFolder(''); setFilterTag(''); }}
+                          onClick={() => { setFilterFolder(''); }}
                           className="rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1 text-[10px] font-bold transition"
                         >
-                          Clear all
+                          Clear
                         </button>
                       </div>
                     ) : null}
@@ -420,7 +566,7 @@ export default function DashboardPage() {
                     : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                 }`}
               >
-                <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-blue-600" />
+
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-4 w-4 text-slate-500">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 13.5V3.75m0 9.75a1.5 1.5 0 0 1 0 3m0-3a1.5 1.5 0 0 0 0 3m0 0V21m6-8.25V3.75m0 9.75a1.5 1.5 0 0 1 0 3m0-3a1.5 1.5 0 0 0 0 3m0 0V21m6-12V3.75m0 5.25a1.5 1.5 0 0 1 0 3m0-3a1.5 1.5 0 0 0 0 3m0 0V21" />
                 </svg>
@@ -433,145 +579,71 @@ export default function DashboardPage() {
               {showDisplayPopover && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowDisplayPopover(false)} />
-                  <div className="absolute right-1/2 translate-x-1/2 md:right-0 md:translate-x-0 top-12 z-50 w-72.5 xs:w-85 rounded-3xl border border-slate-200 bg-white p-5 shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200">
-                  {/* Top layout options */}
-                  <div className="grid grid-cols-2 gap-3 mb-4">
-                    <button
-                      onClick={() => { setLayoutMode('cards'); setCurrentPage(1); }}
-                      className={`flex flex-col items-center justify-center gap-2 rounded-2xl border p-4 text-center transition-all ${
-                        layoutMode === 'cards'
-                          ? 'border-slate-300 bg-slate-50/80 text-slate-900 font-bold'
-                          : 'border-slate-100 bg-white text-slate-500 hover:bg-slate-50'
-                      }`}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-5 w-5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6Z" />
-                      </svg>
-                      <span className="text-xs">Cards</span>
-                    </button>
-                    <button
-                      onClick={() => { setLayoutMode('rows'); setCurrentPage(1); }}
-                      className={`flex flex-col items-center justify-center gap-2 rounded-2xl border p-4 text-center transition-all ${
-                        layoutMode === 'rows'
-                          ? 'border-slate-350 bg-slate-50/80 text-slate-900 font-bold'
-                          : 'border-slate-100 bg-white text-slate-500 hover:bg-slate-50'
-                      }`}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-5 w-5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 5.25h16.5m-16.5 4.5h16.5m-16.5 4.5h16.5m-16.5 4.5h16.5" />
-                      </svg>
-                      <span className="text-xs">Rows</span>
-                    </button>
-                  </div>
+                  <div className="absolute right-[-16px] sm:right-0 top-12 z-50 w-72 sm:w-80 rounded-3xl border border-slate-200 bg-white p-5 shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="space-y-4">
+                      {/* Top layout options */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <button
+                          onClick={() => { setLayoutMode('cards'); setCurrentPage(1); }}
+                          className={`flex flex-col items-center justify-center gap-2 rounded-2xl border p-4 text-center transition-all cursor-pointer ${
+                            layoutMode === 'cards'
+                              ? 'border-slate-300 bg-slate-50/80 text-slate-900 font-bold'
+                              : 'border-slate-100 bg-white text-slate-500 hover:bg-slate-50'
+                          }`}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-5 w-5">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V18ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25A2.25 2.25 0 0 1 13.5 8.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />
+                          </svg>
+                          <span className="text-xs">Cards</span>
+                        </button>
+                        <button
+                          onClick={() => { setLayoutMode('rows'); setCurrentPage(1); }}
+                          className={`flex flex-col items-center justify-center gap-2 rounded-2xl border p-4 text-center transition-all cursor-pointer ${
+                            layoutMode === 'rows'
+                              ? 'border-slate-300 bg-slate-50/80 text-slate-900 font-bold'
+                              : 'border-slate-100 bg-white text-slate-500 hover:bg-slate-50'
+                          }`}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-5 w-5">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-3.75 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                          </svg>
+                          <span className="text-xs">Rows</span>
+                        </button>
+                      </div>
 
-                  {/* Ordering option */}
-                  <div className="flex items-center justify-between border-t border-slate-100 py-3.5 text-sm font-medium text-slate-700">
-                    <span className="flex items-center gap-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-4.5 w-4.5 text-slate-400">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 7.5 7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5" />
-                      </svg>
-                      Ordering
-                    </span>
-                    <select
-                      value={orderBy}
-                      onChange={(e) => { setOrderBy(e.target.value); setCurrentPage(1); }}
-                      className="rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-bold text-slate-700 outline-none hover:bg-slate-50 transition cursor-pointer"
-                    >
-                      <option value="createdAt">Date created</option>
-                      <option value="clicks">Clicks count</option>
-                    </select>
-                  </div>
-
-                  {/* Show archived links toggle */}
-                  <div className="flex items-center justify-between border-t border-slate-100 py-3.5 text-sm font-medium text-slate-700">
-                    <span className="flex items-center gap-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-4.5 w-4.5 text-slate-400">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
-                      </svg>
-                      Show archived links
-                    </span>
-                    <button
-                      onClick={() => { setShowArchived(!showArchived); setCurrentPage(1); }}
-                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                        showArchived ? 'bg-blue-600' : 'bg-slate-200'
-                      }`}
-                    >
-                      <span
-                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                          showArchived ? 'translate-x-5' : 'translate-x-0'
-                        }`}
-                      />
-                    </button>
-                  </div>
-
-                  {/* DISPLAY PROPERTIES */}
-                  <div className="border-t border-slate-100 pt-4 mb-4">
-                    <div className="text-[10px] font-extrabold tracking-wider text-slate-400 uppercase mb-3">Display Properties</div>
-                    <div className="flex flex-wrap gap-1.5">
-                      {Object.keys(displayProperties).map((prop) => {
-                        const labelMap = {
-                          shortLink: 'Short link',
-                          destinationUrl: 'Destination URL',
-                          title: 'Title',
-                          description: 'Description',
-                          createdAt: 'Created Date',
-                          creator: 'Creator',
-                          tags: 'Tags',
-                          analytics: 'Analytics',
-                        }
-                        const label = labelMap[prop] || prop
-                        const active = displayProperties[prop]
-                        return (
+                      {/* Ordering option */}
+                      <div className="flex items-center justify-between border-t border-slate-100 pt-4 text-sm font-medium text-slate-700">
+                        <span className="flex items-center gap-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-4.5 w-4.5 text-slate-400">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 7.5 7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5" />
+                          </svg>
+                          Ordering
+                        </span>
+                        <div className="flex gap-1 bg-slate-100 p-1 rounded-full border border-slate-200/40">
                           <button
-                            key={prop}
-                            onClick={() => setDisplayProperties(prev => ({ ...prev, [prop]: !prev[prop] }))}
-                            className={`rounded-full border px-2.5 py-1 text-xs font-semibold tracking-tight transition-all duration-150 ${
-                              active
-                                ? 'bg-slate-100 border-slate-200/80 text-slate-800'
-                                : 'bg-white border-slate-150 text-slate-400 hover:border-slate-250 hover:bg-slate-50'
+                            onClick={() => { setOrderBy('createdAt'); setCurrentPage(1); }}
+                            className={`rounded-full px-2.5 py-1 text-xs font-bold transition-all duration-150 cursor-pointer ${
+                              orderBy === 'createdAt'
+                                ? 'bg-white text-slate-900 shadow-sm'
+                                : 'text-slate-500 hover:text-slate-800'
                             }`}
                           >
-                            {label}
+                            Date
                           </button>
-                        )
-                      })}
+                          <button
+                            onClick={() => { setOrderBy('clicks'); setCurrentPage(1); }}
+                            className={`rounded-full px-2.5 py-1 text-xs font-bold transition-all duration-150 cursor-pointer ${
+                              orderBy === 'clicks'
+                                ? 'bg-white text-slate-900 shadow-sm'
+                                : 'text-slate-500 hover:text-slate-800'
+                            }`}
+                          >
+                            Clicks
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
-
-                  {/* Reset/Set default */}
-                  <div className="flex items-center justify-between border-t border-slate-100 pt-4 text-xs">
-                    <button
-                      onClick={() => {
-                        setDisplayProperties({
-                          shortLink: true,
-                          destinationUrl: true,
-                          title: true,
-                          description: true,
-                          createdAt: true,
-                          creator: true,
-                          tags: true,
-                          analytics: true,
-                        })
-                        setLayoutMode('cards')
-                        setOrderBy('createdAt')
-                        setShowArchived(false)
-                        setCurrentPage(1)
-                      }}
-                      className="text-slate-500 hover:text-slate-800 font-bold transition"
-                    >
-                      Reset to default
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowDisplayPopover(false)
-                        setSnackbar({ message: 'Display properties saved successfully!', actionLabel: '', action: null })
-                      }}
-                      className="rounded-full bg-slate-900 hover:bg-black px-3.5 py-1.5 font-bold text-white shadow-sm transition"
-                    >
-                      Set as default
-                    </button>
-                  </div>
-                </div>
                 </>
               )}
             </div>
@@ -589,7 +661,7 @@ export default function DashboardPage() {
           </div>
           <button onClick={() => navigate('/create')} className="relative rounded-full bg-[#2563EB] hover:bg-[#1d4ed8] px-5 py-2.5 text-sm font-bold text-white shadow-[0_4px_18px_rgba(37,99,235,0.3)] hover:shadow-[0_6px_22px_rgba(37,99,235,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-150">
             Create link
-            <span className="ml-2 inline-block rounded-md bg-white/20 px-2 py-0.5 text-xs font-bold text-white">C</span>
+            <span className="ml-2 hidden sm:inline-block rounded-md bg-white/20 px-2 py-0.5 text-xs font-bold text-white">C</span>
           </button>
         </div>
       )}
@@ -635,9 +707,9 @@ export default function DashboardPage() {
                             const refreshed = await getMyShortUrls();
                             setUrls(refreshed?.urls || []);
                             setDrafts(refreshed?.drafts || []);
-                            setSnackbar({ message: 'Draft deleted', actionLabel: '', action: null });
+                            showToast('Draft deleted', 'info');
                           } catch {
-                            setSnackbar({ message: 'Failed to delete draft', actionLabel: '', action: null });
+                            showToast('Failed to delete draft', 'error');
                           }
                         }}
                         className="rounded-full hover:bg-rose-50 p-1.5 text-rose-500 hover:text-rose-600 transition"
@@ -661,19 +733,52 @@ export default function DashboardPage() {
           </div>
         )}
 
-        <div className="flex items-center text-sm font-bold text-slate-500 px-1">
+        <div className="flex items-center justify-between text-sm font-bold text-slate-500 px-1">
           <span>
             Showing {filteredUrls.length ? (currentPage - 1) * 10 + 1 : 0} -{' '}
             {Math.min(currentPage * 10, filteredUrls.length)} of {filteredUrls.length} links
           </span>
+          <button
+            onClick={reloadData}
+            disabled={reloading}
+            className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 active:scale-95 transition-all shadow-sm cursor-pointer disabled:opacity-50"
+            title="Reload links"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2.5}
+              stroke="currentColor"
+              className={`h-3.5 w-3.5 text-slate-500 ${reloading ? 'animate-spin' : ''}`}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
+              />
+            </svg>
+            <span>Reload</span>
+          </button>
         </div>
 
-        <div className="space-y-4">
+        <div className={layoutMode === 'cards'
+          ? `grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 ${filteredUrls.length ? 'pb-72' : ''}`
+          : `space-y-3.5 ${filteredUrls.length ? 'pb-72' : ''}`
+        }>
           {filteredUrls.length ? (
             paginatedUrls.map((item) => {
               if (layoutMode === 'rows') {
                 return (
-                  <div key={item.id} className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 rounded-xl border border-slate-200/60 bg-white px-5 py-3.5 shadow-sm hover:shadow-[0_4px_16px_rgba(0,0,0,0.02)] hover:border-slate-350 transition duration-150">
+                  <div key={item.id} className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-4 rounded-2xl border border-slate-200/60 bg-white px-5 py-4 shadow-sm hover:shadow-[0_4px_16px_rgba(0,0,0,0.02)] hover:border-slate-300 transition duration-150 w-full">
+                    <div className="absolute right-5 top-4 z-10 flex items-center gap-2">
+                      <button onClick={() => copy(item.shortUrl)} aria-label="Copy short link" className="shrink-0 rounded-full border border-slate-200 bg-white p-2 text-slate-500 shadow-sm hover:bg-slate-50 hover:text-slate-800 transition cursor-pointer">
+                        <Copy className="h-4 w-4" strokeWidth={1.9} />
+                      </button>
+                      <button onClick={() => { setNewLinkData({ url: item.shortUrl, qr: item.qrCodeUrl, isNew: false }); setShowNewLinkModal(true) }} aria-label="Show QR code" className="shrink-0 rounded-full border border-slate-200 bg-white p-2 text-slate-500 shadow-sm hover:bg-slate-50 hover:text-slate-800 transition cursor-pointer">
+                        <QrCode className="h-4 w-4" strokeWidth={1.9} />
+                      </button>
+                    </div>
                     <div className="flex min-w-0 flex-1 items-center gap-4">
                       {/* Favicon Icon badge */}
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-50 border border-slate-200 shadow-sm overflow-hidden p-1">
@@ -697,24 +802,26 @@ export default function DashboardPage() {
                         </div>
                       </div>
 
-                      {/* Grid columns */}
-                      <div className="min-w-0 flex-1 grid grid-cols-1 md:grid-cols-3 gap-3 items-center">
-                        {/* Col 1: Title and Shortlink */}
-                        <div className="min-w-0">
+                      {/* Align Columns */}
+                      <div className="min-w-0 flex-1 flex flex-col md:flex-row md:items-center gap-4 justify-between">
+                        {/* Column 1: Shortlink & Title */}
+                        <div className="min-w-0 md:w-1/3">
                           {displayProperties.title && item.title && (
                             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-0.5 truncate">{item.title}</div>
                           )}
                           {displayProperties.shortLink ? (
-                            <a href={item.shortUrl} target="_blank" rel="noreferrer" className="text-sm font-bold text-slate-900 hover:text-blue-600 transition truncate block">
-                              {item.shortUrl.replace(/^https?:\/\//, '')}
-                            </a>
+                            <div className="flex min-w-0 items-center gap-2 pr-24 md:pr-0">
+                              <a href={item.shortUrl} target="_blank" rel="noreferrer" className="min-w-0 truncate text-sm font-bold text-slate-900 hover:text-blue-600 transition block">
+                                {item.shortUrl.replace(/^https?:\/\//, '')}
+                              </a>
+                            </div>
                           ) : (
                             <span className="text-sm font-semibold text-slate-400 italic">Short Link hidden</span>
                           )}
                         </div>
 
-                        {/* Col 2: Destination URL & Description */}
-                        <div className="min-w-0">
+                        {/* Column 2: Destination URL & Description */}
+                        <div className="min-w-0 md:w-2/5">
                           {displayProperties.destinationUrl && (
                             <span className="text-xs font-semibold text-slate-500 truncate block">↳ {item.originalUrl}</span>
                           )}
@@ -723,17 +830,6 @@ export default function DashboardPage() {
                           )}
                         </div>
 
-                        {/* Col 3: Date created, Creator, & Tags */}
-                        <div className="min-w-0 flex flex-wrap items-center gap-1.5 text-xs text-slate-400 font-medium">
-                          {displayProperties.createdAt && <span>{formatDate(item.createdAt)}</span>}
-                          {displayProperties.createdAt && displayProperties.creator && <span>•</span>}
-                          {displayProperties.creator && <span>by {profile?.name || 'User'}</span>}
-                          {displayProperties.tags && item.tags && (
-                            <span className="rounded-full bg-blue-50/50 border border-blue-100/60 px-2 py-0.5 text-[9px] font-bold text-[#2563EB]">
-                              #{item.tags.split(',')[0].trim()}
-                            </span>
-                          )}
-                        </div>
                       </div>
                     </div>
 
@@ -741,60 +837,55 @@ export default function DashboardPage() {
                     <div className="flex shrink-0 items-center justify-between md:justify-end gap-3 border-t md:border-t-0 border-slate-100 pt-2.5 md:pt-0">
                       {displayProperties.analytics && (
                         <div className="flex items-center gap-2">
-                          <span className="rounded-full bg-emerald-50 text-emerald-700 px-2.5 py-1 text-[11px] font-bold whitespace-nowrap border border-emerald-100/50">
-                            {item.clicks || 0} clicks
+                          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 text-emerald-700 px-2.5 py-1 text-[11px] font-bold whitespace-nowrap border border-emerald-100/50">
+                            <MousePointerClick className="h-3.5 w-3.5" strokeWidth={2} />
+                            {item.clicks || 0}
                           </span>
                           <button onClick={() => {
                             const shortCode = item.shortUrl.split('/').pop() || '';
                             navigate(`/analytics/${shortCode}`);
-                          }} className="rounded-full border border-blue-100 bg-blue-50/50 hover:bg-blue-100/80 px-2.5 py-1 text-[11px] font-bold text-[#2563EB] transition">
+                          }} className="rounded-full border border-blue-100 bg-blue-50/50 hover:bg-blue-100/80 px-2.5 py-1 text-[11px] font-bold text-[#2563EB] transition cursor-pointer">
                             Stats
                           </button>
                         </div>
                       )}
-                      <button onClick={() => copy(item.shortUrl)} className="rounded-full border border-slate-200 bg-white p-1.5 text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-4 w-4">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H5.25m11.9-3.675A2.006 2.006 0 0 0 15 2.25h-3a2.006 2.006 0 0 0-1.85 1.125M18 10.5h.008v.008H18V10.5Zm3 0h.008v.008H21V10.5Zm-3 3h.008v.008H18v-.008Zm3 0h.008v.008H21v-.008Zm-3 3h.008v.008H18v-.008Zm3 3h.008v.008H21v-.008z" />
-                        </svg>
-                      </button>
-
                       {/* Action Menu (Ellipsis dropdown) */}
                       <div className="relative">
-                        <button onClick={() => setOpenMenuId(openMenuId === item.id ? null : item.id)} className="rounded-full border border-slate-200 bg-white p-1.5 text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition">
+                        <button onClick={() => setOpenMenuId(openMenuId === item.id ? null : item.id)} className="rounded-full border border-slate-200 bg-white p-1.5 text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition cursor-pointer">
                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
                             <path d="M12 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 7.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 7.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3z" />
                           </svg>
                         </button>
 
                         {openMenuId === item.id ? (
-                          <div className="absolute right-0 top-10 z-40 w-48 rounded-2xl border border-slate-200 bg-white shadow-xl py-2.5 animate-in fade-in slide-in-from-top-1 duration-150">
-                            <ul>
-                              <li>
-                                <button onClick={() => { setOpenMenuId(null); navigate('/create', { state: { prefill: item, edit: true } }) }} className="w-full text-left px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Edit</button>
-                              </li>
-                              <li>
-                                <button onClick={() => { setOpenMenuId(null); setNewLinkData({ url: item.shortUrl, qr: item.qrCodeUrl }); setShowNewLinkModal(true) }} className="w-full text-left px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">QR Code</button>
-                              </li>
-                              <li>
-                                <button onClick={() => { setOpenMenuId(null); copy(item.shortUrl) }} className="w-full text-left px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Copy Link ID</button>
-                              </li>
-                              <li>
-                                <button onClick={() => { setOpenMenuId(null); navigate('/create', { state: { prefill: { destination: item.originalUrl, title: item.title, description: item.description }, duplicate: true } }) }} className="w-full text-left px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Duplicate</button>
-                              </li>
-                              <li>
-                                <button onClick={() => { setOpenMenuId(null); setMoveTarget(item); setMoveFolderName(item.folder || ''); setShowMoveModal(true) }} className="w-full text-left px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Move</button>
-                              </li>
-                              <li>
-                                <button onClick={() => { setOpenMenuId(null); setArchiveTarget(item); setShowArchiveModal(true) }} className="w-full text-left px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Archive</button>
-                              </li>
-                              <li>
-                                <button onClick={() => { setOpenMenuId(null); setTransferTarget(item); setTransferEmail(''); setShowTransferModal(true) }} className="w-full text-left px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Transfer</button>
-                              </li>
-                              <li>
-                                <button onClick={() => { setOpenMenuId(null); setDeleteTarget(item); setDeleteVerifyText(''); setShowDeleteModal(true) }} className="w-full text-left px-4 py-2.5 text-sm font-semibold text-rose-600 hover:bg-slate-50 hover:text-rose-700 transition">Delete</button>
-                              </li>
-                            </ul>
-                          </div>
+                          <>
+                            <div className="fixed inset-0 z-30 bg-transparent" onClick={() => setOpenMenuId(null)} />
+                            <div className="absolute right-0 top-10 z-40 w-48 max-h-40 overflow-y-auto scrollbar-thin rounded-xl border border-slate-200 bg-white shadow-xl py-1.5 animate-in fade-in slide-in-from-top-1 duration-150">
+                              <ul>
+                                <li>
+                                  <button onClick={() => { setOpenMenuId(null); navigate('/create', { state: { prefill: item, edit: true } }) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Edit</button>
+                                </li>
+                                <li>
+                                  <button onClick={() => { setOpenMenuId(null); setNewLinkData({ url: item.shortUrl, qr: item.qrCodeUrl, isNew: false }); setShowNewLinkModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">QR Code</button>
+                                </li>
+                                <li>
+                                  <button onClick={() => { setOpenMenuId(null); navigate('/create', { state: { prefill: { destination: item.originalUrl, title: item.title, description: item.description }, duplicate: true } }) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Duplicate</button>
+                                </li>
+                                <li>
+                                  <button onClick={() => { setOpenMenuId(null); setMoveTarget(item); setMoveFolderName(item.folder || ''); setShowMoveModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Move</button>
+                                </li>
+                                <li>
+                                  <button onClick={() => { setOpenMenuId(null); setArchiveTarget(item); setShowArchiveModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Archive</button>
+                                </li>
+                                <li>
+                                  <button onClick={() => { setOpenMenuId(null); setShareTarget(item); setShowShareModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Share</button>
+                                </li>
+                                <li>
+                                  <button onClick={() => { setOpenMenuId(null); setDeleteTarget(item); setDeleteVerifyText(''); setShowDeleteModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-rose-600 hover:bg-slate-50 hover:text-rose-700 transition">Delete</button>
+                                </li>
+                              </ul>
+                            </div>
+                          </>
                         ) : null}
                       </div>
                     </div>
@@ -802,122 +893,146 @@ export default function DashboardPage() {
                 )
               }
 
-              // Default Cards Mode
+              // Default Cards Mode (Grid Item)
               return (
-                <div key={item.id} className="flex flex-col gap-4 rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.05)] hover:border-slate-300/80 lg:flex-row lg:items-center lg:justify-between transition-all duration-200">
-                  <div className="flex min-w-0 flex-1 items-start gap-4">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-slate-50 border border-slate-200/80 shadow-sm overflow-hidden p-1">
-                      {item.originalUrl && getDomainFavicon(item.originalUrl) ? (
-                        <img
-                          src={getDomainFavicon(item.originalUrl)}
-                          alt="Logo"
-                          className="h-6 w-6 object-contain"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                            const fb = e.currentTarget.parentElement.querySelector('.fallback-letter');
-                            if (fb) fb.style.display = 'flex';
-                          }}
-                        />
-                      ) : null}
-                      <div
-                        className="fallback-letter h-full w-full items-center justify-center font-extrabold text-blue-600 text-sm"
-                        style={{ display: item.originalUrl ? 'none' : 'flex' }}
-                      >
-                        {((item.shortUrl || 'L').replace(/^https?:\/\//, '').charAt(0) || 'L').toUpperCase()}
+                <div key={item.id} className="relative flex flex-col justify-between rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:border-slate-300/80 transition-all duration-200 hover:-translate-y-0.5">
+                  <div className="absolute right-5 top-5 z-10 flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2.5 py-2 text-slate-500 shadow-sm" title="Clicks">
+                      <MousePointerClick className="h-4 w-4" strokeWidth={1.9} />
+                      <span className="text-[11px] font-bold leading-none text-slate-700">{item.clicks || 0}</span>
+                    </span>
+                    <button onClick={() => copy(item.shortUrl)} aria-label="Copy short link" className="shrink-0 rounded-full border border-slate-200 bg-white p-2 text-slate-500 shadow-sm hover:bg-slate-50 hover:text-slate-800 transition cursor-pointer">
+                      <Copy className="h-4 w-4" strokeWidth={1.9} />
+                    </button>
+                    <button onClick={() => { setNewLinkData({ url: item.shortUrl, qr: item.qrCodeUrl, isNew: false }); setShowNewLinkModal(true) }} aria-label="Show QR code" className="shrink-0 rounded-full border border-slate-200 bg-white p-2 text-slate-500 shadow-sm hover:bg-slate-50 hover:text-slate-800 transition cursor-pointer">
+                      <QrCode className="h-4 w-4" strokeWidth={1.9} />
+                    </button>
+                  </div>
+                  <div className="flex min-w-0 flex-col items-start gap-3 w-full">
+                    {/* Top row: Favicon and Click count */}
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-50 border border-slate-200/80 shadow-sm overflow-hidden p-1">
+                        {item.originalUrl && getDomainFavicon(item.originalUrl) ? (
+                          <img
+                            src={getDomainFavicon(item.originalUrl)}
+                            alt="Logo"
+                            className="h-5 w-5 object-contain"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                              const fb = e.currentTarget.parentElement.querySelector('.fallback-letter');
+                              if (fb) fb.style.display = 'flex';
+                            }}
+                          />
+                        ) : null}
+                        <div
+                          className="fallback-letter h-full w-full items-center justify-center font-extrabold text-blue-600 text-xs"
+                          style={{ display: item.originalUrl ? 'none' : 'flex' }}
+                        >
+                          {((item.shortUrl || 'L').replace(/^https?:\/\//, '').charAt(0) || 'L').toUpperCase()}
+                        </div>
                       </div>
+
                     </div>
-                    <div className="min-w-0 flex-1">
+
+                    {/* Content Section */}
+                    <div className="min-w-0 w-full mt-1">
                       {displayProperties.title && item.title && (
-                        <div className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1 truncate max-w-sm">{item.title}</div>
+                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1 truncate w-full">{item.title}</div>
                       )}
-                      <div className="flex flex-wrap items-center gap-2.5">
+                      
+                      <div className="flex items-center gap-2 mt-0.5 w-full">
                         {displayProperties.shortLink ? (
-                          <a href={item.shortUrl} target="_blank" rel="noreferrer" className="truncate text-base font-bold text-slate-900 hover:text-blue-600 transition">
-                            {item.shortUrl}
+                          <a href={item.shortUrl} target="_blank" rel="noreferrer" className="truncate text-base font-bold text-slate-900 hover:text-blue-600 transition flex-1 min-w-0 pr-24">
+                            {item.shortUrl.replace(/^https?:\/\//, '')}
                           </a>
                         ) : (
-                          <span className="text-base font-semibold text-slate-400 italic">Short Link hidden</span>
+                          <span className="text-base font-semibold text-slate-400 italic flex-1 pr-24">Short Link hidden</span>
                         )}
-                        <button onClick={() => copy(item.shortUrl)} className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
-                          {copiedValue === item.shortUrl ? 'Copied!' : 'Copy'}
-                        </button>
                       </div>
+
                       {displayProperties.destinationUrl && (
-                        <div className="mt-1.5 truncate text-sm font-medium text-slate-500">↳ {item.originalUrl}</div>
+                        <div className="mt-1.5 truncate text-xs font-semibold text-slate-500 w-full">↳ {item.originalUrl}</div>
                       )}
                       {displayProperties.description && item.description && (
-                        <div className="mt-2 text-xs font-medium text-slate-500 max-w-xl">{item.description}</div>
+                        <div className="mt-2 text-xs font-medium text-slate-400 line-clamp-2 min-h-[2rem] w-full">{item.description}</div>
                       )}
                       {displayProperties.tags && item.tags && (
-                        <div className="mt-2 flex flex-wrap gap-1.5">
+                        <div className="mt-3 flex flex-wrap gap-1">
                           {item.tags.split(',').map((t, idx) => (
-                            <span key={idx} className="rounded-full bg-slate-50 border border-slate-200/80 px-2 py-0.5 text-[10px] font-bold text-slate-500">
+                            <span key={idx} className="rounded-full bg-blue-50/50 border border-blue-100/60 px-2 py-0.5 text-[9px] font-bold text-[#2563EB]">
                               #{t.trim()}
                             </span>
                           ))}
                         </div>
                       )}
-                      {(displayProperties.createdAt || displayProperties.creator) && (
-                        <div className="mt-2 text-xs font-semibold text-slate-400 flex items-center gap-2">
-                          {displayProperties.createdAt && <span>Created {formatDate(item.createdAt)}</span>}
-                          {displayProperties.createdAt && displayProperties.creator && <span>•</span>}
-                          {displayProperties.creator && <span>By {profile?.name || 'User'}</span>}
-                        </div>
-                      )}
                     </div>
                   </div>
 
-                  <div className="flex shrink-0 flex-col items-start gap-2.5 lg:flex-row lg:items-center lg:gap-3.5">
-                    {displayProperties.analytics && (
-                      <>
-                        <div className="rounded-full bg-emerald-50 text-emerald-700 px-3.5 py-1.5 text-xs font-bold whitespace-nowrap shadow-sm">
-                          {item.clicks || 0} clicks
-                        </div>
-                        <button onClick={() => {
-                          const shortCode = item.shortUrl.split('/').pop() || '';
-                          navigate(`/analytics/${shortCode}`);
-                        }} className="rounded-full border border-blue-100 bg-blue-50/50 hover:bg-blue-100/80 px-4 py-2 text-sm font-bold text-[#2563EB] transition duration-150">
-                          View Analytics
+                  {/* Footer Actions */}
+                  <div className="mt-4 pt-4 border-t border-slate-100 flex items-start justify-between w-full gap-3">
+                    {displayProperties.analytics ? (
+                      <div className="flex flex-col items-start gap-2">
+                        <button
+                          onClick={() => {
+                            const shortCode = item.shortUrl.split('/').pop() || '';
+                            navigate(`/analytics/${shortCode}`);
+                          }}
+                          className="text-xs font-bold text-[#2563EB] hover:text-blue-700 hover:underline flex items-center gap-1 cursor-pointer"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="h-3.5 w-3.5">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v18h18" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M7 14l3-3 3 2 4-5" />
+                          </svg>
+                          View Stats
                         </button>
-                      </>
-                    )}
-                    <div className="relative">
-                      <button onClick={() => setOpenMenuId(openMenuId === item.id ? null : item.id)} className="rounded-full border border-slate-200 bg-white p-2.5 text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4.5 w-4.5">
-                          <path d="M12 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 7.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 7.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3z" />
-                        </svg>
-                      </button>
+                      </div>
+                    ) : <div />}
 
-                      {openMenuId === item.id ? (
-                        <div className="absolute right-0 top-11 z-40 w-48 rounded-2xl border border-slate-200 bg-white shadow-xl py-2.5 animate-in fade-in slide-in-from-top-1 duration-150">
-                          <ul>
-                            <li>
-                              <button onClick={() => { setOpenMenuId(null); navigate('/create', { state: { prefill: item, edit: true } }) }} className="w-full text-left px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Edit</button>
-                            </li>
-                            <li>
-                              <button onClick={() => { setOpenMenuId(null); setNewLinkData({ url: item.shortUrl, qr: item.qrCodeUrl }); setShowNewLinkModal(true) }} className="w-full text-left px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">QR Code</button>
-                            </li>
-                            <li>
-                              <button onClick={() => { setOpenMenuId(null); copy(item.shortUrl) }} className="w-full text-left px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Copy Link ID</button>
-                            </li>
-                            <li>
-                              <button onClick={() => { setOpenMenuId(null); navigate('/create', { state: { prefill: { destination: item.originalUrl, title: item.title, description: item.description }, duplicate: true } }) }} className="w-full text-left px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Duplicate</button>
-                            </li>
-                            <li>
-                              <button onClick={() => { setOpenMenuId(null); setMoveTarget(item); setMoveFolderName(item.folder || ''); setShowMoveModal(true) }} className="w-full text-left px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Move</button>
-                            </li>
-                            <li>
-                              <button onClick={() => { setOpenMenuId(null); setArchiveTarget(item); setShowArchiveModal(true) }} className="w-full text-left px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Archive</button>
-                            </li>
-                            <li>
-                              <button onClick={() => { setOpenMenuId(null); setTransferTarget(item); setTransferEmail(''); setShowTransferModal(true) }} className="w-full text-left px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Transfer</button>
-                            </li>
-                            <li>
-                              <button onClick={() => { setOpenMenuId(null); setDeleteTarget(item); setDeleteVerifyText(''); setShowDeleteModal(true) }} className="w-full text-left px-4 py-2.5 text-sm font-semibold text-rose-600 hover:bg-slate-50 hover:text-rose-700 transition">Delete</button>
-                            </li>
-                          </ul>
-                        </div>
-                      ) : null}
+                    <div className="flex items-center gap-2">
+                      <div className="relative">
+                        <button
+                          onClick={() => setOpenMenuId(openMenuId === item.id ? null : item.id)}
+                          className="rounded-full border border-slate-200 bg-white p-1.5 text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition cursor-pointer"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4.5 w-4.5">
+                            <path d="M12 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 7.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 7.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3z" />
+                          </svg>
+                        </button>
+
+                        {openMenuId === item.id ? (
+                          <>
+                            <div className="fixed inset-0 z-30 bg-transparent" onClick={() => setOpenMenuId(null)} />
+                            <div className="absolute right-0 bottom-8 z-40 w-48 max-h-40 overflow-y-auto scrollbar-thin rounded-xl border border-slate-200 bg-white shadow-xl py-1.5 animate-in fade-in slide-in-from-bottom-1 duration-150">
+                              <ul>
+                                <li>
+                                  <button onClick={() => { setOpenMenuId(null); navigate('/create', { state: { prefill: item, edit: true } }) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Edit</button>
+                                </li>
+                                <li>
+                                  <button onClick={() => { setOpenMenuId(null); setNewLinkData({ url: item.shortUrl, qr: item.qrCodeUrl, isNew: false }); setShowNewLinkModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">QR Code</button>
+                                </li>
+                                <li>
+                                  <button onClick={() => { setOpenMenuId(null); copy(item.shortUrl) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Copy Link ID</button>
+                                </li>
+                                <li>
+                                  <button onClick={() => { setOpenMenuId(null); navigate('/create', { state: { prefill: { destination: item.originalUrl, title: item.title, description: item.description }, duplicate: true } }) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Duplicate</button>
+                                </li>
+                                <li>
+                                  <button onClick={() => { setOpenMenuId(null); setMoveTarget(item); setMoveFolderName(item.folder || ''); setShowMoveModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Move</button>
+                                </li>
+                                <li>
+                                  <button onClick={() => { setOpenMenuId(null); setArchiveTarget(item); setShowArchiveModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Archive</button>
+                                </li>
+                                <li>
+                                  <button onClick={() => { setOpenMenuId(null); setShareTarget(item); setShowShareModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Share</button>
+                                </li>
+                                <li>
+                                  <button onClick={() => { setOpenMenuId(null); setDeleteTarget(item); setDeleteVerifyText(''); setShowDeleteModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-rose-600 hover:bg-slate-50 hover:text-rose-700 transition">Delete</button>
+                                </li>
+                              </ul>
+                            </div>
+                          </>
+                        ) : null}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -971,17 +1086,19 @@ export default function DashboardPage() {
         )}
       </div>
       {showNewLinkModal ? <NewLinkModal urlData={newLinkData} onClose={() => setShowNewLinkModal(false)} /> : null}
-      {copiedValue ? <CopyToast value={copiedValue} /> : null}
       {showMoveModal && moveTarget ? (
-        <ConfirmModal title="Move link" onCancel={() => setShowMoveModal(false)} onConfirm={async () => {
+        <ConfirmModal title="Move link" loading={isMoving} onCancel={() => setShowMoveModal(false)} onConfirm={async () => {
           try {
+            setIsMoving(true)
             await updateShortUrl(moveTarget.id, { folder: moveFolderName })
             const refreshed = await getMyShortUrls()
             setUrls(refreshed?.urls || [])
             setShowMoveModal(false)
-            setSnackbar({ message: 'Link moved', actionLabel: '', action: null })
+            showToast('Link moved successfully!', 'folder')
           } catch (err) {
-            alert(err?.response?.data?.message || err?.message || 'Move failed')
+            showToast(err?.response?.data?.message || err?.message || 'Move failed', 'error')
+          } finally {
+            setIsMoving(false)
           }
         }} confirmLabel="Move">
           <div className="text-sm text-slate-700 mb-3">Move <strong className="text-slate-900">{moveTarget.shortUrl}</strong> to a folder.</div>
@@ -990,54 +1107,117 @@ export default function DashboardPage() {
       ) : null}
 
       {showArchiveModal && archiveTarget ? (
-        <ConfirmModal title="Archive link" onCancel={() => setShowArchiveModal(false)} onConfirm={async () => {
+        <ConfirmModal title="Archive link" loading={isArchiving} onCancel={() => setShowArchiveModal(false)} onConfirm={async () => {
           try {
+            setIsArchiving(true)
             await updateShortUrl(archiveTarget.id, { archived: true })
             const refreshed = await getMyShortUrls()
             setUrls(refreshed?.urls || [])
             setShowArchiveModal(false)
-            setSnackbar({ message: 'Successfully archived link!', actionLabel: 'Undo', action: async () => {
-              try { await updateShortUrl(archiveTarget.id, { archived: false }); const refreshed2 = await getMyShortUrls(); setUrls(refreshed2?.urls || []); setSnackbar({ message: '', actionLabel: '', action: null }) } catch { /* ignore */ }
-            } })
+            showToast('Successfully archived link!', 'archive', 'Undo', async () => {
+              try {
+                await updateShortUrl(archiveTarget.id, { archived: false })
+                const refreshed2 = await getMyShortUrls()
+                setUrls(refreshed2?.urls || [])
+                closeToast()
+              } catch { /* ignore */ }
+            })
           } catch (err) {
-            alert(err?.response?.data?.message || err?.message || 'Archive failed')
+            showToast(err?.response?.data?.message || err?.message || 'Archive failed', 'error')
+          } finally {
+            setIsArchiving(false)
           }
         }} confirmLabel="Archive" danger={false}>
           <div className="text-sm text-slate-700 mb-3">Are you sure you want to archive <strong className="text-slate-900">{archiveTarget.shortUrl}</strong>?</div>
         </ConfirmModal>
       ) : null}
 
-      {showTransferModal && transferTarget ? (
-        <ConfirmModal title="Transfer link" onCancel={() => setShowTransferModal(false)} onConfirm={async () => {
-          try {
-            await transferShortUrl(transferTarget.id, transferEmail)
-            const refreshed = await getMyShortUrls()
-            setUrls(refreshed?.urls || [])
-            setShowTransferModal(false)
-            setSnackbar({ message: 'Transfer completed', actionLabel: '', action: null })
-          } catch (err) {
-            alert(err?.response?.data?.message || err?.message || 'Transfer failed')
-          }
-        }} confirmLabel="Transfer">
-          <div className="text-sm text-slate-700 mb-3">Transfer <strong className="text-slate-900">{transferTarget.shortUrl}</strong> to another user by email.</div>
-          <input value={transferEmail} onChange={(e) => setTransferEmail(e.target.value)} className="w-full rounded-lg border px-3 py-2" placeholder="Target user's email" />
-        </ConfirmModal>
+      {showShareModal && shareTarget ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm overflow-hidden rounded-3xl bg-white text-left shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+              <h3 className="text-lg font-bold text-slate-900">Share</h3>
+              <button onClick={() => setShowShareModal(false)} className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700" aria-label="Close share dialog">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-4.5 w-4.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="px-5 py-5">
+              <div className="mb-4 flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                <span className="max-w-45 truncate text-sm font-semibold text-slate-600">{shareTarget.shortUrl}</span>
+                <button
+                  onClick={async () => {
+                    const success = await copy(shareTarget.shortUrl)
+                    if (success) setShowShareModal(false)
+                  }}
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50"
+                  aria-label="Copy link"
+                  title="Copy link"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-4.5 w-4.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25v2.25a2.25 2.25 0 0 1-2.25 2.25H6.75a2.25 2.25 0 0 1-2.25-2.25V8.25a2.25 2.25 0 0 1 2.25-2.25H9m6.75 6v-6a2.25 2.25 0 0 0-2.25-2.25h-6a2.25 2.25 0 0 0-2.25 2.25v6a2.25 2.25 0 0 0 2.25 2.25h6a2.25 2.25 0 0 0 2.25-2.25z" />
+                  </svg>
+                  <span className="sr-only">Copy</span>
+                </button>
+              </div>
+              <div className="grid grid-cols-4 gap-3">
+                <button
+                  onClick={async () => {
+                    try {
+                      await handleNativeShare(shareTarget.shortUrl)
+                    } catch (err) {
+                      showToast(err?.message || 'Sharing failed', 'error')
+                    }
+                  }}
+                  className="flex flex-col items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-4 text-xs font-semibold text-slate-600 transition hover:bg-slate-50"
+                  aria-label="Share on device"
+                  title="Share on device"
+                >
+                  <ShareIcon>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-5 w-5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 12.75 3.75 15 6 17.25M6 12.75V7.5A2.25 2.25 0 0 1 8.25 5.25h7.5A2.25 2.25 0 0 1 18 7.5v5.25M6 12.75h12M18 12.75 20.25 15 18 17.25" />
+                    </svg>
+                  </ShareIcon>
+                  <span className="sr-only">Share on device</span>
+                </button>
+                {buildShareLinks(shareTarget.shortUrl).map((platform) => (
+                  <a
+                    key={platform.label}
+                    href={platform.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex flex-col items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-4 text-xs font-semibold text-slate-600 transition hover:bg-slate-50"
+                    aria-label={platform.label}
+                    title={platform.label}
+                  >
+                    <ShareIcon>{platform.icon}</ShareIcon>
+                    <span className="sr-only">{platform.label}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
       ) : null}
 
       {showDeleteModal && deleteTarget ? (
-        <ConfirmModal title="Delete link" onCancel={() => setShowDeleteModal(false)} onConfirm={async () => {
+        <ConfirmModal title="Delete link" loading={isDeleting} onCancel={() => setShowDeleteModal(false)} onConfirm={async () => {
           try {
             if ((deleteVerifyText || '').trim() !== (deleteTarget.shortUrl || '').trim()) {
-              alert('Please type the exact short link to confirm deletion.')
+              showToast('Please type the exact short link to confirm deletion.', 'error')
               return
             }
+            setIsDeleting(true)
             await deleteShortUrl(deleteTarget.id)
             const refreshed = await getMyShortUrls()
             setUrls(refreshed?.urls || [])
             setShowDeleteModal(false)
-            setSnackbar({ message: 'Link deleted', actionLabel: '', action: null })
+            showToast('Link deleted successfully', 'delete')
           } catch (err) {
-            alert(err?.response?.data?.message || err?.message || 'Delete failed')
+            showToast(err?.response?.data?.message || err?.message || 'Delete failed', 'error')
+          } finally {
+            setIsDeleting(false)
           }
         }} confirmLabel="Delete" danger={true} disabled={!deleteVerifyText || deleteVerifyText.trim() !== (deleteTarget.shortUrl || '').trim()}>
           <div className="text-sm text-slate-700 mb-3">Deleting this link will remove all analytics. This action cannot be undone.</div>
@@ -1047,7 +1227,16 @@ export default function DashboardPage() {
         </ConfirmModal>
       ) : null}
 
-      <Snackbar message={snackbar.message} actionLabel={snackbar.actionLabel} onAction={snackbar.action} onClose={() => setSnackbar({ message: '', actionLabel: '', action: null })} />
+
+
+      <SileoToast 
+        message={toast.message} 
+        type={toast.type} 
+        actionLabel={toast.actionLabel} 
+        onAction={toast.action} 
+        onClose={closeToast} 
+        isVisible={toast.isVisible} 
+      />
     </AppShell>
   )
 }

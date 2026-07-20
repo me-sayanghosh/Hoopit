@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { GoogleLogin } from '@react-oauth/google'
 import AuthPasswordField from './AuthPasswordField.jsx'
+import AuthSuccessOverlay from './AuthSuccessOverlay.jsx'
+import GoogleAuthButton from './GoogleAuthButton.jsx'
 
 function RegisterFrom({ onSubmit, onGoogleSubmit, onSuccess, onBack }) {
 	const [name, setName] = useState('')
@@ -10,6 +11,7 @@ function RegisterFrom({ onSubmit, onGoogleSubmit, onSuccess, onBack }) {
 	const [loading, setLoading] = useState(false)
 	const [message, setMessage] = useState('')
 	const [error, setError] = useState('')
+	const [showSuccess, setShowSuccess] = useState(false)
 	const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
 
 	const handleSubmit = async (event) => {
@@ -38,35 +40,39 @@ function RegisterFrom({ onSubmit, onGoogleSubmit, onSuccess, onBack }) {
 			setName('')
 			setEmail('')
 			setPassword('')
+			setShowSuccess(true)
+			setLoading(false)
 			if (onSuccess) {
-				onSuccess()
+				setTimeout(onSuccess, 1200)
 			}
 		} catch (err) {
 			setError(err?.message || 'Unable to create your account right now.')
-		} finally {
 			setLoading(false)
 		}
 	}
 
 	const handleGoogleSuccess = async ({ credential }) => {
-		setLoading(true)
 		setError('')
-		setMessage('')
+		setShowSuccess(true)   // overlay on immediately after account selection
 
 		try {
 			await onGoogleSubmit(credential)
-			setMessage('Account created successfully.')
 			if (onSuccess) {
-				onSuccess()
+				setTimeout(onSuccess, 1200)
 			}
 		} catch (err) {
+			setShowSuccess(false)
 			setError(err?.message || 'Unable to continue with Google right now.')
-		} finally {
-			setLoading(false)
 		}
 	}
 
+	const handleGoogleError = () => {
+		setError('Google sign up failed. Please try again.')
+	}
+
 	return (
+		<>
+		<AuthSuccessOverlay visible={showSuccess} label="Setting up your account…" />
 		<form className="auth-form" onSubmit={handleSubmit}>
 			{onBack ? (
 				<button type="button" className="auth-back-link" onClick={onBack}>
@@ -123,14 +129,11 @@ function RegisterFrom({ onSubmit, onGoogleSubmit, onSuccess, onBack }) {
 
 			{googleClientId ? (
 				<div className="google-auth-button">
-					<GoogleLogin
+					<GoogleAuthButton
+						label="Continue with Google"
+						disabled={loading}
 						onSuccess={handleGoogleSuccess}
-						onError={() => setError('Google sign up failed. Please try again.')}
-						theme="outline"
-						size="large"
-						shape="pill"
-						text="continue_with"
-						logo_alignment="left"
+						onError={handleGoogleError}
 					/>
 				</div>
 			) : (
@@ -147,6 +150,7 @@ function RegisterFrom({ onSubmit, onGoogleSubmit, onSuccess, onBack }) {
 				</Link>
 			</p>
 		</form>
+		</>
 	)
 }
 

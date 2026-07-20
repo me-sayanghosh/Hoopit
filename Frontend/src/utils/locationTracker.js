@@ -1,7 +1,28 @@
 /**
- * Track user location for analytics
- * Call this on the landing page after a redirect from a short link
+ * Track user location for analytics.
+ * Uses IP-based lookup to avoid browser geolocation permission issues.
  */
+
+async function getIpAddress() {
+  const response = await fetch('https://api.ipify.org?format=json');
+  if (!response.ok) {
+    throw new Error(`Failed to fetch IP address: ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  return data.ip;
+}
+
+export async function getLocationByIp(ip) {
+  const targetIp = ip || (await getIpAddress());
+
+  const response = await fetch(`https://ipapi.co/${targetIp}/json/`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch location data: ${response.statusText}`);
+  }
+
+  return response.json();
+}
 
 export const trackUserLocation = async (shortUrl, visitorId = null) => {
   if (!shortUrl) {
@@ -9,57 +30,41 @@ export const trackUserLocation = async (shortUrl, visitorId = null) => {
     return false;
   }
 
-  if (!navigator.geolocation) {
-    console.log('Geolocation not available');
-    return false;
-  }
-
   try {
-    const position = await new Promise((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(
-        resolve,
-        reject,
-        {
-          enableHighAccuracy: false,
-          timeout: 10000,
-          maximumAge: 0,
-        }
-      );
+    const locationData = await getLocationByIp();
+    const latitude = Number(locationData?.latitude ?? locationData?.lat);
+    const longitude = Number(locationData?.longitude ?? locationData?.lon);
+
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+      throw new Error('Location lookup did not return valid coordinates');
+    }
+
+    const response = await fetch(window.location.origin + '/api/create/track-location', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        shortUrl: String(shortUrl).trim(),
+        latitude,
+        longitude,
+        visitorId: visitorId ? String(visitorId).trim() : null,
+        timestamp: new Date().toISOString(),
+      }),
     });
 
-    const { latitude, longitude } = position.coords;
-
-    try {
-      const response = await fetch(window.location.origin + '/api/create/track-location', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          shortUrl: String(shortUrl).trim(),
-          latitude: Number(latitude),
-          longitude: Number(longitude),
-          visitorId: visitorId ? String(visitorId).trim() : null,
-          timestamp: new Date().toISOString(),
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Location tracked successfully:', data);
-        return true;
-      } else {
-        const error = await response.text();
-        console.error('Failed to track location:', response.status, error);
-        return false;
-      }
-    } catch (fetchError) {
-      console.error('Fetch error during location tracking:', fetchError);
-      return false;
+    if (response.ok) {
+      const data = await response.json();
+      console.log('Location tracked successfully:', data);
+      return true;
     }
+
+    const error = await response.text();
+    console.error('Failed to track location:', response.status, error);
+    return false;
   } catch (error) {
-    console.log('Location tracking skipped - geolocation error:', error.message);
+    console.error('Location tracking failed:', error.message);
     return false;
   }
 };
@@ -76,7 +81,7 @@ export const createLocationBanner = (onAllow, onDeny) => {
         <p class="text-sm font-semibold text-slate-900">Share your location?</p>
         <p class="text-xs text-slate-600 mt-1">Help us improve analytics by sharing your location.</p>
       </div>
-      <button type="button" class="text-slate-400 hover:text-slate-600 flex-shrink-0">
+      <button type="button" class="text-slate-400 hover:text-slate-600 shrink-0">
         <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
           <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
         </svg>

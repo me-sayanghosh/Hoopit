@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { getCurrentUser } from '../api/user.api.js'
-import { createFolder, getFolders, getMyShortUrls, updateFolder, deleteFolder } from '../api/shortUrlapi.js'
+import { getFolders, deleteFolder } from '../api/shortUrlapi.js'
 import AppShell from '../components/AppShell.jsx'
+import SileoToast from '../components/SileoToast.jsx'
 
 const formatDate = (value) => {
   if (!value) return 'recently'
@@ -13,21 +14,52 @@ const formatDate = (value) => {
   }).format(new Date(value))
 }
 
+function ConfirmModal({ title, children, onCancel, onConfirm, confirmLabel = 'Confirm', danger = false, disabled = false, loading = false }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
+      <div className="w-full max-w-md overflow-hidden rounded-[24px] border border-slate-100 bg-white p-6 text-left shadow-[0_20px_50px_rgba(0,0,0,0.15)] animate-in fade-in zoom-in-95 duration-200">
+        <div className="mb-4">
+          <h3 className="text-xl font-bold tracking-tight text-slate-900">{title}</h3>
+        </div>
+        <div className="mb-6">{children}</div>
+        <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-4">
+          <button disabled={loading} onClick={onCancel} className="rounded-full border border-slate-200 bg-white hover:bg-slate-50 px-5 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition disabled:opacity-50">
+            Cancel
+          </button>
+          <button
+            disabled={disabled || loading}
+            onClick={onConfirm}
+            className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold text-white transition ${
+              danger
+                ? 'bg-red-600 hover:bg-red-700 shadow-[0_4px_20px_rgba(220,38,38,0.25)]'
+                : 'bg-blue-600 hover:bg-blue-700 shadow-[0_4px_20px_rgba(37,99,235,0.25)]'
+            } disabled:opacity-50`}
+          >
+            {loading && (
+              <svg className="animate-spin h-4 w-4 text-white shrink-0" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+            )}
+            {loading ? 'Processing...' : confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export default function FoldersPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
   const [folders, setFolders] = useState([])
-  const [urls, setUrls] = useState([])
-  const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
-  const [selectedIds, setSelectedIds] = useState([])
-  const [editingId, setEditingId] = useState('')
   const [error, setError] = useState('')
-  const [notice, setNotice] = useState('')
-  const [deletingId, setDeletingId] = useState('')
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [toast, setToast] = useState({ message: '', type: 'success', isVisible: false })
+  const showToast = (message, type = 'success') => setToast({ message, type, isVisible: true })
+  const closeToast = () => setToast(prev => ({ ...prev, isVisible: false }))
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [deleteVerifyText, setDeleteVerifyText] = useState('')
@@ -38,14 +70,12 @@ export default function FoldersPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const [userRes, foldersRes, urlsRes] = await Promise.all([
+        const [userRes, foldersRes] = await Promise.all([
           getCurrentUser(),
           getFolders(),
-          getMyShortUrls(),
         ])
         setProfile(userRes?.user || null)
         setFolders(foldersRes || [])
-        setUrls(urlsRes?.urls || [])
       } catch (err) {
         if (err?.message?.toLowerCase().includes('unauthorized')) {
           navigate('/login')
@@ -62,49 +92,11 @@ export default function FoldersPage() {
 
   const refresh = async () => {
     try {
-      const [foldersRes, urlsRes] = await Promise.all([getFolders(), getMyShortUrls()])
+      const foldersRes = await getFolders()
       setFolders(foldersRes || [])
-      setUrls(urlsRes?.urls || [])
     } catch (err) {
       setError(err?.message || 'Failed to refresh data.')
     }
-  }
-
-  const resetForm = () => {
-    setName('')
-    setDescription('')
-    setSelectedIds([])
-    setEditingId('')
-    setError('')
-  }
-
-  function ConfirmModal({ title, children, onCancel, onConfirm, confirmLabel = 'Confirm', danger = false, disabled = false }) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
-        <div className="w-full max-w-md overflow-hidden rounded-[24px] border border-slate-100 bg-white p-6 text-left shadow-[0_20px_50px_rgba(0,0,0,0.15)]">
-          <div className="mb-4">
-            <h3 className="text-xl font-bold tracking-tight text-slate-900">{title}</h3>
-          </div>
-          <div className="mb-6">{children}</div>
-          <div className="flex items-center justify-end gap-3">
-            <button onClick={onCancel} className="rounded-full border border-slate-200 bg-white hover:bg-slate-50 px-5 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition">
-              Cancel
-            </button>
-            <button
-              disabled={disabled}
-              onClick={onConfirm}
-              className={`rounded-full px-5 py-2.5 text-sm font-bold text-white transition ${
-                danger
-                  ? 'bg-red-600 hover:bg-red-700 shadow-[0_4px_20px_rgba(220,38,38,0.25)]'
-                  : 'bg-blue-600 hover:bg-blue-700 shadow-[0_4px_20px_rgba(37,99,235,0.25)]'
-              } disabled:opacity-50 disabled:pointer-events-none`}
-            >
-              {confirmLabel}
-            </button>
-          </div>
-        </div>
-      </div>
-    )
   }
 
   const startEdit = (folder) => {
@@ -112,68 +104,75 @@ export default function FoldersPage() {
     navigate('/folders/new', { state: { folder } })
   }
 
-  const toggleSelection = (urlId) => {
-    setSelectedIds((current) => (
-      current.includes(urlId)
-        ? current.filter((item) => item !== urlId)
-        : [...current, urlId]
-    ))
-  }
-
-  const groupedUrls = useMemo(() => {
-    return urls.reduce((acc, item) => {
-      const groupName = item.folder || 'No folder'
-      if (!acc[groupName]) acc[groupName] = []
-      acc[groupName].push(item)
-      return acc
-    }, {})
-  }, [urls])
-
-  const handleSubmit = async (event) => {
-    event.preventDefault()
-    if (!name.trim()) {
-      setError('Folder name is required.')
-      return
-    }
-
-    setSaving(true)
-    setError('')
-    try {
-      const payload = {
-        name,
-        description,
-        shortUrlIds: selectedIds,
-      }
-
-      if (editingId) {
-        await updateFolder(editingId, payload)
-        setNotice('Folder updated successfully.')
-      } else {
-        await createFolder(payload)
-        setNotice('Folder created successfully.')
-      }
-
-      await refresh()
-      resetForm()
-    } catch (err) {
-      setError(err?.message || 'Failed to save folder.')
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  // auto-hide notices after a short delay
+  // Handle folder created / updated redirect state
   useEffect(() => {
-    if (!notice) return
-    const id = setTimeout(() => setNotice(''), 3000)
-    return () => clearTimeout(id)
-  }, [notice])
+    if (location.state?.folderCreated) {
+      setTimeout(() => {
+        showToast('Folder created successfully.', 'folder')
+        navigate('/folders', { replace: true, state: {} })
+      }, 0)
+    } else if (location.state?.folderUpdated) {
+      setTimeout(() => {
+        showToast('Folder updated successfully.', 'folder')
+        navigate('/folders', { replace: true, state: {} })
+      }, 0)
+    }
+  }, [location, navigate])
 
   if (loading) {
     return (
-      <AppShell title="Folders" subtitle="Organize your short links into folders.">
-        <div className="flex h-64 items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600" />
+      <AppShell
+        title="Folders"
+        subtitle="Organize your short links into folders."
+        rightSlot={(
+          <div className="flex flex-wrap items-center gap-2 animate-pulse">
+            <div className="h-9 w-32 rounded-full bg-slate-200" />
+            <div className="h-9 w-28 rounded-full bg-slate-200" />
+          </div>
+        )}
+      >
+        <div className="space-y-6 animate-pulse">
+          {/* Skeletons header title */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2 border-b border-slate-100">
+            <div className="space-y-2">
+              <div className="h-5 w-32 rounded bg-slate-200" />
+              <div className="h-4 w-72 rounded bg-slate-200" />
+            </div>
+            <div className="h-6 w-20 rounded-full bg-slate-200" />
+          </div>
+
+          {/* Folder grid items */}
+          <div className="grid gap-6 grid-cols-1 xl:grid-cols-2">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="rounded-2xl border border-slate-200/80 bg-white p-4 sm:p-6 shadow-[0_4px_24px_rgba(0,0,0,0.04)] space-y-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 space-y-2">
+                    <div className="h-5 w-36 rounded bg-slate-200" />
+                    <div className="h-4 w-5/6 rounded bg-slate-200" />
+                  </div>
+                  <div className="h-8 w-8 rounded-full bg-slate-200 shrink-0" />
+                </div>
+
+                <div className="flex gap-2">
+                  <div className="h-5.5 w-16 rounded-full bg-slate-200" />
+                  <div className="h-5.5 w-24 rounded-full bg-slate-200" />
+                </div>
+
+                {/* Inner list skeleton */}
+                <div className="space-y-2 bg-slate-50/50 rounded-xl p-3 border border-slate-100">
+                  {[1, 2, 3].map((j) => (
+                    <div key={j} className="rounded-xl border border-slate-100 bg-white p-3 flex items-center justify-between gap-3">
+                      <div className="flex-1 space-y-1.5 min-w-0">
+                        <div className="h-4.5 w-1/2 rounded bg-slate-200" />
+                        <div className="h-3.5 w-3/4 rounded bg-slate-200" />
+                      </div>
+                      <div className="h-7 w-7 rounded-full bg-slate-200 shrink-0" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </AppShell>
     )
@@ -302,7 +301,7 @@ export default function FoldersPage() {
                         onClick={(e) => {
                           e.stopPropagation();
                           navigator.clipboard.writeText(item.shortUrl);
-                          setNotice('Link copied!');
+                          showToast('Link copied to clipboard!', 'copy');
                         }}
                         className="rounded-full hover:bg-slate-100 p-1.5 text-slate-400 hover:text-slate-700 transition"
                         title="Copy short url"
@@ -331,22 +330,23 @@ export default function FoldersPage() {
           <ConfirmModal
             title="Delete folder"
             onCancel={() => setShowDeleteModal(false)}
+            loading={isDeleting}
             onConfirm={async () => {
               try {
                 if ((deleteVerifyText || '').trim() !== (deleteTarget.name || '').trim()) {
-                  alert('Please type the exact folder name to confirm deletion.')
+                  showToast('Please type the exact folder name to confirm deletion.', 'error')
                   return
                 }
 
-                setShowDeleteModal(false)
-                setDeletingId(deleteTarget.id)
+                setIsDeleting(true)
                 await deleteFolder(deleteTarget.id)
                 await refresh()
-                setNotice('Folder deleted.')
+                setShowDeleteModal(false)
+                showToast('Folder deleted successfully.', 'delete')
               } catch (err) {
-                setError(err?.message || 'Failed to delete folder.')
+                showToast(err?.message || 'Failed to delete folder.', 'error')
               } finally {
-                setDeletingId('')
+                setIsDeleting(false)
               }
             }}
             confirmLabel="Delete"
@@ -357,6 +357,7 @@ export default function FoldersPage() {
               Deleting <strong className="text-slate-900 font-bold">{deleteTarget.name}</strong> will unassign its {deleteTarget.shortUrls?.length || 0} links. This cannot be undone.
             </div>
             <input
+              disabled={isDeleting}
               value={deleteVerifyText}
               onChange={(e) => setDeleteVerifyText(e.target.value)}
               className="w-full rounded-full border border-slate-200 px-5 py-3 text-sm font-semibold outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
@@ -399,7 +400,7 @@ export default function FoldersPage() {
                     onClick={() => {
                       const allLinks = (viewFolder.shortUrls || []).map(u => u.shortUrl).join('\n')
                       navigator.clipboard.writeText(allLinks)
-                      setNotice('All short links copied to clipboard!')
+                      showToast('All short links copied to clipboard!', 'copy')
                     }}
                     className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition shadow-xs whitespace-nowrap"
                   >
@@ -427,7 +428,7 @@ export default function FoldersPage() {
                         <button
                           onClick={() => {
                             navigator.clipboard.writeText(item.shortUrl)
-                            setNotice('Link copied!')
+                            showToast('Link copied to clipboard!', 'copy')
                           }}
                           className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50 transition shadow-xs"
                         >
@@ -472,14 +473,12 @@ export default function FoldersPage() {
         )}
       </div>
 
-      {notice ? (
-        <div className="fixed right-6 bottom-6 z-50 animate-slide-in">
-          <div className="rounded-full border border-slate-200/80 bg-white px-5 py-3.5 shadow-[0_10px_30px_rgba(0,0,0,0.08)] flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-            <div className="text-sm font-bold text-slate-800">{notice}</div>
-          </div>
-        </div>
-      ) : null}
+      <SileoToast
+        message={toast.message}
+        type={toast.type}
+        onClose={closeToast}
+        isVisible={toast.isVisible}
+      />
     </AppShell>
   )
 }

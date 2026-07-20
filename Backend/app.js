@@ -26,8 +26,10 @@ app.set('trust proxy', true);
 
 /// this is for dns configuration to support dns resolution for url redirection
 
+const normalizeOrigin = (value) => (value || '').trim().replace(/\/$/, '');
+
 const allowedOrigins = [
-    process.env.FRONTEND_URL || 'http://localhost:5173',
+    normalizeOrigin(process.env.FRONTEND_URL || 'http://localhost:5173'),
     'http://localhost:5174',
     'http://127.0.0.1:5174',
     'http://127.0.0.1:5173',
@@ -37,7 +39,7 @@ const allowedOrigins = [
 
 app.use(cors({
     origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin)) {
+        if (!origin || allowedOrigins.includes(normalizeOrigin(origin))) {
             return callback(null, true);
         }
 
@@ -50,6 +52,16 @@ app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(cookieParser());
 app.use(attachUser);
+
+// Silently drop socket.io polling/websocket requests.
+// Nothing in this project uses Socket.IO — these come from browser
+// extensions or dev-tool clients and just spam the logs.
+app.use((req, res, next) => {
+    if (req.path.startsWith('/socket.io')) {
+        return res.status(404).end();
+    }
+    next();
+});
 
 // Log every response's status code and request duration
 app.use((req, res, next) => {

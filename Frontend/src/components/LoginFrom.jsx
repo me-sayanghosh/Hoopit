@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { GoogleLogin } from '@react-oauth/google'
 import AuthPasswordField from './AuthPasswordField.jsx'
+import AuthSuccessOverlay from './AuthSuccessOverlay.jsx'
+import GoogleAuthButton from './GoogleAuthButton.jsx'
 
 function LoginFrom({ onSubmit, onGoogleSubmit, onSuccess }) {
 	const [email, setEmail] = useState('')
@@ -9,6 +10,7 @@ function LoginFrom({ onSubmit, onGoogleSubmit, onSuccess }) {
 	const [loading, setLoading] = useState(false)
 	const [message, setMessage] = useState('')
 	const [error, setError] = useState('')
+	const [showSuccess, setShowSuccess] = useState(false)
 	const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
 
 	const handleSubmit = async (event) => {
@@ -28,35 +30,41 @@ function LoginFrom({ onSubmit, onGoogleSubmit, onSuccess }) {
 			await onSubmit(email, password)
 			setPassword('')
 			setMessage('You are signed in.')
+			setShowSuccess(true)
+			setLoading(false)
 			if (onSuccess) {
-				onSuccess()
+				setTimeout(onSuccess, 1200)
 			}
 		} catch (err) {
 			setError(err?.message || 'Unable to sign in right now.')
-		} finally {
 			setLoading(false)
 		}
 	}
 
+	// Show overlay as soon as Google returns the credential (after account selection)
+	// — before the backend API call, so the form is never visible during the wait
 	const handleGoogleSuccess = async ({ credential }) => {
-		setLoading(true)
 		setError('')
-		setMessage('')
+		setShowSuccess(true)   // overlay on immediately
 
 		try {
 			await onGoogleSubmit(credential)
-			setMessage('You are signed in.')
 			if (onSuccess) {
-				onSuccess()
+				setTimeout(onSuccess, 1200)
 			}
 		} catch (err) {
+			setShowSuccess(false)  // hide overlay, surface the error
 			setError(err?.message || 'Unable to sign in with Google right now.')
-		} finally {
-			setLoading(false)
 		}
 	}
 
+	const handleGoogleError = () => {
+		setError('Google sign in failed. Please try again.')
+	}
+
 	return (
+		<>
+		<AuthSuccessOverlay visible={showSuccess} label="Signing you in…" />
 		<form className="auth-form" onSubmit={handleSubmit}>
 			<div className="auth-heading">
 				<h2>Welcome back</h2>
@@ -103,14 +111,11 @@ function LoginFrom({ onSubmit, onGoogleSubmit, onSuccess }) {
 
 			{googleClientId ? (
 				<div className="google-auth-button">
-					<GoogleLogin
+					<GoogleAuthButton
+						label="Continue with Google"
+						disabled={loading}
 						onSuccess={handleGoogleSuccess}
-						onError={() => setError('Google sign in failed. Please try again.')}
-						theme="outline"
-						size="large"
-						shape="pill"
-						text="continue_with"
-						logo_alignment="left"
+						onError={handleGoogleError}
 					/>
 				</div>
 			) : (
@@ -127,6 +132,7 @@ function LoginFrom({ onSubmit, onGoogleSubmit, onSuccess }) {
 				</Link>
 			</p>
 		</form>
+		</>
 	)
 }
 

@@ -50,6 +50,22 @@ const parseCoordinate = (value) => {
     return Number.isFinite(coordinate) ? coordinate : null;
 };
 
+const isLocalOrPrivateIp = (ip) => {
+    if (!ip) return true;
+    const clean = String(ip).replace(/^::ffff:/, '').trim();
+    if (clean === '127.0.0.1' || clean === '::1' || clean === 'localhost' || clean === '') return true;
+    
+    // Check for private / local IP ranges
+    if (clean.startsWith('10.')) return true;
+    if (clean.startsWith('192.168.')) return true;
+    if (clean.startsWith('172.')) {
+        const parts = clean.split('.');
+        const second = Number(parts[1]);
+        if (second >= 16 && second <= 31) return true;
+    }
+    return false;
+};
+
 const getLocation = async (req, ip) => {
     const country = req.headers['x-vercel-ip-country'] || req.headers['cf-ipcountry'] || '';
     const region = req.headers['x-vercel-ip-country-region'] || '';
@@ -67,47 +83,85 @@ const getLocation = async (req, ip) => {
         };
     }
 
-    if (ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1') {
-        return {
-            country: 'IN',
-            region: 'Delhi',
-            city: 'New Delhi',
-            latitude: 28.7041,
-            longitude: 77.1025,
-        };
-    }
-
-    if (ip) {
+    // If it's a localhost or private LAN IP, look up the server's real external IP via ip-api
+    if (isLocalOrPrivateIp(ip)) {
         try {
-            const response = await fetch(`http://ip-api.com/json/${ip}`, {
-                signal: AbortSignal.timeout(1500)
+            // Calling ip-api.com without an IP param makes it resolve the caller's real public IP
+            const extResponse = await fetch('https://ip-api.com/json/?fields=status,country,regionName,city,lat,lon', {
+                signal: AbortSignal.timeout(4000)
             });
-            if (response.ok) {
-                const data = await response.json();
-                if (data.status === 'success') {
+
+            if (extResponse.ok) {
+                const extData = await extResponse.json();
+                if (extData.status === 'success') {
+                    console.log(`[geo] Local IP detected → resolved via external IP: ${extData.city}, ${extData.regionName}, ${extData.country}`);
                     return {
-                        country: data.country || 'Unknown',
-                        region: data.regionName || 'Unknown',
-                        city: data.city || 'Unknown',
-                        latitude: data.lat ?? null,
-                        longitude: data.lon ?? null,
+                        country: extData.country || 'Unknown',
+                        region: extData.regionName || 'Unknown',
+                        city: extData.city || 'Unknown',
+                        latitude: extData.lat ?? null,
+                        longitude: extData.lon ?? null,
                     };
                 }
             }
-        } catch (error) {
-            console.error('IP-API lookup failed:', error);
+        } catch (extErr) {
+            console.error('[geo] External IP lookup failed for local IP:', extErr.message || extErr);
         }
+
+        // If external lookup also fails, return Unknown instead of fake data
+        return {
+            country: 'Unknown',
+            region: 'Unknown',
+            city: 'Unknown',
+            latitude: null,
+            longitude: null,
+        };
     }
 
-    const lookup = ip ? geoip.lookup(ip) : null;
-    const [lookupLatitude, lookupLongitude] = Array.isArray(lookup?.ll) ? lookup.ll : [null, null];
+    // Try ip-api for real public IPs
+    const apiUrl = `https://ip-api.com/json/${ip}?fields=status,country,regionName,city,lat,lon`;
+
+    try {
+        const response = await fetch(apiUrl, {
+            signal: AbortSignal.timeout(3000)
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            if (data.status === 'success') {
+                return {
+                    country: data.country || 'Unknown',
+                    region: data.regionName || 'Unknown',
+                    city: data.city || 'Unknown',
+                    latitude: data.lat ?? null,
+                    longitude: data.lon ?? null,
+                };
+            }
+        }
+    } catch (error) {
+        console.error('ip-api lookup failed:', error);
+    }
+
+    // Fallback: geoip for non-localhost IPs
+    if (ip) {
+        const lookup = geoip.lookup(ip);
+        const [lookupLatitude, lookupLongitude] = Array.isArray(lookup?.ll) ? lookup.ll : [null, null];
+
+        return {
+            country: lookup?.country || 'Unknown',
+            region: lookup?.region || 'Unknown',
+            city: lookup?.city || 'Unknown',
+            latitude: typeof lookupLatitude === 'number' ? lookupLatitude : null,
+            longitude: typeof lookupLongitude === 'number' ? lookupLongitude : null,
+        };
+    }
 
     return {
-        country: lookup?.country || 'Unknown',
-        region: lookup?.region || 'Unknown',
-        city: lookup?.city || 'Unknown',
-        latitude: typeof latitude === 'number' ? latitude : (typeof lookupLatitude === 'number' ? lookupLatitude : null),
-        longitude: typeof longitude === 'number' ? longitude : (typeof lookupLongitude === 'number' ? lookupLongitude : null),
+        country: 'Unknown',
+        region: 'Unknown',
+        city: 'Unknown',
+        latitude: null,
+        longitude: null,
     };
 };
 
@@ -239,7 +293,7 @@ export const getShortUrlByOriginalUrl = async (originalUrl) => {
 export const getShortUrlsByUserId = async (userId) => {
     try {
         return await urlSchema
-            .find({ user: userId, isDraft: { $ne: true } })
+            .find({ user: userId, isDraft: { $ne: true }, archived: { $ne: true } })
             .sort({ createdAt: -1 });
     }
     catch (err) {
@@ -272,7 +326,7 @@ export const getTagsForUser = async (userId) => {
     try {
         // unwind tags and count occurrences
         const rows = await urlSchema.aggregate([
-            { $match: { user: userId } },
+            { $match: { user: userId, isDraft: { $ne: true }, archived: { $ne: true } } },
             { $unwind: { path: '$tags', preserveNullAndEmptyArrays: false } },
             { $group: { _id: '$tags', count: { $sum: 1 } } },
             { $sort: { count: -1, _id: 1 } }
@@ -286,7 +340,7 @@ export const getTagsForUser = async (userId) => {
 
 export const getUrlsByTagForUser = async (userId, tag) => {
     try {
-        return await urlSchema.find({ user: userId, tags: tag }).sort({ createdAt: -1 });
+        return await urlSchema.find({ user: userId, tags: tag, isDraft: { $ne: true }, archived: { $ne: true } }).sort({ createdAt: -1 });
     } catch (err) {
         throw new AppError(err.message || 'Failed to fetch URLs for tag.', 500);
     }
@@ -307,7 +361,7 @@ export const updateShortUrlById = async (id, userId, updates = {}) => {
             throw new AppError('No valid fields to update', 400);
         }
 
-        const updated = await urlSchema.findOneAndUpdate(query, { $set: set }, { new: true });
+        const updated = await urlSchema.findOneAndUpdate(query, { $set: set }, { returnDocument: 'after' });
         if (!updated) throw new AppError('URL not found or not owned by user', 404);
         return updated;
     } catch (err) {
@@ -333,7 +387,7 @@ export const deleteShortUrlById = async (id, userId) => {
 export const transferShortUrlToUserId = async (id, userId, targetUserId) => {
     try {
         const query = { _id: id, user: userId };
-        const updated = await urlSchema.findOneAndUpdate(query, { $set: { user: targetUserId } }, { new: true });
+        const updated = await urlSchema.findOneAndUpdate(query, { $set: { user: targetUserId } }, { returnDocument: 'after' });
         if (!updated) throw new AppError('URL not found or not owned by user', 404);
         return updated;
     } catch (err) {

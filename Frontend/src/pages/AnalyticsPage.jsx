@@ -224,9 +224,63 @@ function AnalyticsPage() {
 
   if (loading) {
     return (
-      <AppShell title="Analytics" subtitle="Overview of your links and click activity.">
-        <div className="flex h-64 items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600" />
+      <AppShell
+        title="Analytics"
+        subtitle="Overview of your links and click activity."
+      >
+        <div className="space-y-6 animate-pulse">
+          {/* Top Growth timeline block skeleton */}
+          <div className="rounded-2xl border border-slate-200/80 bg-white p-6 sm:p-7 shadow-[0_4px_24px_rgba(0,0,0,0.04)] space-y-6">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div className="space-y-2">
+                <div className="h-3 w-28 rounded bg-slate-200" />
+                <div className="h-5 w-64 rounded bg-slate-200" />
+              </div>
+              <div className="h-4 w-44 rounded bg-slate-200" />
+            </div>
+            
+            <div className="grid gap-6 lg:grid-cols-2">
+              <div className="h-[270px] rounded-2xl bg-slate-50 border border-slate-100" />
+              <div className="h-[270px] rounded-2xl bg-slate-50 border border-slate-100" />
+            </div>
+          </div>
+
+          {/* Metric counters skeletons */}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_4px_20px_rgba(0,0,0,0.02)] space-y-3">
+                <div className="h-3 w-16 rounded bg-slate-200" />
+                <div className="h-8 w-12 rounded bg-slate-200" />
+              </div>
+            ))}
+          </div>
+
+          {/* Core charts & Map split skeletons */}
+          <div className="grid gap-6 lg:grid-cols-2">
+            {/* Click share skeleton */}
+            <div className="rounded-2xl border border-slate-200/80 bg-white p-6 sm:p-7 shadow-[0_4px_24px_rgba(0,0,0,0.04)] space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="space-y-2">
+                  <div className="h-3 w-20 rounded bg-slate-200" />
+                  <div className="h-5 w-44 rounded bg-slate-200" />
+                </div>
+                <div className="h-6 w-16 rounded-full bg-slate-200" />
+              </div>
+              <div className="h-[200px] rounded-2xl bg-slate-50 border border-slate-100" />
+            </div>
+
+            {/* Real-time clicks skeleton */}
+            <div className="rounded-2xl border border-slate-200/80 bg-white p-6 sm:p-7 shadow-[0_4px_24px_rgba(0,0,0,0.04)] space-y-6">
+              <div className="flex items-end justify-between">
+                <div className="space-y-2">
+                  <div className="h-3 w-28 rounded bg-slate-200" />
+                  <div className="h-5 w-36 rounded bg-slate-200" />
+                </div>
+                <div className="h-4 w-32 rounded bg-slate-200" />
+              </div>
+              <div className="h-[200px] rounded-2xl bg-slate-50 border border-slate-100" />
+            </div>
+          </div>
         </div>
       </AppShell>
     )
@@ -266,7 +320,13 @@ function AnalyticsPage() {
                 <GrowthBarChart series={growthSeries.map((s) => ({ id: s.id, label: s.label, value: s.value }))} width={640} height={240} />
               </div>
               <div className="overflow-hidden rounded-2xl border border-slate-100 bg-slate-50/50 p-4">
-                <ChannelGauge data={analytics.trafficByCountry && analytics.trafficByCountry.length ? analytics.trafficByCountry.slice(0,4).map((d)=>({label:d.label,value:d.value})) : [{label:'Google',value:78},{label:'Facebook',value:12},{label:'YouTube',value:6},{label:'Others',value:4}]} />
+              {analytics.trafficByCountry && analytics.trafficByCountry.length ? (
+                <ChannelGauge data={analytics.trafficByCountry.slice(0,4).map((d)=>({label:d.label,value:d.value}))} />
+              ) : (
+                <div className="flex h-full items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 p-6">
+                  <p className="text-sm font-medium text-slate-500">No country traffic data yet. Data will appear after users click your short links.</p>
+                </div>
+              )}
               </div>
             </div>
           </div>
