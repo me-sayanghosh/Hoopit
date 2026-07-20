@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
+import { Copy, QrCode } from 'lucide-react'
 import AppShell from '../components/AppShell.jsx'
 import SileoToast from '../components/SileoToast.jsx'
 import { getMyShortUrls, updateShortUrl, deleteShortUrl } from '../api/shortUrlapi.js'
@@ -801,9 +802,17 @@ export default function DashboardPage() {
                             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-0.5 truncate">{item.title}</div>
                           )}
                           {displayProperties.shortLink ? (
-                            <a href={item.shortUrl} target="_blank" rel="noreferrer" className="text-sm font-bold text-slate-900 hover:text-blue-600 transition truncate block">
-                              {item.shortUrl.replace(/^https?:\/\//, '')}
-                            </a>
+                            <div className="flex min-w-0 items-center gap-2">
+                              <a href={item.shortUrl} target="_blank" rel="noreferrer" className="min-w-0 truncate text-sm font-bold text-slate-900 hover:text-blue-600 transition block">
+                                {item.shortUrl.replace(/^https?:\/\//, '')}
+                              </a>
+                              <button onClick={() => copy(item.shortUrl)} aria-label="Copy short link" className="shrink-0 rounded-full border border-slate-200 bg-white p-1.5 text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition cursor-pointer">
+                                <Copy className="h-4 w-4" strokeWidth={1.9} />
+                              </button>
+                              <button onClick={() => { setNewLinkData({ url: item.shortUrl, qr: item.qrCodeUrl, isNew: false }); setShowNewLinkModal(true) }} aria-label="Show QR code" className="shrink-0 rounded-full border border-slate-200 bg-white p-1.5 text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition cursor-pointer">
+                                <QrCode className="h-4 w-4" strokeWidth={1.9} />
+                              </button>
+                            </div>
                           ) : (
                             <span className="text-sm font-semibold text-slate-400 italic">Short Link hidden</span>
                           )}
@@ -819,17 +828,6 @@ export default function DashboardPage() {
                           )}
                         </div>
 
-                        {/* Column 3: Date created & Tags */}
-                        <div className="min-w-0 md:w-1/4 flex flex-wrap items-center gap-1.5 text-xs text-slate-400 font-medium">
-                          {displayProperties.createdAt && <span>{formatDate(item.createdAt)}</span>}
-                          {displayProperties.createdAt && displayProperties.creator && <span>•</span>}
-                          {displayProperties.creator && <span>by {profile?.name || 'User'}</span>}
-                          {displayProperties.tags && item.tags && (
-                            <span className="rounded-full bg-blue-50/50 border border-blue-100/60 px-2 py-0.5 text-[9px] font-bold text-[#2563EB]">
-                              #{item.tags.split(',')[0].trim()}
-                            </span>
-                          )}
-                        </div>
                       </div>
                     </div>
 
@@ -848,12 +846,6 @@ export default function DashboardPage() {
                           </button>
                         </div>
                       )}
-                      <button onClick={() => copy(item.shortUrl)} className="rounded-full border border-slate-200 bg-white p-1.5 text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition cursor-pointer">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-4 w-4">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H5.25m11.9-3.675A2.006 2.006 0 0 0 15 2.25h-3a2.006 2.006 0 0 0-1.85 1.125M18 10.5h.008v.008H18V10.5Zm3 0h.008v.008H21V10.5Zm-3 3h.008v.008H18v-.008Zm3 0h.008v.008H21v-.008Zm-3 3h.008v.008H18v-.008Zm3 3h.008v.008H21v-.008z" />
-                        </svg>
-                      </button>
-
                       {/* Action Menu (Ellipsis dropdown) */}
                       <div className="relative">
                         <button onClick={() => setOpenMenuId(openMenuId === item.id ? null : item.id)} className="rounded-full border border-slate-200 bg-white p-1.5 text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition cursor-pointer">
@@ -872,9 +864,6 @@ export default function DashboardPage() {
                                 </li>
                                 <li>
                                   <button onClick={() => { setOpenMenuId(null); setNewLinkData({ url: item.shortUrl, qr: item.qrCodeUrl, isNew: false }); setShowNewLinkModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">QR Code</button>
-                                </li>
-                                <li>
-                                  <button onClick={() => { setOpenMenuId(null); copy(item.shortUrl) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Copy Link ID</button>
                                 </li>
                                 <li>
                                   <button onClick={() => { setOpenMenuId(null); navigate('/create', { state: { prefill: { destination: item.originalUrl, title: item.title, description: item.description }, duplicate: true } }) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Duplicate</button>
