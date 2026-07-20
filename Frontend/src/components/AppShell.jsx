@@ -301,15 +301,15 @@ export default function AppShell({ title, subtitle, children, profile, onLogout,
   )
 
   return (
-    <div className="min-h-screen lg:h-screen lg:overflow-hidden bg-[#f5f5f5] text-slate-900 relative font-sans">
+    <div className="h-screen overflow-hidden bg-[#f5f5f5] text-slate-900 relative font-sans">
       {/* Full-page dotted overlay (behind content) */}
       <div className="fixed inset-0 pointer-events-none radial-dots-bg z-0 opacity-100" />
-      <div className="relative z-10 mx-auto flex min-h-screen lg:h-full lg:max-h-screen lg:box-border w-full gap-6 px-4 py-4 sm:px-6 lg:px-8 lg:py-8">
+      <div className="relative z-10 mx-auto flex h-full max-h-screen box-border w-full gap-6 px-4 py-4 sm:px-6 lg:px-8 lg:py-8">
         <aside className="hidden lg:block w-72 shrink-0 h-full overflow-hidden">
           {desktopSidebar}
         </aside>
 
-        <div className="min-w-0 flex-1 min-h-0 flex flex-col lg:h-full">
+        <div className="min-w-0 flex-1 min-h-0 flex flex-col h-full">
           <header className="mb-4 flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm lg:hidden">
             <button
               type="button"

@@ -482,7 +482,7 @@ export default function DashboardPage() {
               {showFilterPopover && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowFilterPopover(false)} />
-                  <div className="absolute left-1/2 -translate-x-1/2 md:left-0 md:translate-x-0 top-12 z-50 w-72.5 xs:w-80 max-h-[70vh] overflow-y-auto rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_20px_50px_rgba(0,0,0,0.12)] animate-in fade-in slide-in-from-top-2 duration-200 text-left">
+                  <div className="absolute left-[-16px] sm:left-0 top-12 z-50 w-72.5 xs:w-80 max-h-[70vh] overflow-y-auto rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_20px_50px_rgba(0,0,0,0.12)] animate-in fade-in slide-in-from-top-2 duration-200 text-left">
                   <div className="space-y-4">
                     {/* Folders Section */}
                     <div>
@@ -494,7 +494,7 @@ export default function DashboardPage() {
                           </button>
                         )}
                       </div>
-                      <div className="space-y-1 max-h-80 overflow-y-auto pr-1 scrollbar-thin">
+                      <div className="space-y-1 max-h-36 overflow-y-auto pr-1 scrollbar-thin">
                         <button
                           onClick={() => { setFilterFolder(''); setCurrentPage(1); }}
                           className={`w-full flex items-center justify-between rounded-xl px-3 py-2.5 text-xs font-bold transition ${
@@ -537,67 +537,15 @@ export default function DashboardPage() {
                       </div>
                     </div>
 
-                    {/* Tags Section */}
-                    <div className="border-t border-slate-100 pt-3">
-                      <div className="flex items-center justify-between text-[11px] font-extrabold tracking-wider text-slate-400 uppercase mb-2">
-                        <span>Tag</span>
-                        {filterTag && (
-                          <button onClick={() => setFilterTag('')} className="text-blue-600 hover:text-blue-800 transition lowercase font-bold text-[10px]">
-                            Clear
-                          </button>
-                        )}
-                      </div>
-                      <div className="space-y-1 max-h-36 overflow-y-auto pr-1 scrollbar-thin">
-                        <button
-                          onClick={() => { setFilterTag(''); setCurrentPage(1); }}
-                          className={`w-full flex items-center justify-between rounded-xl px-3 py-2.5 text-xs font-bold transition ${
-                            !filterTag
-                              ? 'bg-blue-50/50 text-blue-600'
-                              : 'text-slate-700 hover:bg-slate-50'
-                          }`}
-                        >
-                          <span className="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-4 w-4 shrink-0 text-slate-400">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581a1.002 1.002 0 0 0 1.417 0l4.318-4.318a1.002 1.002 0 0 0 0-1.417L9.581 3.659A2.25 2.25 0 0 0 7.99 3H5.25Z" />
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6Z" />
-                            </svg>
-                            All Tags
-                          </span>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100/80 text-slate-500">{urls.length}</span>
-                        </button>
-                        {[...new Set(urls.flatMap(u => (u.tags || '').split(',').map(t => t.trim())).filter(Boolean))].map(tag => {
-                          const tagCount = urls.filter(u => (u.tags || '').split(',').map(t => t.trim().toLowerCase()).includes(tag.toLowerCase())).length;
-                          const isSelected = filterTag === tag;
-                          return (
-                            <button
-                              key={tag}
-                              onClick={() => { setFilterTag(isSelected ? '' : tag); setCurrentPage(1); }}
-                              className={`w-full flex items-center justify-between rounded-xl px-3 py-2.5 text-xs font-bold transition ${
-                                isSelected
-                                  ? 'bg-blue-50 text-blue-600'
-                                  : 'text-slate-700 hover:bg-slate-50'
-                              }`}
-                            >
-                              <span className="flex items-center gap-2 truncate pr-2">
-                                <span className={`text-sm shrink-0 ${isSelected ? 'text-blue-500 font-extrabold' : 'text-slate-400'}`}>#</span>
-                                <span className="truncate">{tag}</span>
-                              </span>
-                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${isSelected ? 'bg-blue-100 text-blue-700' : 'bg-slate-100/80 text-slate-500'}`}>{tagCount}</span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
                     {/* Popover Footer Summary */}
-                    {(filterFolder || filterTag) ? (
+                    {filterFolder ? (
                       <div className="border-t border-slate-100 pt-3 flex items-center justify-between">
                         <span className="text-[10px] font-bold text-slate-400">{filteredUrls.length} matches found</span>
                         <button
-                          onClick={() => { setFilterFolder(''); setFilterTag(''); }}
+                          onClick={() => { setFilterFolder(''); }}
                           className="rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1 text-[10px] font-bold transition"
                         >
-                          Clear all
+                          Clear
                         </button>
                       </div>
                     ) : null}
@@ -617,7 +565,7 @@ export default function DashboardPage() {
                     : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                 }`}
               >
-                <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-blue-600" />
+
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-4 w-4 text-slate-500">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 13.5V3.75m0 9.75a1.5 1.5 0 0 1 0 3m0-3a1.5 1.5 0 0 0 0 3m0 0V21m6-8.25V3.75m0 9.75a1.5 1.5 0 0 1 0 3m0-3a1.5 1.5 0 0 0 0 3m0 0V21m6-12V3.75m0 5.25a1.5 1.5 0 0 1 0 3m0-3a1.5 1.5 0 0 0 0 3m0 0V21" />
                 </svg>
@@ -630,123 +578,71 @@ export default function DashboardPage() {
               {showDisplayPopover && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowDisplayPopover(false)} />
-                  <div className="absolute right-1/2 translate-x-1/2 md:right-0 md:translate-x-0 top-12 z-50 w-72.5 xs:w-85 rounded-3xl border border-slate-200 bg-white p-5 shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200">
-                  {/* Top layout options */}
-                  <div className="grid grid-cols-2 gap-3 mb-4">
-                    <button
-                      onClick={() => { setLayoutMode('cards'); setCurrentPage(1); }}
-                      className={`flex flex-col items-center justify-center gap-2 rounded-2xl border p-4 text-center transition-all ${
-                        layoutMode === 'cards'
-                          ? 'border-slate-300 bg-slate-50/80 text-slate-900 font-bold'
-                          : 'border-slate-100 bg-white text-slate-500 hover:bg-slate-50'
-                      }`}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-5 w-5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6Z" />
-                      </svg>
-                      <span className="text-xs">Cards</span>
-                    </button>
-                    <button
-                      onClick={() => { setLayoutMode('rows'); setCurrentPage(1); }}
-                      className={`flex flex-col items-center justify-center gap-2 rounded-2xl border p-4 text-center transition-all ${
-                        layoutMode === 'rows'
-                          ? 'border-slate-350 bg-slate-50/80 text-slate-900 font-bold'
-                          : 'border-slate-100 bg-white text-slate-500 hover:bg-slate-50'
-                      }`}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-5 w-5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 5.25h16.5m-16.5 4.5h16.5m-16.5 4.5h16.5m-16.5 4.5h16.5" />
-                      </svg>
-                      <span className="text-xs">Rows</span>
-                    </button>
-                  </div>
+                  <div className="absolute right-[-16px] sm:right-0 top-12 z-50 w-72 sm:w-80 rounded-3xl border border-slate-200 bg-white p-5 shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="space-y-4">
+                      {/* Top layout options */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <button
+                          onClick={() => { setLayoutMode('cards'); setCurrentPage(1); }}
+                          className={`flex flex-col items-center justify-center gap-2 rounded-2xl border p-4 text-center transition-all cursor-pointer ${
+                            layoutMode === 'cards'
+                              ? 'border-slate-300 bg-slate-50/80 text-slate-900 font-bold'
+                              : 'border-slate-100 bg-white text-slate-500 hover:bg-slate-50'
+                          }`}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-5 w-5">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V18ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25A2.25 2.25 0 0 1 13.5 8.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />
+                          </svg>
+                          <span className="text-xs">Cards</span>
+                        </button>
+                        <button
+                          onClick={() => { setLayoutMode('rows'); setCurrentPage(1); }}
+                          className={`flex flex-col items-center justify-center gap-2 rounded-2xl border p-4 text-center transition-all cursor-pointer ${
+                            layoutMode === 'rows'
+                              ? 'border-slate-300 bg-slate-50/80 text-slate-900 font-bold'
+                              : 'border-slate-100 bg-white text-slate-500 hover:bg-slate-50'
+                          }`}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-5 w-5">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-3.75 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                          </svg>
+                          <span className="text-xs">Rows</span>
+                        </button>
+                      </div>
 
-                  {/* Ordering option */}
-                  <div className="flex items-center justify-between border-t border-slate-100 py-3.5 text-sm font-medium text-slate-700">
-                    <span className="flex items-center gap-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-4.5 w-4.5 text-slate-400">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 7.5 7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5" />
-                      </svg>
-                      Ordering
-                    </span>
-                    <select
-                      value={orderBy}
-                      onChange={(e) => { setOrderBy(e.target.value); setCurrentPage(1); }}
-                      className="rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-bold text-slate-700 outline-none hover:bg-slate-50 transition cursor-pointer"
-                    >
-                      <option value="createdAt">Date created</option>
-                      <option value="clicks">Clicks count</option>
-                    </select>
-                  </div>
-
-                  {/* Show archived links toggle */}
-                  {/* DISPLAY PROPERTIES */}
-                  <div className="border-t border-slate-100 pt-4 mb-4">
-                    <div className="text-[10px] font-extrabold tracking-wider text-slate-400 uppercase mb-3">Display Properties</div>
-                    <div className="flex flex-wrap gap-1.5">
-                      {Object.keys(displayProperties).map((prop) => {
-                        const labelMap = {
-                          shortLink: 'Short link',
-                          destinationUrl: 'Destination URL',
-                          title: 'Title',
-                          description: 'Description',
-                          createdAt: 'Created Date',
-                          creator: 'Creator',
-                          tags: 'Tags',
-                          analytics: 'Analytics',
-                        }
-                        const label = labelMap[prop] || prop
-                        const active = displayProperties[prop]
-                        return (
+                      {/* Ordering option */}
+                      <div className="flex items-center justify-between border-t border-slate-100 pt-4 text-sm font-medium text-slate-700">
+                        <span className="flex items-center gap-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-4.5 w-4.5 text-slate-400">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 7.5 7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5" />
+                          </svg>
+                          Ordering
+                        </span>
+                        <div className="flex gap-1 bg-slate-100 p-1 rounded-full border border-slate-200/40">
                           <button
-                            key={prop}
-                            onClick={() => setDisplayProperties(prev => ({ ...prev, [prop]: !prev[prop] }))}
-                            className={`rounded-full border px-2.5 py-1 text-xs font-semibold tracking-tight transition-all duration-150 ${
-                              active
-                                ? 'bg-slate-100 border-slate-200/80 text-slate-800'
-                                : 'bg-white border-slate-150 text-slate-400 hover:border-slate-250 hover:bg-slate-50'
+                            onClick={() => { setOrderBy('createdAt'); setCurrentPage(1); }}
+                            className={`rounded-full px-2.5 py-1 text-xs font-bold transition-all duration-150 cursor-pointer ${
+                              orderBy === 'createdAt'
+                                ? 'bg-white text-slate-900 shadow-sm'
+                                : 'text-slate-500 hover:text-slate-800'
                             }`}
                           >
-                            {label}
+                            Date
                           </button>
-                        )
-                      })}
+                          <button
+                            onClick={() => { setOrderBy('clicks'); setCurrentPage(1); }}
+                            className={`rounded-full px-2.5 py-1 text-xs font-bold transition-all duration-150 cursor-pointer ${
+                              orderBy === 'clicks'
+                                ? 'bg-white text-slate-900 shadow-sm'
+                                : 'text-slate-500 hover:text-slate-800'
+                            }`}
+                          >
+                            Clicks
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
-
-                  {/* Reset/Set default */}
-                  <div className="flex items-center justify-between border-t border-slate-100 pt-4 text-xs">
-                    <button
-                      onClick={() => {
-                        setDisplayProperties({
-                          shortLink: true,
-                          destinationUrl: true,
-                          title: true,
-                          description: true,
-                          createdAt: true,
-                          creator: true,
-                          tags: true,
-                          analytics: true,
-                        })
-                        setLayoutMode('cards')
-                        setOrderBy('createdAt')
-                        setCurrentPage(1)
-                      }}
-                      className="text-slate-500 hover:text-slate-800 font-bold transition"
-                    >
-                      Reset to default
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowDisplayPopover(false)
-                        showToast('Display properties saved successfully!', 'success')
-                      }}
-                      className="rounded-full bg-slate-900 hover:bg-black px-3.5 py-1.5 font-bold text-white shadow-sm transition"
-                    >
-                      Set as default
-                    </button>
-                  </div>
-                </div>
                 </>
               )}
             </div>
