@@ -892,7 +892,15 @@ export default function DashboardPage() {
 
               // Default Cards Mode (Grid Item)
               return (
-                <div key={item.id} className="flex flex-col justify-between rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:border-slate-300/80 transition-all duration-200 hover:-translate-y-0.5">
+                <div key={item.id} className="relative flex flex-col justify-between rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:border-slate-300/80 transition-all duration-200 hover:-translate-y-0.5">
+                  <div className="absolute right-5 top-5 z-10 flex items-center gap-2">
+                    <button onClick={() => copy(item.shortUrl)} aria-label="Copy short link" className="shrink-0 rounded-full border border-slate-200 bg-white p-2 text-slate-500 shadow-sm hover:bg-slate-50 hover:text-slate-800 transition cursor-pointer">
+                      <Copy className="h-4 w-4" strokeWidth={1.9} />
+                    </button>
+                    <button onClick={() => { setNewLinkData({ url: item.shortUrl, qr: item.qrCodeUrl, isNew: false }); setShowNewLinkModal(true) }} aria-label="Show QR code" className="shrink-0 rounded-full border border-slate-200 bg-white p-2 text-slate-500 shadow-sm hover:bg-slate-50 hover:text-slate-800 transition cursor-pointer">
+                      <QrCode className="h-4 w-4" strokeWidth={1.9} />
+                    </button>
+                  </div>
                   <div className="flex min-w-0 flex-col items-start gap-3 w-full">
                     {/* Top row: Favicon and Click count */}
                     <div className="flex items-center justify-between w-full">
@@ -932,18 +940,12 @@ export default function DashboardPage() {
                       
                       <div className="flex items-center gap-2 mt-0.5 w-full">
                         {displayProperties.shortLink ? (
-                          <a href={item.shortUrl} target="_blank" rel="noreferrer" className="truncate text-base font-bold text-slate-900 hover:text-blue-600 transition flex-1 min-w-0">
+                          <a href={item.shortUrl} target="_blank" rel="noreferrer" className="truncate text-base font-bold text-slate-900 hover:text-blue-600 transition flex-1 min-w-0 pr-24">
                             {item.shortUrl.replace(/^https?:\/\//, '')}
                           </a>
                         ) : (
-                          <span className="text-base font-semibold text-slate-400 italic flex-1">Short Link hidden</span>
+                          <span className="text-base font-semibold text-slate-400 italic flex-1 pr-24">Short Link hidden</span>
                         )}
-                        <button
-                          onClick={() => copy(item.shortUrl)}
-                          className="shrink-0 rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-bold text-slate-600 hover:bg-slate-50 transition cursor-pointer"
-                        >
-                          {copiedValue === item.shortUrl ? 'Copied' : 'Copy'}
-                        </button>
                       </div>
 
                       {displayProperties.destinationUrl && (
