@@ -761,12 +761,15 @@ export default function DashboardPage() {
           </button>
         </div>
 
-        <div className={`space-y-4 ${filteredUrls.length ? 'pb-72' : ''}`}>
+        <div className={layoutMode === 'cards'
+          ? `grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 ${filteredUrls.length ? 'pb-72' : ''}`
+          : `space-y-3.5 ${filteredUrls.length ? 'pb-72' : ''}`
+        }>
           {filteredUrls.length ? (
             paginatedUrls.map((item) => {
               if (layoutMode === 'rows') {
                 return (
-                  <div key={item.id} className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 rounded-xl border border-slate-200/60 bg-white px-5 py-3.5 shadow-sm hover:shadow-[0_4px_16px_rgba(0,0,0,0.02)] hover:border-slate-350 transition duration-150">
+                  <div key={item.id} className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 rounded-2xl border border-slate-200/60 bg-white px-5 py-4 shadow-sm hover:shadow-[0_4px_16px_rgba(0,0,0,0.02)] hover:border-slate-300 transition duration-150 w-full">
                     <div className="flex min-w-0 flex-1 items-center gap-4">
                       {/* Favicon Icon badge */}
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-50 border border-slate-200 shadow-sm overflow-hidden p-1">
@@ -790,10 +793,10 @@ export default function DashboardPage() {
                         </div>
                       </div>
 
-                      {/* Grid columns */}
-                      <div className="min-w-0 flex-1 grid grid-cols-1 md:grid-cols-3 gap-3 items-center">
-                        {/* Col 1: Title and Shortlink */}
-                        <div className="min-w-0">
+                      {/* Align Columns */}
+                      <div className="min-w-0 flex-1 flex flex-col md:flex-row md:items-center gap-4 justify-between">
+                        {/* Column 1: Shortlink & Title */}
+                        <div className="min-w-0 md:w-1/3">
                           {displayProperties.title && item.title && (
                             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-0.5 truncate">{item.title}</div>
                           )}
@@ -806,8 +809,8 @@ export default function DashboardPage() {
                           )}
                         </div>
 
-                        {/* Col 2: Destination URL & Description */}
-                        <div className="min-w-0">
+                        {/* Column 2: Destination URL & Description */}
+                        <div className="min-w-0 md:w-2/5">
                           {displayProperties.destinationUrl && (
                             <span className="text-xs font-semibold text-slate-500 truncate block">↳ {item.originalUrl}</span>
                           )}
@@ -816,8 +819,8 @@ export default function DashboardPage() {
                           )}
                         </div>
 
-                        {/* Col 3: Date created, Creator, & Tags */}
-                        <div className="min-w-0 flex flex-wrap items-center gap-1.5 text-xs text-slate-400 font-medium">
+                        {/* Column 3: Date created & Tags */}
+                        <div className="min-w-0 md:w-1/4 flex flex-wrap items-center gap-1.5 text-xs text-slate-400 font-medium">
                           {displayProperties.createdAt && <span>{formatDate(item.createdAt)}</span>}
                           {displayProperties.createdAt && displayProperties.creator && <span>•</span>}
                           {displayProperties.creator && <span>by {profile?.name || 'User'}</span>}
@@ -840,12 +843,12 @@ export default function DashboardPage() {
                           <button onClick={() => {
                             const shortCode = item.shortUrl.split('/').pop() || '';
                             navigate(`/analytics/${shortCode}`);
-                          }} className="rounded-full border border-blue-100 bg-blue-50/50 hover:bg-blue-100/80 px-2.5 py-1 text-[11px] font-bold text-[#2563EB] transition">
+                          }} className="rounded-full border border-blue-100 bg-blue-50/50 hover:bg-blue-100/80 px-2.5 py-1 text-[11px] font-bold text-[#2563EB] transition cursor-pointer">
                             Stats
                           </button>
                         </div>
                       )}
-                      <button onClick={() => copy(item.shortUrl)} className="rounded-full border border-slate-200 bg-white p-1.5 text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition">
+                      <button onClick={() => copy(item.shortUrl)} className="rounded-full border border-slate-200 bg-white p-1.5 text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition cursor-pointer">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-4 w-4">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H5.25m11.9-3.675A2.006 2.006 0 0 0 15 2.25h-3a2.006 2.006 0 0 0-1.85 1.125M18 10.5h.008v.008H18V10.5Zm3 0h.008v.008H21V10.5Zm-3 3h.008v.008H18v-.008Zm3 0h.008v.008H21v-.008Zm-3 3h.008v.008H18v-.008Zm3 3h.008v.008H21v-.008z" />
                         </svg>
@@ -853,7 +856,7 @@ export default function DashboardPage() {
 
                       {/* Action Menu (Ellipsis dropdown) */}
                       <div className="relative">
-                        <button onClick={() => setOpenMenuId(openMenuId === item.id ? null : item.id)} className="rounded-full border border-slate-200 bg-white p-1.5 text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition">
+                        <button onClick={() => setOpenMenuId(openMenuId === item.id ? null : item.id)} className="rounded-full border border-slate-200 bg-white p-1.5 text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition cursor-pointer">
                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
                             <path d="M12 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 7.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 7.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3z" />
                           </svg>
@@ -898,125 +901,143 @@ export default function DashboardPage() {
                 )
               }
 
-              // Default Cards Mode
+              // Default Cards Mode (Grid Item)
               return (
-                <div key={item.id} className="flex flex-col gap-4 rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.05)] hover:border-slate-300/80 lg:flex-row lg:items-center lg:justify-between transition-all duration-200">
-                  <div className="flex min-w-0 flex-1 items-start gap-4">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-slate-50 border border-slate-200/80 shadow-sm overflow-hidden p-1">
-                      {item.originalUrl && getDomainFavicon(item.originalUrl) ? (
-                        <img
-                          src={getDomainFavicon(item.originalUrl)}
-                          alt="Logo"
-                          className="h-6 w-6 object-contain"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                            const fb = e.currentTarget.parentElement.querySelector('.fallback-letter');
-                            if (fb) fb.style.display = 'flex';
-                          }}
-                        />
-                      ) : null}
-                      <div
-                        className="fallback-letter h-full w-full items-center justify-center font-extrabold text-blue-600 text-sm"
-                        style={{ display: item.originalUrl ? 'none' : 'flex' }}
-                      >
-                        {((item.shortUrl || 'L').replace(/^https?:\/\//, '').charAt(0) || 'L').toUpperCase()}
+                <div key={item.id} className="flex flex-col justify-between rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:border-slate-300/80 transition-all duration-200 hover:-translate-y-0.5">
+                  <div className="flex min-w-0 flex-col items-start gap-3 w-full">
+                    {/* Top row: Favicon and Click count */}
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-50 border border-slate-200/80 shadow-sm overflow-hidden p-1">
+                        {item.originalUrl && getDomainFavicon(item.originalUrl) ? (
+                          <img
+                            src={getDomainFavicon(item.originalUrl)}
+                            alt="Logo"
+                            className="h-5 w-5 object-contain"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                              const fb = e.currentTarget.parentElement.querySelector('.fallback-letter');
+                              if (fb) fb.style.display = 'flex';
+                            }}
+                          />
+                        ) : null}
+                        <div
+                          className="fallback-letter h-full w-full items-center justify-center font-extrabold text-blue-600 text-xs"
+                          style={{ display: item.originalUrl ? 'none' : 'flex' }}
+                        >
+                          {((item.shortUrl || 'L').replace(/^https?:\/\//, '').charAt(0) || 'L').toUpperCase()}
+                        </div>
                       </div>
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      {displayProperties.title && item.title && (
-                        <div className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1 truncate max-w-sm">{item.title}</div>
+
+                      {displayProperties.analytics && (
+                        <span className="rounded-full bg-emerald-50 text-emerald-700 px-2.5 py-1 text-[11px] font-bold border border-emerald-100/50 shadow-sm">
+                          {item.clicks || 0} clicks
+                        </span>
                       )}
-                      <div className="flex flex-wrap items-center gap-2.5">
+                    </div>
+
+                    {/* Content Section */}
+                    <div className="min-w-0 w-full mt-1">
+                      {displayProperties.title && item.title && (
+                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1 truncate w-full">{item.title}</div>
+                      )}
+                      
+                      <div className="flex items-center gap-2 mt-0.5 w-full">
                         {displayProperties.shortLink ? (
-                          <a href={item.shortUrl} target="_blank" rel="noreferrer" className="truncate text-base font-bold text-slate-900 hover:text-blue-600 transition">
-                            {item.shortUrl}
+                          <a href={item.shortUrl} target="_blank" rel="noreferrer" className="truncate text-base font-bold text-slate-900 hover:text-blue-600 transition flex-1 min-w-0">
+                            {item.shortUrl.replace(/^https?:\/\//, '')}
                           </a>
                         ) : (
-                          <span className="text-base font-semibold text-slate-400 italic">Short Link hidden</span>
+                          <span className="text-base font-semibold text-slate-400 italic flex-1">Short Link hidden</span>
                         )}
-                        <button onClick={() => copy(item.shortUrl)} className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
-                          {copiedValue === item.shortUrl ? 'Copied!' : 'Copy'}
+                        <button
+                          onClick={() => copy(item.shortUrl)}
+                          className="shrink-0 rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-bold text-slate-600 hover:bg-slate-50 transition cursor-pointer"
+                        >
+                          {copiedValue === item.shortUrl ? 'Copied' : 'Copy'}
                         </button>
                       </div>
+
                       {displayProperties.destinationUrl && (
-                        <div className="mt-1.5 truncate text-sm font-medium text-slate-500">↳ {item.originalUrl}</div>
+                        <div className="mt-1.5 truncate text-xs font-semibold text-slate-500 w-full">↳ {item.originalUrl}</div>
                       )}
                       {displayProperties.description && item.description && (
-                        <div className="mt-2 text-xs font-medium text-slate-500 max-w-xl">{item.description}</div>
+                        <div className="mt-2 text-xs font-medium text-slate-400 line-clamp-2 min-h-[2rem] w-full">{item.description}</div>
                       )}
                       {displayProperties.tags && item.tags && (
-                        <div className="mt-2 flex flex-wrap gap-1.5">
+                        <div className="mt-3 flex flex-wrap gap-1">
                           {item.tags.split(',').map((t, idx) => (
-                            <span key={idx} className="rounded-full bg-slate-50 border border-slate-200/80 px-2 py-0.5 text-[10px] font-bold text-slate-500">
+                            <span key={idx} className="rounded-full bg-blue-50/50 border border-blue-100/60 px-2 py-0.5 text-[9px] font-bold text-[#2563EB]">
                               #{t.trim()}
                             </span>
                           ))}
                         </div>
                       )}
-                      {(displayProperties.createdAt || displayProperties.creator) && (
-                        <div className="mt-2 text-xs font-semibold text-slate-400 flex items-center gap-2">
-                          {displayProperties.createdAt && <span>Created {formatDate(item.createdAt)}</span>}
-                          {displayProperties.createdAt && displayProperties.creator && <span>•</span>}
-                          {displayProperties.creator && <span>By {profile?.name || 'User'}</span>}
-                        </div>
-                      )}
                     </div>
                   </div>
 
-                  <div className="flex shrink-0 flex-col items-start gap-2.5 lg:flex-row lg:items-center lg:gap-3.5">
-                    {displayProperties.analytics && (
-                      <>
-                        <div className="rounded-full bg-emerald-50 text-emerald-700 px-3.5 py-1.5 text-xs font-bold whitespace-nowrap shadow-sm">
-                          {item.clicks || 0} clicks
-                        </div>
-                        <button onClick={() => {
+                  {/* Footer Actions */}
+                  <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between w-full">
+                    {displayProperties.analytics ? (
+                      <button
+                        onClick={() => {
                           const shortCode = item.shortUrl.split('/').pop() || '';
                           navigate(`/analytics/${shortCode}`);
-                        }} className="rounded-full border border-blue-100 bg-blue-50/50 hover:bg-blue-100/80 px-4 py-2 text-sm font-bold text-[#2563EB] transition duration-150">
-                          View Analytics
-                        </button>
-                      </>
-                    )}
-                    <div className="relative">
-                      <button onClick={() => setOpenMenuId(openMenuId === item.id ? null : item.id)} className="rounded-full border border-slate-200 bg-white p-2.5 text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4.5 w-4.5">
-                          <path d="M12 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 7.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 7.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3z" />
+                        }}
+                        className="text-xs font-bold text-[#2563EB] hover:text-blue-700 hover:underline flex items-center gap-1 cursor-pointer"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="h-3.5 w-3.5">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v18h18" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M7 14l3-3 3 2 4-5" />
                         </svg>
+                        View Stats
                       </button>
+                    ) : <div />}
 
-                      {openMenuId === item.id ? (
-                        <>
-                          <div className="fixed inset-0 z-30 bg-transparent" onClick={() => setOpenMenuId(null)} />
-                           <div className="absolute left-0 lg:left-auto lg:right-0 top-11 z-40 w-48 max-h-40 overflow-y-auto scrollbar-thin rounded-xl border border-slate-200 bg-white shadow-xl py-1.5 animate-in fade-in slide-in-from-top-1 duration-150">
-                             <ul>
-                               <li>
-                                 <button onClick={() => { setOpenMenuId(null); navigate('/create', { state: { prefill: item, edit: true } }) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Edit</button>
-                               </li>
-                               <li>
-                                 <button onClick={() => { setOpenMenuId(null); setNewLinkData({ url: item.shortUrl, qr: item.qrCodeUrl, isNew: false }); setShowNewLinkModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">QR Code</button>
-                               </li>
-                               <li>
-                                 <button onClick={() => { setOpenMenuId(null); copy(item.shortUrl) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Copy Link ID</button>
-                               </li>
-                               <li>
-                                 <button onClick={() => { setOpenMenuId(null); navigate('/create', { state: { prefill: { destination: item.originalUrl, title: item.title, description: item.description }, duplicate: true } }) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Duplicate</button>
-                               </li>
-                               <li>
-                                 <button onClick={() => { setOpenMenuId(null); setMoveTarget(item); setMoveFolderName(item.folder || ''); setShowMoveModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Move</button>
-                               </li>
-                               <li>
-                                 <button onClick={() => { setOpenMenuId(null); setArchiveTarget(item); setShowArchiveModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Archive</button>
-                               </li>
-                               <li>
-                                 <button onClick={() => { setOpenMenuId(null); setShareTarget(item); setShowShareModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Share</button>
-                               </li>
-                               <li>
-                                 <button onClick={() => { setOpenMenuId(null); setDeleteTarget(item); setDeleteVerifyText(''); setShowDeleteModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-rose-600 hover:bg-slate-50 hover:text-rose-700 transition">Delete</button>
-                               </li>
-                             </ul>
-                           </div>
-                        </>
-                      ) : null}
+                    <div className="flex items-center gap-2">
+                      <div className="relative">
+                        <button
+                          onClick={() => setOpenMenuId(openMenuId === item.id ? null : item.id)}
+                          className="rounded-full border border-slate-200 bg-white p-1.5 text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition cursor-pointer"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4.5 w-4.5">
+                            <path d="M12 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 7.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 7.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3z" />
+                          </svg>
+                        </button>
+
+                        {openMenuId === item.id ? (
+                          <>
+                            <div className="fixed inset-0 z-30 bg-transparent" onClick={() => setOpenMenuId(null)} />
+                            <div className="absolute right-0 bottom-8 z-40 w-48 max-h-40 overflow-y-auto scrollbar-thin rounded-xl border border-slate-200 bg-white shadow-xl py-1.5 animate-in fade-in slide-in-from-bottom-1 duration-150">
+                              <ul>
+                                <li>
+                                  <button onClick={() => { setOpenMenuId(null); navigate('/create', { state: { prefill: item, edit: true } }) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Edit</button>
+                                </li>
+                                <li>
+                                  <button onClick={() => { setOpenMenuId(null); setNewLinkData({ url: item.shortUrl, qr: item.qrCodeUrl, isNew: false }); setShowNewLinkModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">QR Code</button>
+                                </li>
+                                <li>
+                                  <button onClick={() => { setOpenMenuId(null); copy(item.shortUrl) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Copy Link ID</button>
+                                </li>
+                                <li>
+                                  <button onClick={() => { setOpenMenuId(null); navigate('/create', { state: { prefill: { destination: item.originalUrl, title: item.title, description: item.description }, duplicate: true } }) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Duplicate</button>
+                                </li>
+                                <li>
+                                  <button onClick={() => { setOpenMenuId(null); setMoveTarget(item); setMoveFolderName(item.folder || ''); setShowMoveModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Move</button>
+                                </li>
+                                <li>
+                                  <button onClick={() => { setOpenMenuId(null); setArchiveTarget(item); setShowArchiveModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Archive</button>
+                                </li>
+                                <li>
+                                  <button onClick={() => { setOpenMenuId(null); setShareTarget(item); setShowShareModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition">Share</button>
+                                </li>
+                                <li>
+                                  <button onClick={() => { setOpenMenuId(null); setDeleteTarget(item); setDeleteVerifyText(''); setShowDeleteModal(true) }} className="w-full text-left px-3.5 py-2 text-sm font-semibold text-rose-600 hover:bg-slate-50 hover:text-rose-700 transition">Delete</button>
+                                </li>
+                              </ul>
+                            </div>
+                          </>
+                        ) : null}
+                      </div>
                     </div>
                   </div>
                 </div>
