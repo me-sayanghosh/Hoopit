@@ -1,27 +1,116 @@
-# Hoopit
+<div align="center">
 
-Hoopit is a full-stack URL shortener with authentication, folder organization, and analytics for clicks, devices, browsers, referrers, and geolocation. It combines a Node.js + Express backend with a React + Vite frontend to help users create short links and understand who is clicking them, where they are coming from, and what devices they use.
+# 🔗 Hoopit
 
-## Highlights
+**A full-stack URL shortener with real-time analytics, folder organization, and geolocation tracking.**
 
-- Shorten long URLs into clean, shareable links
-- Add optional custom aliases and organize links into folders
-- Track clicks with device, browser, country, city, referrer, and timestamp data
-- View analytics in a dashboard with charts and map-based location visualization
-- Support user accounts with JWT authentication
-- Capture location data from IP lookup and browser geolocation when available
+Shorten links, understand your audience, and see exactly who's clicking — from where, on what device, and when.
 
-## Tech Stack
+[![Node.js](https://img.shields.io/badge/Node.js-Express-339933?logo=node.js&logoColor=white)](#tech-stack)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](#tech-stack)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Mongoose-47A248?logo=mongodb&logoColor=white)](#tech-stack)
+[![Vite](https://img.shields.io/badge/Vite-Frontend-646CFF?logo=vite&logoColor=white)](#tech-stack)
+[![License](https://img.shields.io/badge/license-unspecified-lightgrey)](#license)
 
-| Layer | Tools |
-| --- | --- |
-| Backend | Node.js, Express, MongoDB, Mongoose |
-| Auth | JWT, cookie-parser |
-| Analytics | geoip-lite, UAParser, Leaflet, react-leaflet |
-| Frontend | React 19, Vite, React Router, Axios |
-| Styling | CSS, Tailwind CSS |
+[Features](#-core-features) • [Tech Stack](#-tech-stack) • [Getting Started](#-getting-started) • [API Reference](#-api-overview) • [Deployment](#-deployment-notes)
 
-## Project Structure
+</div>
+
+---
+
+## 📸 Preview
+
+<div align="center">
+
+<img src="./hoopit.png" alt="Hoopit landing page — paste, short, and track all in one place" width="800"/>
+
+</div>
+
+---
+
+## ✨ Overview
+
+Hoopit combines a **Node.js + Express** backend with a **React + Vite** frontend to turn long, unwieldy URLs into clean, shareable links — while giving you a full analytics dashboard to track clicks, devices, browsers, referrers, and geolocation in real time.
+
+|  |  |
+|---|---|
+| 🔗 **Shorten** | Turn long URLs into clean, shareable links with optional custom aliases |
+| 📁 **Organize** | Group links into folders for easy management |
+| 📊 **Analyze** | Track clicks by device, browser, country, city, referrer, and timestamp |
+| 🗺️ **Visualize** | See where your clicks come from on an interactive map |
+| 🔐 **Secure** | JWT-based authentication with protected dashboard routes |
+
+---
+
+## 🚀 Core Features
+
+### URL Management
+- Create short URLs from long links
+- Add optional custom aliases
+- Organize links into folders
+- Manage active and archived links
+
+### 📊 Analytics
+- Total click counts at a glance
+- Traffic breakdowns by country, city, device, and browser
+- Recent click history log
+- Interactive location map powered by Leaflet
+- Growth trends and summary charts
+
+### 🌍 Location Tracking
+- IP-based geolocation via edge headers or `geoip-lite`
+- Optional browser geolocation for higher precision
+- Visitor ID tracking to match location updates with click events
+
+### 🔐 Authentication
+- User registration and login
+- Protected dashboard routes
+- Cookie-based session handling with JWT
+
+---
+
+## 🛠 Tech Stack
+
+<table>
+<tr>
+<td valign="top" width="50%">
+
+**Backend**
+- Node.js + Express
+- MongoDB + Mongoose
+- JWT + `cookie-parser`
+
+</td>
+<td valign="top" width="50%">
+
+**Frontend**
+- React 19 + Vite
+- React Router + Axios
+- Tailwind CSS
+
+</td>
+</tr>
+<tr>
+<td valign="top" width="50%">
+
+**Analytics & Location**
+- `geoip-lite`
+- `UAParser`
+- Leaflet / `react-leaflet`
+
+</td>
+<td valign="top" width="50%">
+
+**Styling**
+- CSS + Tailwind CSS
+
+</td>
+</tr>
+</table>
+
+---
+
+## 📂 Project Structure
 
 ```text
 Hoopit/
@@ -46,25 +135,25 @@ Hoopit/
     └── public/
 ```
 
-## Getting Started
+---
+
+## ⚡ Getting Started
 
 ### 1. Clone the repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/me-sayanghosh/Hoopit
 cd Hoopit
 ```
 
 ### 2. Configure the backend
-
-Install dependencies:
 
 ```bash
 cd Backend
 npm install
 ```
 
-Create a `.env` file with your backend environment variables. Typical values include:
+Create a `.env` file in `Backend/` with the following:
 
 ```bash
 PORT=5000
@@ -81,101 +170,104 @@ npm run dev
 
 ### 3. Configure the frontend
 
-Install dependencies:
-
 ```bash
 cd ../Frontend
 npm install
-```
-
-Start the frontend:
-
-```bash
 npm run dev
 ```
 
-## Available Scripts
+Your app should now be running at `http://localhost:5173` 🎉
 
-### Backend
+---
 
-- `npm start` - start the server with Node.js
-- `npm run dev` - start the server with nodemon
-- `npm test` - placeholder test script
+## 📜 Available Scripts
 
-### Frontend
+<table>
+<tr>
+<td valign="top" width="50%">
 
-- `npm run dev` - start the Vite development server
-- `npm run build` - create a production build
-- `npm run preview` - preview the production build locally
-- `npm run lint` - run ESLint
+**Backend**
+| Script | Description |
+|---|---|
+| `npm start` | Start the server with Node.js |
+| `npm run dev` | Start the server with nodemon |
+| `npm test` | Placeholder test script |
 
-## Core Features
+</td>
+<td valign="top" width="50%">
 
-### URL Management
-- Create short URLs from long links
-- Use optional custom aliases
-- Organize links into folders
-- Manage active and archived links
+**Frontend**
+| Script | Description |
+|---|---|
+| `npm run dev` | Start the Vite dev server |
+| `npm run build` | Create a production build |
+| `npm run preview` | Preview the production build |
+| `npm run lint` | Run ESLint |
 
-### Analytics
-- Total click counts
-- Traffic by country, city, device, and browser
-- Recent click history
-- Interactive location map
-- Growth trends and summary charts
+</td>
+</tr>
+</table>
 
-### Location Tracking
-- IP-based geolocation using edge headers or geoip-lite
-- Optional browser geolocation capture for higher precision
-- Visitor ID tracking to match location updates with click events
+---
 
-### Authentication
-- User registration and login
-- Protected dashboard routes
-- Cookie-based session handling with JWT
-
-## API Overview
+## 🔌 API Overview
 
 ### Authentication
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-- `POST /api/auth/logout`
-- `POST /api/auth/refresh`
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/auth/register` | Register a new user |
+| `POST` | `/api/auth/login` | Log in a user |
+| `POST` | `/api/auth/logout` | Log out the current user |
+| `POST` | `/api/auth/refresh` | Refresh the auth token |
 
 ### Short URLs
-- `POST /api/create`
-- `GET /r/:shortCode`
-- `GET /api/user/all-urls`
-- `GET /api/user/analytics/:shortUrl`
-- `POST /api/create/track-location`
-- `PUT /api/:id`
-- `DELETE /api/:id`
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/create` | Create a new short URL |
+| `GET` | `/r/:shortCode` | Redirect to the original URL |
+| `GET` | `/api/user/all-urls` | Get all URLs for the current user |
+| `GET` | `/api/user/analytics/:shortUrl` | Get analytics for a specific URL |
+| `POST` | `/api/create/track-location` | Track visitor location for a click |
+| `PUT` | `/api/:id` | Update a short URL |
+| `DELETE` | `/api/:id` | Delete a short URL |
 
 ### Folders
-- `POST /api/folder`
-- `GET /api/folder`
-- `PUT /api/folder/:id`
-- `DELETE /api/folder/:id`
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/folder` | Create a new folder |
+| `GET` | `/api/folder` | Get all folders |
+| `PUT` | `/api/folder/:id` | Update a folder |
+| `DELETE` | `/api/folder/:id` | Delete a folder |
 
-## Screenshot
+---
 
-Add your product screenshot here to make the GitHub landing page stronger:
+## 🚢 Deployment Notes
 
-```md
-![Hoopit dashboard](./path-to-your-image.png)
-```
+- ✅ Use **HTTPS** in production so browser geolocation works correctly
+- ✅ Set all backend environment variables before deploying
+- ✅ Ensure the frontend API base URL points to the deployed backend
+- ✅ Verify MongoDB access and CORS settings in production
 
-## Deployment Notes
+---
 
-- Use HTTPS in production so browser geolocation works correctly
-- Set the backend environment variables before deploying
-- Ensure the frontend API base URL points to the deployed backend
-- Verify MongoDB access and CORS settings in production
+## 🤝 Contributing
 
-## Contributing
+Contributions are welcome! To keep the codebase consistent:
 
-If you want to improve Hoopit, keep changes focused and consistent with the existing backend controller/DAO/service structure and the frontend component layout.
+- Follow the existing backend **controller → DAO → service** structure
+- Match the existing frontend component layout and styling conventions
+- Keep pull requests focused and well-scoped
 
-## License
+---
+
+## 📄 License
 
 No license has been specified yet.
+
+---
+
+<div align="center">
+
+Built with ❤️ by [Sayan Ghosh](https://github.com/me-sayanghosh)
+
+</div>

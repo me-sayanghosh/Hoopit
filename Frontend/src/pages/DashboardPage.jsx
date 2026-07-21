@@ -771,14 +771,6 @@ export default function DashboardPage() {
               if (layoutMode === 'rows') {
                 return (
                   <div key={item.id} className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-4 rounded-2xl border border-slate-200/60 bg-white px-5 py-4 shadow-sm hover:shadow-[0_4px_16px_rgba(0,0,0,0.02)] hover:border-slate-300 transition duration-150 w-full">
-                    <div className="absolute right-5 top-4 z-10 flex items-center gap-2">
-                      <button onClick={() => copy(item.shortUrl)} aria-label="Copy short link" className="shrink-0 rounded-full border border-slate-200 bg-white p-2 text-slate-500 shadow-sm hover:bg-slate-50 hover:text-slate-800 transition cursor-pointer">
-                        <Copy className="h-4 w-4" strokeWidth={1.9} />
-                      </button>
-                      <button onClick={() => { setNewLinkData({ url: item.shortUrl, qr: item.qrCodeUrl, isNew: false }); setShowNewLinkModal(true) }} aria-label="Show QR code" className="shrink-0 rounded-full border border-slate-200 bg-white p-2 text-slate-500 shadow-sm hover:bg-slate-50 hover:text-slate-800 transition cursor-pointer">
-                        <QrCode className="h-4 w-4" strokeWidth={1.9} />
-                      </button>
-                    </div>
                     <div className="flex min-w-0 flex-1 items-center gap-4">
                       {/* Favicon Icon badge */}
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-50 border border-slate-200 shadow-sm overflow-hidden p-1">
@@ -834,7 +826,13 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex shrink-0 items-center justify-between md:justify-end gap-3 border-t md:border-t-0 border-slate-100 pt-2.5 md:pt-0">
+                    <div className="flex shrink-0 items-center justify-between md:justify-end gap-2 border-t md:border-t-0 border-slate-100 pt-2.5 md:pt-0">
+                      <button onClick={() => copy(item.shortUrl)} aria-label="Copy short link" className="shrink-0 rounded-full border border-slate-200 bg-white p-2 text-slate-500 shadow-sm hover:bg-slate-50 hover:text-slate-800 transition cursor-pointer">
+                        <Copy className="h-4 w-4" strokeWidth={1.9} />
+                      </button>
+                      <button onClick={() => { setNewLinkData({ url: item.shortUrl, qr: item.qrCodeUrl, isNew: false }); setShowNewLinkModal(true) }} aria-label="Show QR code" className="shrink-0 rounded-full border border-slate-200 bg-white p-2 text-slate-500 shadow-sm hover:bg-slate-50 hover:text-slate-800 transition cursor-pointer">
+                        <QrCode className="h-4 w-4" strokeWidth={1.9} />
+                      </button>
                       {displayProperties.analytics && (
                         <div className="flex items-center gap-2">
                           <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 text-emerald-700 px-2.5 py-1 text-[11px] font-bold whitespace-nowrap border border-emerald-100/50">
