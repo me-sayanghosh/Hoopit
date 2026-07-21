@@ -6,6 +6,8 @@ const FALLBACK_BASE_URL = import.meta.env.PROD
 const baseURL = import.meta.env.VITE_API_BASE_URL || FALLBACK_BASE_URL;
 
 const TOKEN_STORAGE_KEY = "hoopit.authToken";
+const AUTH_ROUTE_PATTERN = /\/api\/auth\/(login|register|google|logout|forgot-password|verify-reset-code|reset-password|me)(?:\?|$)/;
+const AUTH_TIMEOUT_MESSAGE = "Signing in is taking longer than usual. Please wait and try again.";
 
 /**
  * Persist the JWT so it survives page reloads.
@@ -41,6 +43,11 @@ const axiosInstance = axios.create({
 // This is the Safari ITP fallback: when cookies are blocked, this header
 // is the only way the backend can identify the user.
 axiosInstance.interceptors.request.use((config) => {
+    const requestUrl = `${config.baseURL || baseURL}${config.url || ''}`;
+    if (AUTH_ROUTE_PATTERN.test(requestUrl)) {
+        config.timeout = 0;
+    }
+
     const token = getToken();
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
@@ -85,7 +92,9 @@ axiosInstance.interceptors.response.use(
 
         const message =
             serverMessage ||
-            error?.message ||
+            (error?.code === 'ECONNABORTED' || /timeout/i.test(error?.message || '')
+                ? AUTH_TIMEOUT_MESSAGE
+                : error?.message) ||
             "Something went wrong. Please try again.";
 
         return Promise.reject(new Error(message));
